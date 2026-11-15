@@ -11,7 +11,7 @@ Router (FastAPI)  ->  Service (business rules)  ->  SQLAlchemy session / models
 
 - **Routers** (`backend/app/routers`) authenticate, authorise (`require("permission")`), validate input with Pydantic, call a service, write the audit row and commit.
 - **Services** (`backend/app/services`) hold all business rules and never commit. They only `flush`, so a document and its journal entry commit or roll back together.
-- **Models** (`backend/app/models`) declare 36 tables with `CHECK`, `UNIQUE`, foreign-key and composite-index constraints.
+- **Models** (`backend/app/models`) declare 38 tables with `CHECK`, `UNIQUE`, foreign-key and composite-index constraints.
 - Database access goes through SQLAlchemy sessions injected with `Depends(get_db)`. The session acts as the unit of work; a separate repository layer was not added because services query the ORM directly and a thin wrapper would only forward calls.
 
 ## Key design decisions
@@ -45,6 +45,8 @@ Router (FastAPI)  ->  Service (business rules)  ->  SQLAlchemy session / models
 | Delivery | 5100 COGS | 1300 / 1310 Inventory |
 | Customer invoice | 1200 Accounts receivable | 4100 Sales revenue |
 | Customer payment | 1100 | 1200 |
+| Sales return | 4150 Sales returns (contra revenue) | 1200 Accounts receivable |
+| Return restock | Inventory | 5100 COGS |
 | Stock shortage | 6900 Inventory loss | Inventory |
 | Stock overage | Inventory | 4200 Inventory gain |
 
@@ -82,7 +84,7 @@ erDiagram
   work_orders }o--|| products : produces
 ```
 
-Tables beyond the 28 in the brief: `role_permissions`, `refresh_tokens`, `document_sequences`, `goods_receipt_items`, `stock_transfers`, `stock_transfer_items`, `stock_counts`, `stock_count_items`.
+Statement sections take their sign from the account class, so contra accounts such as 4150 reduce revenue. Tables beyond the 28 in the brief: `role_permissions`, `refresh_tokens`, `document_sequences`, `goods_receipt_items`, `stock_transfers`, `stock_transfer_items`, `stock_counts`, `stock_count_items`, `sales_returns`, `sales_return_items`.
 
 ## SQLite and PostgreSQL
 

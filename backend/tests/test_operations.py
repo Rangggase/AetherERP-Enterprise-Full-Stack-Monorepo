@@ -237,3 +237,65 @@ def test_inventory_accounts_reconcile_with_fifo_layers(db, world):
     tb = {r["code"]: r for r in reports.trial_balance(db, branch_id=None, as_of=date(2026, 5, 31))["rows"]}
     gl_value = tb["1300"]["debit_balance"] + tb["1310"]["debit_balance"]
     assert gl_value == inventory.stock_value(db)
+
+
+# ---------------------------------------------------------------- sales returns
+
+
+def _invoiced_order(db, w, qty=10, price=100, cost=40, branch=None):
+    stock_in(db, w, w["rm"], 20, cost)
+    so = sales.create_quotation(db, customer_id=w["cus"].id, branch_id=w["b2"].id, order_date=date(2026, 5, 10), user_id=None,
+                                items=[{"product_id": w["rm"].id, "quantity": qty, "unit_price": price}])
+    sales.confirm_so(db, so.id, None)
+    sales.deliver_so(db, so.id, delivery_date=date(2026, 5, 11), user_id=None)
+    inv = sales.invoice_so(db, so.id, invoice_date=date(2026, 5, 12), user_id=None)
+    return so, inv
+
+
+def test_sales_return_restocks_at_original_cost_and_credits_invoice(db, world):
+    w = world
+    so, inv = _invoiced_order(db, w)
+    stock_in(db, w, w["rm"], 5, 70)  # newer, dearer layer must not distort the returned cost
+    before = inventory.stock_value(db, w["b2"].id)
+    ret = sales.create_return(db, so.id, items=[{"product_id": w["rm"].id, "quantity": 4}], return_date=date(2026, 5, 15), reason="Damaged", user_id=None)
+    assert ret.total_amount == D("400.00") and ret.cogs_reversed == D("160.00")
+    assert inventory.stock_value(db, w["b2"].id) == before + D("160.00")
+    assert inv.total_amount == D("600.00") and inv.outstanding == D("600.00")
+
+    inc = reports.income_statement(db, branch_id=None, start=date(2026, 5, 1), end=date(2026, 5, 31))
+    assert inc["revenue"]["total"] == D("600.00") and inc["cogs"]["total"] == D("240.00") and inc["gross_profit"] == D("360.00")
+    tb = {r["code"]: r for r in reports.trial_balance(db, branch_id=None, as_of=date(2026, 5, 31))["rows"]}
+    assert tb["1200"]["debit_balance"] == D("600.00")
+    assert reports.balance_sheet(db, branch_id=None, as_of=date(2026, 5, 31))["balanced"]
+    assert sum(tb[c]["debit_balance"] for c in ("1300", "1310") if c in tb) == inventory.stock_value(db)
+
+
+def test_return_limits_and_states(db, world):
+    w = world
+    so, inv = _invoiced_order(db, w)
+    sales.create_return(db, so.id, items=[{"product_id": w["rm"].id, "quantity": 6}], return_date=date(2026, 5, 15), reason=None, user_id=None)
+    with pytest.raises(Exception, match="more than was sold"):
+        sales.create_return(db, so.id, items=[{"product_id": w["rm"].id, "quantity": 5}], return_date=date(2026, 5, 16), reason=None, user_id=None)
+    with pytest.raises(Exception, match="not on this sales order"):
+        sales.create_return(db, so.id, items=[{"product_id": w["rm2"].id, "quantity": 1}], return_date=date(2026, 5, 16), reason=None, user_id=None)
+    # Customer already paid most of the invoice: crediting more than is outstanding is refused (and rolls nothing half-done).
+    payments.pay_invoice(db, inv.id, amount=D("300"), payment_date=date(2026, 5, 20), method="CASH", user_id=None)
+    with pytest.raises(Conflict, match="exceeds the outstanding"):
+        sales.create_return(db, so.id, items=[{"product_id": w["rm"].id, "quantity": 4}], return_date=date(2026, 5, 21), reason=None, user_id=None)
+
+
+def test_full_return_of_unpaid_invoice_closes_it(db, world):
+    w = world
+    so, inv = _invoiced_order(db, w, qty=2, price=50)
+    sales.create_return(db, so.id, items=[{"product_id": w["rm"].id, "quantity": 2}], return_date=date(2026, 5, 15), reason=None, user_id=None)
+    assert inv.total_amount == 0 and inv.status == "PAID" and so.status == "PAID"
+    assert inventory.available(db, w["b2"].id, w["rm"].id) == D("20")
+
+
+def test_return_requires_invoiced_order(db, world):
+    w = world
+    stock_in(db, w, w["rm"], 5, 10)
+    so = sales.create_quotation(db, customer_id=w["cus"].id, branch_id=w["b2"].id, order_date=date(2026, 5, 10), user_id=None,
+                                items=[{"product_id": w["rm"].id, "quantity": 1, "unit_price": 20}])
+    with pytest.raises(Conflict):
+        sales.create_return(db, so.id, items=[{"product_id": w["rm"].id, "quantity": 1}], return_date=date(2026, 5, 15), reason=None, user_id=None)

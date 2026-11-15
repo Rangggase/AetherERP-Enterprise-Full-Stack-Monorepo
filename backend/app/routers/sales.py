@@ -6,7 +6,7 @@ from sqlalchemy import func, select
 
 from app.core.deps import DB, Audit, perm, require
 from app.core.errors import NotFound
-from app.models import Branch, Customer, Invoice, Payment, PurchaseOrder, SalesOrder, Supplier
+from app.models import Branch, Customer, Invoice, Payment, PurchaseOrder, SalesOrder, SalesReturn, Supplier
 from app.models.base import money
 from app.schemas.common import NonNegative, Positive
 from app.services import payments, sales
@@ -117,6 +117,41 @@ def invoice(so_id: int, body: DateIn, db: DB, audit: Audit, user: perm("sales.wr
     audit.log("INVOICE", "invoice", inv.id, after={"invoice_no": inv.invoice_no, "total": str(inv.total_amount)})
     db.commit()
     return _inv(inv)
+
+
+class ReturnLine(BaseModel):
+    product_id: int
+    quantity: Positive
+
+
+class ReturnIn(BaseModel):
+    return_date: date = Field(default_factory=date.today)
+    reason: str | None = Field(None, max_length=255)
+    items: list[ReturnLine] = Field(min_length=1)
+
+
+def _return(r: SalesReturn) -> dict:
+    return {"id": r.id, "return_no": r.return_no, "so_id": r.so_id, "invoice_id": r.invoice_id, "branch_id": r.branch_id,
+            "return_date": r.return_date, "reason": r.reason, "total_amount": r.total_amount, "cogs_reversed": r.cogs_reversed,
+            "journal_entry_id": r.journal_entry_id,
+            "items": [{"product_id": i.product_id, "sku": i.product.sku, "quantity": i.quantity, "unit_price": i.unit_price} for i in r.items]}
+
+
+@router.post("/orders/{so_id}/return", status_code=201)
+def return_goods(so_id: int, body: ReturnIn, db: DB, audit: Audit, user: perm("sales.write", "inventory.write")):
+    r = sales.create_return(db, so_id, items=[i.model_dump() for i in body.items], return_date=body.return_date,
+                            reason=body.reason, user_id=user.id)
+    audit.log("RETURN", "sales_return", r.id, after={"return_no": r.return_no, "credit": str(r.total_amount), "so_id": so_id})
+    db.commit()
+    return _return(r)
+
+
+@router.get("/returns", dependencies=[read])
+def list_returns(db: DB, branch_id: int | None = None):
+    stmt = select(SalesReturn).order_by(SalesReturn.id.desc()).limit(200)
+    if branch_id:
+        stmt = stmt.where(SalesReturn.branch_id == branch_id)
+    return [_return(r) for r in db.execute(stmt).scalars()]
 
 
 # ----- invoices & payments (both AR and AP)

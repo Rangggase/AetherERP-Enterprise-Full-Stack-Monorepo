@@ -125,6 +125,40 @@ class DeliveryOrder(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
 
 
+class SalesReturn(Base):
+    """Credit note for goods returned after invoicing. Reduces the invoice and puts stock back at its original cost."""
+
+    __tablename__ = "sales_returns"
+    __table_args__ = (CheckConstraint("total_amount >= 0", name="total"),)
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    return_no: Mapped[str] = mapped_column(String(24), unique=True)
+    so_id: Mapped[int] = mapped_column(ForeignKey("sales_orders.id"), index=True)
+    invoice_id: Mapped[int] = mapped_column(ForeignKey("invoices.id"), index=True)
+    branch_id: Mapped[int] = mapped_column(ForeignKey("branches.id"))
+    return_date: Mapped[date] = mapped_column(Date)
+    reason: Mapped[str | None] = mapped_column(String(255))
+    total_amount: Mapped[Decimal] = mapped_column(Money)
+    cogs_reversed: Mapped[Decimal] = mapped_column(Money, default=Decimal("0"))
+    journal_entry_id: Mapped[int | None] = mapped_column(ForeignKey("journal_entries.id"))
+    created_by: Mapped[int | None] = mapped_column(ForeignKey("users.id"))
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
+    items: Mapped[list["SalesReturnItem"]] = relationship(cascade="all, delete-orphan", lazy="selectin")
+
+
+class SalesReturnItem(Base):
+    __tablename__ = "sales_return_items"
+    __table_args__ = (CheckConstraint("quantity > 0", name="quantity"),)
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    return_id: Mapped[int] = mapped_column(ForeignKey("sales_returns.id", ondelete="CASCADE"), index=True)
+    product_id: Mapped[int] = mapped_column(ForeignKey("products.id"))
+    quantity: Mapped[Decimal] = mapped_column(Qty)
+    unit_price: Mapped[Decimal] = mapped_column(Money)
+    unit_cost: Mapped[Decimal] = mapped_column(Qty, default=Decimal("0"))
+    product: Mapped[Product] = relationship(lazy="joined")
+
+
 class Invoice(TimestampMixin, Base):
     __tablename__ = "invoices"
     __table_args__ = (

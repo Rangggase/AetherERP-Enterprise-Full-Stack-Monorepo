@@ -14,7 +14,8 @@ Integrated multi-branch ERP covering procurement, warehouse and assembly (BOM), 
 - **Reports** computed live, per branch or consolidated: general ledger with running balance, trial balance, income statement, balance sheet, AR/AP aging.
 - **Procure-to-pay**: `DRAFT → PENDING_APPROVAL → APPROVED → PARTIALLY_RECEIVED/RECEIVED → BILLED → PAID`. Large orders need a second person's approval. Goods receipts create FIFO layers and journal `Inventory / Goods received not billed`.
 - **Warehouse**: multi-branch stock, FIFO costing, inter-branch transfers that carry cost layers, BOM assembly with actual-cost unit pricing, stock opname with shrinkage/gain journals, reorder advice from 30-day consumption.
-- **Order-to-cash**: quotation, confirmation (credit-limit guard and stock reservation), delivery (COGS by FIFO), invoice, payments. Reservations use guarded single-statement updates, so concurrent checkouts cannot oversell.
+- **Order-to-cash**: quotation, confirmation (credit-limit guard and stock reservation), delivery (COGS by FIFO), invoice, payments, and sales returns that credit the invoice and restock at the original cost. Reservations use guarded single-statement updates, so concurrent checkouts cannot oversell.
+- **Period control and administration**: ordered month close, year-end closing entries, user and role administration, printable invoices, CSV export.
 - **Security**: Argon2 password hashing, short-lived access tokens, rotating refresh tokens with reuse detection, 16 granular permissions across 7 roles, an append-only audit log with before/after JSON and IP.
 
 ## Quick start

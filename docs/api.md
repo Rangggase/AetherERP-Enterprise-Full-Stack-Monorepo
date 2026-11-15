@@ -41,6 +41,8 @@ Money and quantities are returned as exact decimal strings. Errors use `{"detail
 
 `GET/POST /sales/orders` with `/{id}/confirm`, `/cancel`, `/deliver`, `/invoice`; `GET /invoices`; `POST /invoices/{id}/payments`.
 
+Returns: `POST /sales/orders/{id}/return` (needs `sales.write` and `inventory.write`) and `GET /sales/returns`. Only invoiced orders can be returned. The credit reduces the invoice and cannot exceed what is still outstanding (refunding paid amounts is out of scope). Returned stock re-enters as a new FIFO layer at the weighted-average cost of the layers consumed by the delivery. Posting: debit 4150 Sales returns and credit 1200 for the credit; debit inventory and credit 5100 COGS for the restocked cost.
+
 ## Master data, dashboard, system
 
 `/master/{branches,categories,products,suppliers,customers,boms}`; `GET /dashboard/overview?branch_id=`; `GET /audit-logs` (`audit.read`).

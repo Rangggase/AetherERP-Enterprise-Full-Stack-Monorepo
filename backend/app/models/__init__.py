@@ -22,4 +22,6 @@ from app.models.trade import (
     PurchaseOrderItem,
     SalesOrder,
     SalesOrderItem,
+    SalesReturn,
+    SalesReturnItem,
 )

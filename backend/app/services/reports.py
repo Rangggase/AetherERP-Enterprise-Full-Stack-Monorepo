@@ -62,7 +62,9 @@ def _balances(db: Session, *, branch_id: int | None, start: date | None, end: da
                 "normal_balance": normal,
                 "debit": d,
                 "credit": c,
-                "balance": (d - c) if normal == "DEBIT" else (c - d),
+                # Sign follows the account class, not its normal side, so contra accounts
+                # (e.g. sales returns, a debit-side revenue account) reduce their section.
+                "balance": (d - c) if atype in ("ASSET", "EXPENSE") else (c - d),
             }
         )
     return rows

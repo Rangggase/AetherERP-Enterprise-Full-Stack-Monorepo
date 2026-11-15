@@ -9,6 +9,7 @@ import { Customers, NewCustomer, NewProduct, NewSupplier, Products, Suppliers } 
 import { AuditLog, Invoices, Journals, Movements, PurchaseOrders, Receipts, Reorder, SalesOrders, Stock, Transfers, WorkOrders } from "./pages/Lists";
 import { Account, NewUser, Users } from "./pages/Admin";
 import { InvoicePrint } from "./pages/InvoicePrint";
+import { NewReturn, Returns } from "./pages/Returns";
 import { Login } from "./pages/Login";
 import { Periods } from "./pages/Periods";
 import { Reports } from "./pages/Reports";
@@ -41,6 +42,8 @@ export default function App() {
               <Route path="sales/orders" element={<SalesOrders />} />
               <Route path="sales/orders/new" element={<NewSalesOrder />} />
               <Route path="sales/customers" element={<Customers />} />
+              <Route path="sales/returns" element={<Returns />} />
+              <Route path="sales/orders/:id/return" element={<NewReturn />} />
               <Route path="sales/customers/new" element={<NewCustomer />} />
               <Route path="master/products" element={<Products />} />
               <Route path="master/products/new" element={<NewProduct />} />

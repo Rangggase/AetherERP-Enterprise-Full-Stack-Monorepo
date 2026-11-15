@@ -1,7 +1,7 @@
 import clsx from "clsx";
 import {
   BarChart3, BookOpenText, Handshake, Package, Boxes, CalendarCheck, ChevronsLeft, ChevronsRight, ClipboardList, Factory, FileText, Landmark, LogOut, Menu,
-  Moon, Plus, Receipt, ScrollText, Scale, ShieldCheck, ShoppingCart, Sun, Truck, Users, Warehouse, X, type LucideIcon,
+  Moon, Plus, Receipt, ScrollText, Scale, ShieldCheck, ShoppingCart, Sun, Truck, Users, Warehouse, X, Undo2, type LucideIcon,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { Link, NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
@@ -33,6 +33,7 @@ const NAV: { group: string; items: Item[] }[] = [
     group: "Sales & CRM",
     items: [
       { to: "/sales/orders", label: "Sales orders", icon: Receipt, perm: "sales.read" },
+      { to: "/sales/returns", label: "Returns", icon: Undo2, perm: "sales.read" },
       { to: "/sales/customers", label: "Customers", icon: Users, perm: "master.read" },
     ],
   },

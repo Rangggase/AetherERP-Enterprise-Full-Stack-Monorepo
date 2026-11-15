@@ -5,7 +5,9 @@ from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from app.core.errors import Conflict, DomainError, NotFound
-from app.models import Customer, DeliveryOrder, Invoice, Product, SalesOrder, SalesOrderItem
+from app.models import (
+    Customer, DeliveryOrder, Invoice, Product, SalesOrder, SalesOrderItem, SalesReturn, SalesReturnItem, StockMovement,
+)
 from app.models.base import ZERO, money, qty as q4
 from app.services import inventory, ledger
 from app.services.numbering import next_number
@@ -13,6 +15,7 @@ from app.services.numbering import next_number
 AR_ACCOUNT = "1200"
 REVENUE_ACCOUNT = "4100"
 COGS_ACCOUNT = "5100"
+RETURNS_ACCOUNT = "4150"
 
 
 def _get_so(db: Session, so_id: int) -> SalesOrder:
@@ -143,3 +146,83 @@ def invoice_so(db: Session, so_id: int, *, invoice_date: date, user_id) -> Invoi
     so.status = "INVOICED"
     db.flush()
     return inv
+
+
+def _delivered_unit_cost(db: Session, do_id: int, product_id: int) -> Decimal:
+    """Weighted-average cost of the FIFO layers consumed when this product was delivered."""
+    rows = db.execute(
+        select(StockMovement.quantity, StockMovement.unit_cost).where(
+            StockMovement.ref_type == "DELIVERY", StockMovement.ref_id == do_id,
+            StockMovement.product_id == product_id, StockMovement.quantity < 0,
+        )
+    ).all()
+    qty_total = sum((-q for q, _ in rows), ZERO)
+    if qty_total == 0:
+        raise DomainError("No delivery cost found for this product")
+    return q4(sum((-q * c for q, c in rows), ZERO) / qty_total)
+
+
+def create_return(db: Session, so_id: int, *, items: list[dict], return_date: date, reason: str | None, user_id) -> SalesReturn:
+    """Credit note for invoiced goods: reverses revenue and COGS and restocks at the original cost."""
+    so = _get_so(db, so_id)
+    if so.status not in ("INVOICED", "PARTIALLY_PAID"):
+        raise Conflict("Returns can be recorded for invoiced orders that are not fully paid")
+    inv = db.execute(select(Invoice).where(Invoice.so_id == so.id, Invoice.invoice_type == "AR").with_for_update()).scalar_one()
+    do = db.execute(select(DeliveryOrder).where(DeliveryOrder.so_id == so.id)).scalar_one()
+
+    wanted: dict[int, Decimal] = {}
+    for it in items:
+        n = q4(it["quantity"])
+        if n <= 0:
+            raise DomainError("Quantity must be positive")
+        wanted[it["product_id"]] = wanted.get(it["product_id"], ZERO) + n
+    if not wanted:
+        raise DomainError("Select at least one item to return")
+
+    sold = {i.product_id: i for i in so.items}
+    already = dict(
+        db.execute(
+            select(SalesReturnItem.product_id, func.sum(SalesReturnItem.quantity))
+            .join(SalesReturn, SalesReturn.id == SalesReturnItem.return_id)
+            .where(SalesReturn.so_id == so.id).group_by(SalesReturnItem.product_id)
+        ).all()
+    )
+    ret = SalesReturn(return_no=next_number(db, "RET", return_date), so_id=so.id, invoice_id=inv.id, branch_id=so.branch_id,
+                      return_date=return_date, reason=reason, total_amount=ZERO, created_by=user_id)
+    db.add(ret)
+    db.flush()
+
+    credit_total = ZERO
+    cogs_by_account: dict[str, Decimal] = {}
+    for pid, n in wanted.items():
+        line = sold.get(pid)
+        if line is None:
+            raise DomainError("Product is not on this sales order")
+        if n > line.quantity - q4(already.get(pid, 0)):
+            raise DomainError(f"Cannot return more than was sold and not yet returned for {line.product.sku}")
+        unit_cost = ZERO
+        if line.product.is_stocked:
+            unit_cost = _delivered_unit_cost(db, do.id, pid)
+            inventory.receive_stock(db, branch_id=so.branch_id, product_id=pid, quantity=n, unit_cost=unit_cost,
+                                    mtype="SALE_RETURN", ref_type="RETURN", ref_id=ret.id, user_id=user_id)
+            acct = inventory.inventory_account(line.product)
+            cogs_by_account[acct] = cogs_by_account.get(acct, ZERO) + money(n * unit_cost)
+        ret.items.append(SalesReturnItem(product_id=pid, quantity=n, unit_price=line.unit_price, unit_cost=unit_cost))
+        credit_total += money(n * line.unit_price)
+
+    if credit_total > inv.outstanding:
+        raise Conflict(f"Credit {credit_total} exceeds the outstanding {inv.outstanding}; refunding paid amounts is not supported")
+    cogs_total = sum(cogs_by_account.values(), ZERO)
+    lines = [ledger.debit(RETURNS_ACCOUNT, credit_total, f"Return {ret.return_no}"), ledger.credit(AR_ACCOUNT, credit_total, f"Return {ret.return_no}")]
+    for acct, v in cogs_by_account.items():
+        lines += [ledger.debit(acct, v, "Restock"), ledger.credit(COGS_ACCOUNT, v, "COGS reversal")]
+    je = ledger.post_entry(db, entry_date=return_date, branch_id=so.branch_id, description=f"Sales return {ret.return_no} ({so.so_no})",
+                           lines=lines, source_type="SALES_RETURN", source_id=ret.id, user_id=user_id)
+    ret.total_amount, ret.cogs_reversed, ret.journal_entry_id = credit_total, money(cogs_total), je.id
+
+    inv.total_amount = money(inv.total_amount - credit_total)
+    if inv.paid_amount == inv.total_amount:
+        inv.status = "PAID"
+        so.status = "PAID"
+    db.flush()
+    return ret

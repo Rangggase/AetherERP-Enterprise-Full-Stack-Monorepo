@@ -100,6 +100,7 @@ export function SalesOrders() {
   const { branchId, can } = useSession();
   const q = useList("sos", "/sales/orders", { branch_id: branchId });
   const run = useTransition("sos", "/sales/orders");
+  const returnable = (s: string) => s === "INVOICED" || s === "PARTIALLY_PAID";
   const steps = [
     { from: "QUOTATION", action: "confirm", next: "CONFIRMED_SO", label: "Confirm", perm: "sales.write" },
     { from: "CONFIRMED_SO", action: "deliver", next: "DELIVERED", label: "Deliver", perm: "inventory.write" },
@@ -110,7 +111,11 @@ export function SalesOrders() {
   const columns = [
     col("SO number", "so_no"), col("Customer", "customer_name"), col("Date", "order_date", { cell: (c) => date(c.getValue()) }),
     money("Total", "total_amount"), status(),
-    { id: "a", header: "", enableSorting: false, enableColumnFilter: false, cell: (c) => <ActionButtons row={c.row.original} steps={steps} run={run} /> } as ColumnDef<Row, any>,
+    { id: "a", header: "", enableSorting: false, enableColumnFilter: false, cell: (c) => (
+      <div className="flex justify-end gap-1.5">
+        <ActionButtons row={c.row.original} steps={steps} run={run} />
+        {can("sales.write") && returnable(c.row.original.status) && <Link className="btn h-7 px-2 text-xs" to={`/sales/orders/${c.row.original.id}/return`}>Return</Link>}
+      </div>) } as ColumnDef<Row, any>,
   ];
   return <Table label="Sales orders" title="Sales orders" note="Confirming checks the customer's credit limit and reserves stock; delivery posts cost of goods sold." q={q} columns={columns}
     actions={can("sales.write") && <Link className="btn btn-primary" to="/sales/orders/new">New sales order</Link>} />;

@@ -53,6 +53,7 @@ COA = [
     ("3100", "Modal Disetor", "EQUITY", None, "CREDIT"),
     ("3200", "Laba Ditahan", "EQUITY", None, "CREDIT"),
     ("4100", "Pendapatan Penjualan", "REVENUE", "REVENUE", "CREDIT"),
+    ("4150", "Retur Penjualan", "REVENUE", "REVENUE", "DEBIT"),
     ("4200", "Keuntungan Selisih Persediaan", "REVENUE", "REVENUE", "CREDIT"),
     ("5100", "Harga Pokok Penjualan", "EXPENSE", "COGS", "DEBIT"),
     ("6100", "Beban Gaji", "EXPENSE", "OPEX", "DEBIT"),
