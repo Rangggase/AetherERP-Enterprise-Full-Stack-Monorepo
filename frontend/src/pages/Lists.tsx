@@ -116,12 +116,6 @@ export function SalesOrders() {
     actions={can("sales.write") && <Link className="btn btn-primary" to="/sales/orders/new">New sales order</Link>} />;
 }
 
-export function Customers() {
-  const q = useList("customers", "/master/customers", {}, false);
-  return <Table label="Customers" title="Customers" q={q}
-    columns={[col("Code", "code"), col("Name", "name"), col("Segment", "segment"), money("Credit limit", "credit_limit"), col("Terms (days)", "payment_term_days", { meta: R })]} />;
-}
-
 export function Stock() {
   const { branchId } = useSession();
   const q = useList("stock", "/inventory/balances", { branch_id: branchId }, false);

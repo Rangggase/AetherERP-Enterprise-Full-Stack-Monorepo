@@ -5,7 +5,8 @@ import { Toaster } from "./components/Toaster";
 import { SessionProvider, useSession } from "./lib/session";
 import { Dashboard } from "./pages/Dashboard";
 import { NewJournal, NewPurchaseOrder, NewSalesOrder } from "./pages/Forms";
-import { AuditLog, Customers, Invoices, Journals, Movements, PurchaseOrders, Receipts, Reorder, SalesOrders, Stock, Transfers, Users, WorkOrders } from "./pages/Lists";
+import { Customers, NewCustomer, NewProduct, NewSupplier, Products, Suppliers } from "./pages/MasterData";
+import { AuditLog, Invoices, Journals, Movements, PurchaseOrders, Receipts, Reorder, SalesOrders, Stock, Transfers, Users, WorkOrders } from "./pages/Lists";
 import { Login } from "./pages/Login";
 import { Reports } from "./pages/Reports";
 
@@ -37,6 +38,11 @@ export default function App() {
               <Route path="sales/orders" element={<SalesOrders />} />
               <Route path="sales/orders/new" element={<NewSalesOrder />} />
               <Route path="sales/customers" element={<Customers />} />
+              <Route path="sales/customers/new" element={<NewCustomer />} />
+              <Route path="master/products" element={<Products />} />
+              <Route path="master/products/new" element={<NewProduct />} />
+              <Route path="master/suppliers" element={<Suppliers />} />
+              <Route path="master/suppliers/new" element={<NewSupplier />} />
               <Route path="accounting/journals" element={<Journals />} />
               <Route path="accounting/journals/new" element={<NewJournal />} />
               <Route path="accounting/invoices" element={<Invoices />} />

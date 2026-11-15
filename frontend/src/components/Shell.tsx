@@ -1,6 +1,6 @@
 import clsx from "clsx";
 import {
-  BarChart3, BookOpenText, Boxes, CalendarCheck, ChevronsLeft, ChevronsRight, ClipboardList, Factory, FileText, Landmark, LogOut, Menu,
+  BarChart3, BookOpenText, Handshake, Package, Boxes, CalendarCheck, ChevronsLeft, ChevronsRight, ClipboardList, Factory, FileText, Landmark, LogOut, Menu,
   Moon, Plus, Receipt, ScrollText, Scale, ShieldCheck, ShoppingCart, Sun, Truck, Users, Warehouse, X, type LucideIcon,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
@@ -15,11 +15,13 @@ const NAV: { group: string; items: Item[] }[] = [
     items: [
       { to: "/procurement/orders", label: "Purchase orders", icon: ShoppingCart, perm: "procurement.read" },
       { to: "/procurement/receipts", label: "Goods receipts", icon: Truck, perm: "procurement.read" },
+      { to: "/master/suppliers", label: "Suppliers", icon: Handshake, perm: "master.read" },
     ],
   },
   {
     group: "Warehouse & Assembly",
     items: [
+      { to: "/master/products", label: "Products", icon: Package, perm: "master.read" },
       { to: "/inventory/stock", label: "Stock levels", icon: Warehouse, perm: "inventory.read" },
       { to: "/inventory/movements", label: "Stock card", icon: ClipboardList, perm: "inventory.read" },
       { to: "/inventory/transfers", label: "Transfers", icon: Boxes, perm: "inventory.read" },

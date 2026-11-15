@@ -101,3 +101,27 @@ def test_order_to_cash_over_http_with_audit_trail(client, db):
     assert dash["kpis"]["net_revenue"] == "100.00" and dash["kpis"]["inventory_value"] == "60.00"
     actions = {a.action for a in db.execute(select(AuditLog)).scalars()}
     assert {"CREATE", "RECEIVE", "CONFIRM", "DELIVER", "INVOICE", "PAYMENT"} <= actions
+
+
+def test_master_data_create_validate_and_audit(client, db):
+    admin = login(client, "admin@aether.local")
+    body = {"sku": "FG-NEW", "name": "New item", "product_type": "FINISHED_GOOD", "sale_price": "125000.50", "reorder_point": "10"}
+    r = client.post("/api/v1/master/products", headers=admin, json=body)
+    assert r.status_code == 201, r.text
+    assert r.json()["sale_price"] == "125000.50"
+    assert client.post("/api/v1/master/products", headers=admin, json=body).status_code == 409  # duplicate SKU
+    assert client.post("/api/v1/master/products", headers=admin, json={**body, "sku": "X2", "sale_price": "-1"}).status_code == 422
+    assert client.post("/api/v1/master/products", headers=admin, json={**body, "sku": "X3", "product_type": "GADGET"}).status_code == 422
+
+    cust = client.post("/api/v1/master/customers", headers=admin, json={"code": "C-9", "name": "Buyer", "credit_limit": "5000000", "payment_term_days": 14})
+    assert cust.status_code == 201 and cust.json()["segment"] == "B2B"
+    assert client.post("/api/v1/master/customers", headers=admin, json={"code": "C-10", "name": "Bad", "email": "not-an-email"}).status_code == 422
+    actions = {(a.action, a.entity_type) for a in db.execute(select(AuditLog)).scalars()}
+    assert {("CREATE", "product"), ("CREATE", "customer")} <= actions
+
+
+def test_master_data_writes_require_permission(client):
+    sales = login(client, "sales@aether.local")
+    assert client.get("/api/v1/master/products", headers=sales).status_code == 200
+    r = client.post("/api/v1/master/suppliers", headers=sales, json={"code": "S-1", "name": "Nope"})
+    assert r.status_code == 403

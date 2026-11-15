@@ -9,7 +9,7 @@ import {
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import { ArrowDown, ArrowUp, ChevronLeft, ChevronRight, ChevronsUpDown } from "lucide-react";
+import { ArrowDown, ArrowUp, Download, ChevronLeft, ChevronRight, ChevronsUpDown } from "lucide-react";
 import { useState } from "react";
 
 interface Props<T> {
@@ -42,6 +42,24 @@ export function DataTable<T>({ data, columns, loading, empty = "Nothing here yet
   });
   const rows = table.getRowModel().rows;
   const { pageIndex } = table.getState().pagination;
+
+  /** Exports every filtered and sorted row (not just the current page) using raw accessor values. */
+  function exportCsv() {
+    const cols = table.getAllLeafColumns().filter((c) => c.accessorFn && typeof c.columnDef.header === "string");
+    const esc = (v: unknown) => {
+      let s = v === null || v === undefined ? "" : typeof v === "object" ? JSON.stringify(v) : String(v);
+      if (/^[=+\-@\t\r]/.test(s)) s = `'${s}`; // neutralise spreadsheet formula injection
+      return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+    };
+    const lines = [cols.map((c) => esc(c.columnDef.header)).join(",")];
+    for (const r of table.getPrePaginationRowModel().rows) lines.push(cols.map((c) => esc(r.getValue(c.id))).join(","));
+    const url = URL.createObjectURL(new Blob(["﻿" + lines.join("\r\n")], { type: "text/csv;charset=utf-8" }));
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${label.toLowerCase().replace(/\W+/g, "-")}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
 
   return (
     <div className="overflow-hidden rounded-lg border border-line bg-surface">
@@ -121,7 +139,12 @@ export function DataTable<T>({ data, columns, loading, empty = "Nothing here yet
         </table>
       </div>
       <div className="flex items-center justify-between gap-3 border-t border-line px-3 py-2 text-xs text-muted">
-        <span>{table.getFilteredRowModel().rows.length} rows</span>
+        <span className="flex items-center gap-3">
+          {table.getFilteredRowModel().rows.length} rows
+          <button className="btn h-7 px-2 text-xs" onClick={exportCsv} disabled={loading || rows.length === 0}>
+            <Download size={13} aria-hidden /> Export CSV
+          </button>
+        </span>
         <div className="flex items-center gap-2">
           <button className="btn h-7 px-2" aria-label="Previous page" disabled={!table.getCanPreviousPage()} onClick={() => table.previousPage()}>
             <ChevronLeft size={14} aria-hidden />
