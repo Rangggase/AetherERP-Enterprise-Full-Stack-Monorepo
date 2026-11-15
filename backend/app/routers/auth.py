@@ -6,7 +6,9 @@ from pydantic import BaseModel, Field
 from sqlalchemy import select, update
 
 from app.core.deps import DB, CurrentUser
-from app.core.security import create_access_token, create_refresh_token, decode_token, verify_password
+from app.core.security import (
+    create_access_token, create_refresh_token, decode_token, hash_password, password_problem, verify_password,
+)
 from app.models import RefreshToken, User
 from app.schemas.common import ORM
 from app.services import audit
@@ -90,6 +92,27 @@ def logout(body: RefreshIn, db: DB):
     except jwt.PyJWTError:
         return
     db.execute(update(RefreshToken).where(RefreshToken.family == payload["family"]).values(revoked=True))
+    db.commit()
+
+
+class ChangePasswordIn(BaseModel):
+    current_password: str = Field(max_length=200)
+    new_password: str = Field(max_length=200)
+
+
+@router.post("/change-password", status_code=204)
+def change_password(body: ChangePasswordIn, db: DB, user: CurrentUser):
+    if not verify_password(body.current_password, user.password_hash):
+        audit.record(db, user_id=user.id, action="PASSWORD_CHANGE_FAILED", entity_type="user", entity_id=user.id)
+        db.commit()
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "Current password is incorrect")
+    if body.new_password == body.current_password:
+        raise HTTPException(422, "The new password must differ from the current one")
+    if (problem := password_problem(body.new_password)):
+        raise HTTPException(422, problem)
+    user.password_hash = hash_password(body.new_password)
+    db.execute(update(RefreshToken).where(RefreshToken.user_id == user.id).values(revoked=True))
+    audit.record(db, user_id=user.id, action="PASSWORD_CHANGED", entity_type="user", entity_id=user.id)
     db.commit()
 
 

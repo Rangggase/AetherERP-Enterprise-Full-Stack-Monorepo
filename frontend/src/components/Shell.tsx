@@ -4,7 +4,7 @@ import {
   Moon, Plus, Receipt, ScrollText, Scale, ShieldCheck, ShoppingCart, Sun, Truck, Users, Warehouse, X, type LucideIcon,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
+import { Link, NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { useSession } from "../lib/session";
 
 interface Item { to: string; label: string; icon: LucideIcon; perm: string }
@@ -126,7 +126,7 @@ export function Shell() {
       <a href="#main" className="sr-only focus:not-sr-only focus:fixed focus:left-2 focus:top-2 focus:z-50 focus:rounded focus:bg-surface focus:px-3 focus:py-2">
         Skip to content
       </a>
-      <aside className={clsx("sticky top-0 hidden h-dvh shrink-0 flex-col bg-rail transition-[width] duration-200 md:flex", collapsed ? "w-[60px]" : "w-60")}>
+      <aside className={clsx("sticky top-0 hidden h-dvh print:!hidden shrink-0 flex-col bg-rail transition-[width] duration-200 md:flex", collapsed ? "w-[60px]" : "w-60")}>
         <div className={clsx("flex h-14 items-center gap-2 border-b border-white/10 px-4", collapsed && "justify-center px-0")}>
           <Landmark size={20} className="text-brand" aria-hidden />
           {!collapsed && <span className="text-base font-semibold tracking-tight text-white">AetherERP</span>}
@@ -153,7 +153,7 @@ export function Shell() {
       )}
 
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="sticky top-0 z-30 flex h-14 items-center gap-2 border-b border-line bg-surface/95 px-3 backdrop-blur sm:px-5">
+        <header className="sticky top-0 z-30 flex h-14 print:hidden items-center gap-2 border-b border-line bg-surface/95 px-3 backdrop-blur sm:px-5">
           <button className="btn h-9 w-9 px-0 md:hidden" aria-label="Open menu" onClick={() => setDrawer(true)}>
             <Menu size={16} aria-hidden />
           </button>
@@ -196,16 +196,16 @@ export function Shell() {
             <button className="btn h-9 w-9 px-0" onClick={s.toggleTheme} aria-label={s.theme === "dark" ? "Switch to light theme" : "Switch to dark theme"}>
               {s.theme === "dark" ? <Sun size={16} aria-hidden /> : <Moon size={16} aria-hidden />}
             </button>
-            <div className="hidden text-right leading-tight sm:block">
+            <Link to="/account" className="hidden rounded-md px-1.5 py-0.5 text-right leading-tight hover:bg-sunken sm:block" title="My account">
               <p className="text-sm font-medium">{s.me?.full_name}</p>
               <p className="text-xs text-muted">{s.me?.role}</p>
-            </div>
+            </Link>
             <button className="btn h-9 w-9 px-0" onClick={() => { s.signOut(); nav("/login"); }} aria-label="Sign out">
               <LogOut size={16} aria-hidden />
             </button>
           </div>
         </header>
-        <main id="main" ref={mainRef} tabIndex={-1} className="flex-1 p-3 outline-none sm:p-5">
+        <main id="main" ref={mainRef} tabIndex={-1} className="flex-1 p-3 outline-none sm:p-5 print:p-0">
           <Outlet />
         </main>
       </div>

@@ -6,7 +6,9 @@ import { SessionProvider, useSession } from "./lib/session";
 import { Dashboard } from "./pages/Dashboard";
 import { NewJournal, NewPurchaseOrder, NewSalesOrder } from "./pages/Forms";
 import { Customers, NewCustomer, NewProduct, NewSupplier, Products, Suppliers } from "./pages/MasterData";
-import { AuditLog, Invoices, Journals, Movements, PurchaseOrders, Receipts, Reorder, SalesOrders, Stock, Transfers, Users, WorkOrders } from "./pages/Lists";
+import { AuditLog, Invoices, Journals, Movements, PurchaseOrders, Receipts, Reorder, SalesOrders, Stock, Transfers, WorkOrders } from "./pages/Lists";
+import { Account, NewUser, Users } from "./pages/Admin";
+import { InvoicePrint } from "./pages/InvoicePrint";
 import { Login } from "./pages/Login";
 import { Periods } from "./pages/Periods";
 import { Reports } from "./pages/Reports";
@@ -51,6 +53,9 @@ export default function App() {
               <Route path="accounting/periods" element={<Periods />} />
               <Route path="system/audit" element={<AuditLog />} />
               <Route path="system/users" element={<Users />} />
+              <Route path="system/users/new" element={<NewUser />} />
+              <Route path="account" element={<Account />} />
+              <Route path="accounting/invoices/:id" element={<InvoicePrint />} />
               <Route path="*" element={<Navigate to="/" replace />} />
             </Route>
           </Routes>

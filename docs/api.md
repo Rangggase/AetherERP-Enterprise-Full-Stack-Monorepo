@@ -12,6 +12,7 @@ Money and quantities are returned as exact decimal strings. Errors use `{"detail
 | `POST /auth/refresh` | Rotates the refresh token; a replayed token revokes the family |
 | `POST /auth/logout` | Revokes the token family |
 | `GET /auth/me` | Profile and permission codes |
+| `POST /auth/change-password` | Needs the current password; revokes every refresh token of the user |
 
 ## Accounting (`accounting.read`, writes need `accounting.post` or `accounting.close`)
 
@@ -42,7 +43,11 @@ Money and quantities are returned as exact decimal strings. Errors use `{"detail
 
 ## Master data, dashboard, system
 
-`/master/{branches,categories,products,suppliers,customers,boms}`; `GET /dashboard/overview?branch_id=`; `GET /audit-logs` (`audit.read`); `GET /system/users`, `/system/roles` (`users.manage`).
+`/master/{branches,categories,products,suppliers,customers,boms}`; `GET /dashboard/overview?branch_id=`; `GET /audit-logs` (`audit.read`).
+
+User administration (`users.manage`): `GET /system/users`, `GET /system/roles`, `POST /system/users`, `PATCH /system/users/{id}` (name, role, branch, `is_active`), `POST /system/users/{id}/reset-password`. Passwords need at least 10 characters with a letter and a digit. Role changes and deactivation revoke refresh tokens, and permissions are read from the database on every request, so they apply at once. The last active administrator cannot be demoted or deactivated, and nobody can deactivate themselves.
+
+`GET /invoices/{id}` (`accounting.read`) returns the invoice with party, source lines and payments; the frontend renders it as a printable invoice or supplier bill.
 
 ## Permissions
 

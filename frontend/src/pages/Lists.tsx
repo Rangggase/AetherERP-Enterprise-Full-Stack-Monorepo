@@ -193,7 +193,8 @@ export function Invoices() {
     columns={[col("Number", "invoice_no"), col("Type", "type", { cell: (c) => (c.getValue() === "AR" ? "Receivable" : "Payable") }), col("Due", "due_date", { cell: (c) => date(c.getValue()) }),
       money("Total", "total_amount"), money("Outstanding", "outstanding"), status(),
       { id: "a", header: "", enableSorting: false, enableColumnFilter: false, cell: (c) => can("payments.write") && c.row.original.status !== "PAID" ? (
-        <div className="flex justify-end"><button className="btn h-7 px-2 text-xs" disabled={pay.isPending} onClick={() => pay.mutate(c.row.original)}>Pay in full</button></div>) : null } as ColumnDef<Row, any>]} />;
+        <div className="flex justify-end"><button className="btn h-7 px-2 text-xs" disabled={pay.isPending} onClick={() => pay.mutate(c.row.original)}>Pay in full</button></div>) : null } as ColumnDef<Row, any>,
+      { id: "p", header: "", enableSorting: false, enableColumnFilter: false, cell: (c) => <div className="flex justify-end"><Link className="btn h-7 px-2 text-xs" to={`/accounting/invoices/${c.row.original.id}`}>View</Link></div> } as ColumnDef<Row, any>]} />;
 }
 
 export function AuditLog() {
@@ -202,9 +203,4 @@ export function AuditLog() {
     columns={[col("When", "created_at", { cell: (c) => dateTime(c.getValue()) }), col("User", "user"), col("Action", "action"), col("Entity", "entity_type"), col("Ref", "entity_id"),
       col("Change", "after", { enableSorting: false, enableColumnFilter: false, cell: (c) => <code className="block max-w-xs truncate text-xs text-muted" title={JSON.stringify(c.row.original.before) + " → " + JSON.stringify(c.getValue())}>{c.getValue() ? JSON.stringify(c.getValue()) : ""}</code> }),
       col("IP", "ip_address")]} />;
-}
-
-export function Users() {
-  const q = useList("users", "/system/users", {}, false);
-  return <Table label="Users" title="Users and roles" q={q} columns={[col("Name", "full_name"), col("Email", "email"), col("Role", "role"), col("Active", "is_active", { cell: (c) => (c.getValue() ? "Yes" : "No") })]} />;
 }

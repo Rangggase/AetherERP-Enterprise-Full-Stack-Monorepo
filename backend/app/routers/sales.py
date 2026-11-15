@@ -6,7 +6,8 @@ from sqlalchemy import func, select
 
 from app.core.deps import DB, Audit, perm, require
 from app.core.errors import NotFound
-from app.models import Invoice, Payment, SalesOrder
+from app.models import Branch, Customer, Invoice, Payment, PurchaseOrder, SalesOrder, Supplier
+from app.models.base import money
 from app.schemas.common import NonNegative, Positive
 from app.services import payments, sales
 
@@ -136,6 +137,33 @@ def list_invoices(db: DB, type: str | None = None, status: str | None = None, br
     total = db.execute(select(func.count()).select_from(stmt.subquery())).scalar_one()
     rows = db.execute(stmt.order_by(Invoice.id.desc()).offset((page - 1) * page_size).limit(page_size)).scalars().all()
     return {"items": [_inv(i) for i in rows], "total": total, "page": page, "page_size": page_size}
+
+
+@inv_router.get("/{invoice_id}", dependencies=[Depends(require("accounting.read"))])
+def invoice_detail(invoice_id: int, db: DB):
+    inv = db.get(Invoice, invoice_id)
+    if inv is None:
+        raise NotFound("Invoice not found")
+    branch = db.get(Branch, inv.branch_id)
+    if inv.invoice_type == "AR":
+        party = db.get(Customer, inv.customer_id)
+        src = db.get(SalesOrder, inv.so_id) if inv.so_id else None
+        lines = [{"sku": i.product.sku, "name": i.product.name, "quantity": i.quantity, "unit_price": i.unit_price,
+                  "amount": money(i.quantity * i.unit_price)} for i in (src.items if src else [])]
+        reference = src.so_no if src else None
+    else:
+        party = db.get(Supplier, inv.supplier_id)
+        src = db.get(PurchaseOrder, inv.po_id) if inv.po_id else None
+        lines = [{"sku": i.product.sku, "name": i.product.name, "quantity": i.received_qty, "unit_price": i.unit_price,
+                  "amount": money(i.received_qty * i.unit_price)} for i in (src.items if src else [])]
+        reference = src.po_no if src else None
+    pays = db.execute(select(Payment).where(Payment.invoice_id == inv.id).order_by(Payment.id)).scalars().all()
+    return {
+        **_inv(inv), "branch_name": branch.name if branch else None, "reference": reference,
+        "party": {"name": party.name, "code": party.code, "tax_id": party.tax_id, "email": party.email} if party else None,
+        "lines": lines,
+        "payments": [{"payment_no": p.payment_no, "payment_date": p.payment_date, "amount": p.amount, "method": p.method} for p in pays],
+    }
 
 
 @inv_router.post("/{invoice_id}/payments", status_code=201)

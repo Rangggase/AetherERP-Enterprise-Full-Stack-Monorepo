@@ -17,6 +17,17 @@ def verify_password(password: str, hashed: str) -> bool:
     return _hasher.verify(password, hashed)
 
 
+def password_problem(password: str) -> str | None:
+    """Return why a password is unacceptable, or None when it meets the policy."""
+    if len(password) < 10:
+        return "Password must be at least 10 characters"
+    if not any(c.isalpha() for c in password) or not any(c.isdigit() for c in password):
+        return "Password must contain at least one letter and one digit"
+    if password.lower() in {"password123", "1234567890", "aether#demo2026"}:
+        return "Password is too common"
+    return None
+
+
 def _encode(sub: int, kind: str, ttl: timedelta, extra: dict | None = None) -> tuple[str, dict]:
     now = datetime.now(timezone.utc)
     payload = {"sub": str(sub), "type": kind, "iat": now, "exp": now + ttl, "jti": uuid.uuid4().hex, **(extra or {})}
