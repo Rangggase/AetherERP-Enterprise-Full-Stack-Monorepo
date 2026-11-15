@@ -1,0 +1,62 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --canvas: 238 241 244;
+  --surface: 255 255 255;
+  --sunken: 246 248 250;
+  --line: 218 224 231;
+  --ink: 20 29 42;
+  --muted: 98 110 126;
+  --brand: 14 124 123;
+  --brand-ink: 255 255 255;
+  --rail: 17 27 46;
+  --rail-ink: 190 201 217;
+  --good: 22 130 84;
+  --warn: 176 100 8;
+  --bad: 188 48 48;
+}
+:root[data-theme="dark"] {
+  --canvas: 11 16 25;
+  --surface: 19 26 38;
+  --sunken: 15 21 31;
+  --line: 40 51 68;
+  --ink: 228 233 241;
+  --muted: 140 153 171;
+  --brand: 56 189 180;
+  --brand-ink: 6 24 28;
+  --rail: 8 12 20;
+  --rail-ink: 160 173 191;
+  --good: 74 202 142;
+  --warn: 232 172 70;
+  --bad: 242 120 120;
+}
+
+@layer base {
+  html { font-size: 15px; }
+  body {
+    @apply bg-canvas font-sans text-ink antialiased;
+  }
+  /* Tabular figures only where columns must align; elsewhere they widen commas. */
+  table, .num { font-variant-numeric: tabular-nums; }
+  :focus-visible { outline: 2px solid rgb(var(--brand)); outline-offset: 2px; border-radius: 4px; }
+  * { scrollbar-width: thin; scrollbar-color: rgb(var(--line)) transparent; }
+}
+
+@layer components {
+  .field {
+    @apply h-9 w-full rounded-md border border-line bg-surface px-2.5 text-sm text-ink placeholder:text-muted;
+  }
+  .btn {
+    @apply inline-flex h-9 items-center justify-center gap-1.5 rounded-md border border-line bg-surface px-3 text-sm font-medium text-ink transition-colors hover:bg-sunken disabled:cursor-not-allowed disabled:opacity-50;
+  }
+  .btn-primary {
+    @apply border-transparent bg-brand text-brand-ink hover:opacity-90;
+  }
+  .num { @apply text-right tabular-nums; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+}

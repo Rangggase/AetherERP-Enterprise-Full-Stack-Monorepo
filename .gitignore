@@ -31,3 +31,8 @@ CLAUDE.md
 Thumbs.db
 .idea/
 .vscode/
+
+# SQLite sidecar files
+*.db-shm
+*.db-wal
+*.db-journal
