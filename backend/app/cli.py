@@ -1,4 +1,4 @@
-"""Management commands: python -m app.cli [init|seed|reset]"""
+"""Management commands: python -m app.cli [init|seed|reset|createadmin EMAIL PASSWORD]"""
 import sys
 
 from app.core.config import get_settings
@@ -18,6 +18,21 @@ def main(cmd: str) -> None:
                 seed_demo(db)
             db.commit()
         print(f"Database ready: {get_settings().database_url}")
+    elif cmd == "createadmin" and len(sys.argv) == 4:
+        from sqlalchemy import select
+
+        from app.core.security import hash_password
+        from app.models import Branch, Role, User
+
+        with SessionLocal() as db:
+            role = db.execute(select(Role).where(Role.name == "Admin")).scalar_one_or_none()
+            branch = db.execute(select(Branch).where(Branch.code == "HQ")).scalar_one_or_none()
+            if role is None or branch is None:
+                sys.exit("Run `python -m app.cli init` first.")
+            db.add(User(email=sys.argv[2].lower(), full_name="Administrator", password_hash=hash_password(sys.argv[3]),
+                        role_id=role.id, branch_id=branch.id))
+            db.commit()
+        print("Admin created.")
     else:
         print(__doc__)
 

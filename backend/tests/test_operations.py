@@ -221,3 +221,19 @@ def test_ar_aging_buckets(db, world):
     rep = reports.aging(db, invoice_type="AR", branch_id=None, as_of=date(2026, 4, 30))
     # Jan invoice due Feb 6 -> 83 days late; Mar invoice due Apr 6 -> 24 days late
     assert rep["totals"]["d61_90"] == D("1000.00") and rep["totals"]["d0_30"] == D("1000.00")
+
+
+def test_inventory_accounts_reconcile_with_fifo_layers(db, world):
+    """GL inventory (1300 + 1310) must always equal the value of remaining FIFO layers."""
+    w = world
+    stock_in(db, w, w["rm"], 10, 10)
+    stock_in(db, w, w["rm2"], 10, 5)
+    wo = inventory.create_work_order(db, branch_id=w["b2"].id, product_id=w["fg"].id, quantity=D("4"), user_id=None)
+    inventory.complete_work_order(db, wo.id, None, on=date(2026, 5, 20))
+    so = sales.create_quotation(db, customer_id=w["cus"].id, branch_id=w["b2"].id, order_date=date(2026, 5, 21), user_id=None,
+                                items=[{"product_id": w["fg"].id, "quantity": 2}])
+    sales.confirm_so(db, so.id, None)
+    sales.deliver_so(db, so.id, delivery_date=date(2026, 5, 22), user_id=None)
+    tb = {r["code"]: r for r in reports.trial_balance(db, branch_id=None, as_of=date(2026, 5, 31))["rows"]}
+    gl_value = tb["1300"]["debit_balance"] + tb["1310"]["debit_balance"]
+    assert gl_value == inventory.stock_value(db)

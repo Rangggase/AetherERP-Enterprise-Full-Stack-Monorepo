@@ -265,7 +265,7 @@ def create_work_order(db: Session, *, branch_id: int, product_id: int, quantity:
     return wo
 
 
-def complete_work_order(db: Session, wo_id: int, user_id) -> WorkOrder:
+def complete_work_order(db: Session, wo_id: int, user_id, on: date | None = None) -> WorkOrder:
     wo = db.get(WorkOrder, wo_id)
     if wo is None:
         raise NotFound("Work order not found")
@@ -289,7 +289,7 @@ def complete_work_order(db: Session, wo_id: int, user_id) -> WorkOrder:
     lines = [ledger.debit(fg_account, total, f"Output {wo.wo_no}")] + [
         ledger.credit(a, v, f"Consumption {wo.wo_no}") for a, v in credits.items()
     ]
-    je = ledger.post_entry(db, entry_date=date.today(), branch_id=wo.branch_id, description=f"Assembly {wo.wo_no}",
+    je = ledger.post_entry(db, entry_date=on or date.today(), branch_id=wo.branch_id, description=f"Assembly {wo.wo_no}",
                            lines=lines, source_type="WORK_ORDER", source_id=wo.id, user_id=user_id)
     wo.total_cost, wo.unit_cost, wo.status = money(total), unit_cost, "COMPLETED"
     wo.completed_at = utcnow()

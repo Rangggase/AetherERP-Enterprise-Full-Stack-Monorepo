@@ -91,6 +91,23 @@ def seed_reference(db: Session, year: int = 2026) -> None:
     db.flush()
 
 
+def _audit_demo_documents(db: Session, users: dict[str, User]) -> None:
+    """Audit entries for the generated documents, so the activity feed is populated on first run."""
+    from app.models import DeliveryOrder, GoodsReceipt, PurchaseOrder, SalesOrder, WorkOrder
+    from app.services import audit
+
+    for model, action, who, label, attr in (
+        (PurchaseOrder, "CREATE", "buyer", "purchase_order", "po_no"),
+        (GoodsReceipt, "RECEIVE", "warehouse", "goods_receipt", "grn_no"),
+        (WorkOrder, "COMPLETE", "warehouse", "work_order", "wo_no"),
+        (SalesOrder, "CREATE", "sales", "sales_order", "so_no"),
+        (DeliveryOrder, "DELIVER", "warehouse", "delivery_order", "do_no"),
+    ):
+        for row in db.execute(select(model)).scalars():
+            audit.record(db, user_id=users[who].id, action=action, entity_type=label, entity_id=row.id,
+                         after={attr: getattr(row, attr)}, ip="127.0.0.1")
+
+
 def _user(db, email, name, role, branch_id, password):
     u = db.execute(select(User).where(User.email == email)).scalar_one_or_none()
     if u:
@@ -162,7 +179,7 @@ def seed_demo(db: Session, password: str = "Aether#Demo2026") -> None:
 
     # Opening capital
     ledger.post_entry(db, entry_date=date(2026, 6, 1), branch_id=hq.id, description="Opening capital injection",
-                      lines=[ledger.debit("1100", "2000000000"), ledger.credit("3100", "2000000000")], source_type="MANUAL", user_id=admin.id)
+                      lines=[ledger.debit("1100", "2000000000"), ledger.credit("3100", "2000000000")], source_type="OPENING", user_id=admin.id)
 
     sup1, sup2 = suppliers
     cus1, cus2, cus3 = customers
@@ -186,7 +203,7 @@ def seed_demo(db: Session, password: str = "Aether#Demo2026") -> None:
         procurement.receive_goods(db, po2.id, lines=[{"po_item_id": i.id, "quantity": i.quantity} for i in po2.items], received_date=d, user_id=admin.id)
 
         wo = inventory.create_work_order(db, branch_id=sby.id, product_id=hub.id, quantity=Decimal(sale_n + 8), user_id=admin.id)
-        inventory.complete_work_order(db, wo.id, admin.id)
+        inventory.complete_work_order(db, wo.id, admin.id, on=d)
 
         for cust, units, hubs in ((cus1, 40, sale_n // 2), (cus2, 60, sale_n // 2 - 4), (cus3, 3, 0)):
             lines = [{"product_id": cab.id, "quantity": units}]
@@ -201,13 +218,15 @@ def seed_demo(db: Session, password: str = "Aether#Demo2026") -> None:
                 payments.pay_invoice(db, si.id, amount=si.total_amount, payment_date=date(2026, month, 28), method="BANK_TRANSFER", user_id=admin.id)
 
     ledger.post_entry(db, entry_date=date(2026, 11, 1), branch_id=hq.id, description="November rent and utilities",
-                      lines=[ledger.debit("6200", "45000000"), ledger.debit("6300", "8500000"), ledger.credit("1100", "53500000")],
+                      lines=[ledger.debit("6200", "4500000"), ledger.debit("6300", "850000"), ledger.credit("1100", "5350000")],
                       source_type="MANUAL", user_id=admin.id)
     for m in range(6, 12):
         ledger.post_entry(db, entry_date=date(2026, m, 28), branch_id=hq.id, description=f"Payroll {calendar.month_name[m]}",
-                          lines=[ledger.debit("6100", "120000000"), ledger.credit("1100", "120000000")], source_type="MANUAL", user_id=admin.id)
+                          lines=[ledger.debit("6100", "12000000"), ledger.credit("1100", "12000000")], source_type="MANUAL", user_id=admin.id)
     # A cross-branch transfer so the Bandung warehouse has stock
     t = inventory.create_transfer(db, from_branch_id=sby.id, to_branch_id=bdg.id, items=[(cab.id, Decimal("100"))], user_id=admin.id)
     inventory.dispatch_transfer(db, t.id, admin.id)
     inventory.receive_transfer(db, t.id, admin.id)
+    db.flush()
+    _audit_demo_documents(db, users)
     db.flush()

@@ -67,6 +67,8 @@ def overview(db: Session, *, branch_id: int | None, as_of: date | None = None, m
             .join(JournalEntry, JournalEntry.id == JournalLine.entry_id)
             .join(Account, Account.id == JournalLine.account_id)
             .where(Account.code == "1100", JournalEntry.entry_date >= s, JournalEntry.entry_date <= e,
+                   # Capital injections are financing, not operating cash flow.
+                   func.coalesce(JournalEntry.source_type, "") != "OPENING",
                    *([JournalEntry.branch_id == branch_id] if branch_id else []))
         ).one()
         trend.append({
