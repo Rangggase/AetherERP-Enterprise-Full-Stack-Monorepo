@@ -9,7 +9,7 @@ from app.core.deps import DB, Audit, require
 from app.core.errors import Conflict, NotFound
 from app.models import Account, FiscalPeriod, JournalEntry, User
 from app.schemas.common import ORM, NonNegative
-from app.services import ledger, reports
+from app.services import closing, ledger, reports
 
 router = APIRouter(prefix="/accounting", tags=["accounting"])
 read = Depends(require("accounting.read"))
@@ -76,27 +76,28 @@ def periods(db: DB):
     return db.execute(select(FiscalPeriod).order_by(FiscalPeriod.start_date)).scalars().all()
 
 
-def _set_period(db, audit, period_id: int, status: str):
-    p = db.get(FiscalPeriod, period_id)
-    if p is None:
-        raise NotFound("Period not found")
-    before = p.status
-    if before == status:
-        raise Conflict(f"Period is already {status}")
-    p.status = status
-    audit.log("PERIOD_" + status, "fiscal_period", p.id, before={"status": before}, after={"status": status})
+@router.post("/periods/{period_id}/close", response_model=PeriodOut, dependencies=[Depends(require("accounting.close"))])
+def close_period(period_id: int, db: DB, audit: Audit):
+    p = closing.close_period(db, period_id)
+    audit.log("PERIOD_CLOSED", "fiscal_period", p.id, before={"status": "OPEN"}, after={"status": "CLOSED"})
     db.commit()
     return p
 
 
-@router.post("/periods/{period_id}/close", response_model=PeriodOut, dependencies=[Depends(require("accounting.close"))])
-def close_period(period_id: int, db: DB, audit: Audit):
-    return _set_period(db, audit, period_id, "CLOSED")
-
-
 @router.post("/periods/{period_id}/reopen", response_model=PeriodOut, dependencies=[Depends(require("accounting.close"))])
 def reopen_period(period_id: int, db: DB, audit: Audit):
-    return _set_period(db, audit, period_id, "OPEN")
+    p = closing.reopen_period(db, period_id)
+    audit.log("PERIOD_OPENED", "fiscal_period", p.id, before={"status": "CLOSED"}, after={"status": "OPEN"})
+    db.commit()
+    return p
+
+
+@router.post("/year-end/{year}/close", dependencies=[Depends(require("accounting.close"))])
+def close_year(year: int, db: DB, audit: Audit, user: Annotated[User, Depends(require("accounting.close", "accounting.post"))]):
+    result = closing.close_year(db, year, user_id=user.id)
+    audit.log("YEAR_CLOSED", "fiscal_year", year, after={"entries": result["entries"], "net_income": str(result["net_income"])})
+    db.commit()
+    return result
 
 
 @router.get("/journals", dependencies=[read])

@@ -63,8 +63,11 @@ def test_manual_journal_validation_and_reversal_via_api(client):
 def test_closed_period_blocks_posting_via_api(client, db):
     h = login(client, "finance@aether.local")
     periods = client.get("/api/v1/accounting/periods", headers=h).json()
-    march = next(p for p in periods if p["code"] == "2026-03")
-    assert client.post(f"/api/v1/accounting/periods/{march['id']}/close", headers=h).status_code == 200
+    by_code = {p["code"]: p for p in periods}
+    # Periods must close in order: March cannot be closed while January is open.
+    assert client.post(f"/api/v1/accounting/periods/{by_code['2026-03']['id']}/close", headers=h).status_code == 409
+    for code in ("2026-01", "2026-02", "2026-03"):
+        assert client.post(f"/api/v1/accounting/periods/{by_code[code]['id']}/close", headers=h).status_code == 200
     r = client.post("/api/v1/accounting/journals", headers=h, json={
         "entry_date": "2026-03-10", "branch_id": 1, "description": "late posting",
         "lines": [{"account_code": "1100", "debit": 5}, {"account_code": "3100", "credit": 5}]})

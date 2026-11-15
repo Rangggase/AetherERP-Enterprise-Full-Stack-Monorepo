@@ -26,6 +26,14 @@ Router (FastAPI)  ->  Service (business rules)  ->  SQLAlchemy session / models
 | Refresh tokens stored server-side by `jti` and `family` | Rotation on every refresh; replaying an old token revokes the whole family. |
 | Dashboard `as_of` defaults to the latest journal date | The demo data stays meaningful whenever it is opened. |
 
+## Concurrency and hardening
+
+- File-backed SQLite runs every transaction as `BEGIN IMMEDIATE` with a 15 second busy timeout, so concurrent writers queue instead of failing with "database is locked". PostgreSQL relies on row-level locks (`FOR UPDATE`) and the guarded stock updates.
+- `tests/test_closing.py` races eight threads for five units of stock and asserts exactly five reservations succeed.
+- Year-end `CLOSING` entries are excluded from profit reports, so a closed year still shows its income statement; balance sheet and trial balance include them.
+- Responses carry `nosniff`, `X-Frame-Options: DENY`, `no-referrer` and `no-store`. With a non-SQLite database the app refuses to start on a weak `SECRET_KEY`.
+- GitHub Actions (`.github/workflows/ci.yml`) runs the backend tests, checks that migrations match the models, and builds the frontend.
+
 ## Posting rules
 
 | Event | Debit | Credit |

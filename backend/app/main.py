@@ -8,6 +8,7 @@ from sqlalchemy.exc import IntegrityError
 
 from app.core.config import get_settings
 from app.core.errors import DomainError
+from app.core.headers import SecurityHeadersMiddleware
 from app.core.ratelimit import RateLimitMiddleware
 from app.models.guards import ImmutableRecordError
 from app.routers import accounting, auth, inventory, master, procurement, sales, system
@@ -20,6 +21,7 @@ warnings.filterwarnings("ignore", message="Dialect sqlite\\+pysqlite does not su
 encoders.ENCODERS_BY_TYPE[Decimal] = lambda d: format(d, "f")
 
 app = FastAPI(title="AetherERP API", version="1.0.0", docs_url="/api/docs", openapi_url="/api/openapi.json")
+app.add_middleware(SecurityHeadersMiddleware)
 app.add_middleware(RateLimitMiddleware)
 app.add_middleware(
     CORSMiddleware, allow_origins=get_settings().cors_list, allow_credentials=True,

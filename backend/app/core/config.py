@@ -1,6 +1,7 @@
 from decimal import Decimal
 from functools import lru_cache
 
+from pydantic import model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -15,6 +16,13 @@ class Settings(BaseSettings):
     rate_limit_per_minute: int = 120
     login_rate_limit_per_minute: int = 10
     po_approval_threshold: Decimal = Decimal("50000000")
+
+    @model_validator(mode="after")
+    def _require_real_secret(self):
+        weak = self.secret_key.startswith("dev-only") or len(self.secret_key) < 32
+        if weak and not self.database_url.startswith("sqlite"):
+            raise ValueError("SECRET_KEY must be a random string of at least 32 characters when not using SQLite")
+        return self
 
     @property
     def cors_list(self) -> list[str]:

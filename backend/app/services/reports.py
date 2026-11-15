@@ -9,9 +9,14 @@ from app.models import Account, Invoice, JournalEntry, JournalLine
 from app.models.base import ZERO, money
 
 
-def _balances(db: Session, *, branch_id: int | None, start: date | None, end: date | None):
-    """Per-account debit/credit totals for a date window."""
+def _balances(db: Session, *, branch_id: int | None, start: date | None, end: date | None, exclude_closing: bool = False):
+    """Per-account debit/credit totals for a date window.
+
+    Year-end closing entries are excluded from period profit reports so a closed year still shows its results.
+    """
     conds = []
+    if exclude_closing:
+        conds.append(func.coalesce(JournalEntry.source_type, "") != "CLOSING")
     if branch_id:
         conds.append(JournalEntry.branch_id == branch_id)
     if start:
@@ -125,7 +130,7 @@ def general_ledger(
 
 
 def income_statement(db: Session, *, branch_id: int | None, start: date, end: date) -> dict:
-    rows = _balances(db, branch_id=branch_id, start=start, end=end)
+    rows = _balances(db, branch_id=branch_id, start=start, end=end, exclude_closing=True)
 
     def group(g: str):
         items = [r for r in rows if r["account_type"] in ("REVENUE", "EXPENSE") and r["report_group"] == g and r["balance"]]

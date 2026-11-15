@@ -25,16 +25,30 @@ Base.metadata.naming_convention = NAMING
 def make_engine(url: str):
     if url.startswith("sqlite"):
         kwargs: dict = {"connect_args": {"check_same_thread": False}}
-        if ":memory:" in url or url == "sqlite://":
+        in_memory = ":memory:" in url or url == "sqlite://"
+        if in_memory:
+            # One shared connection (tests): sessions overlap on it, so explicit BEGINs are not possible.
             kwargs["poolclass"] = StaticPool
         engine = create_engine(url, **kwargs)
 
         @event.listens_for(engine, "connect")
         def _pragmas(dbapi_conn, _):
+            if not in_memory:
+                # Hand transaction control to SQLAlchemy (see the "begin" hook below).
+                dbapi_conn.isolation_level = None
             cur = dbapi_conn.cursor()
             cur.execute("PRAGMA foreign_keys=ON")
             cur.execute("PRAGMA journal_mode=WAL")
+            cur.execute("PRAGMA busy_timeout=15000")
             cur.close()
+
+        if not in_memory:
+
+            @event.listens_for(engine, "begin")
+            def _begin_immediate(conn):
+                # Take the write lock up front. Deferred transactions that read then write fail with
+                # "database is locked" under concurrency instead of waiting their turn.
+                conn.exec_driver_sql("BEGIN IMMEDIATE")
 
         return engine
     return create_engine(url, pool_pre_ping=True)

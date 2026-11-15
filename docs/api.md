@@ -18,7 +18,8 @@ Money and quantities are returned as exact decimal strings. Errors use `{"detail
 | Endpoint | Notes |
 | --- | --- |
 | `GET /accounting/accounts`, `/periods` | Chart of accounts, fiscal periods |
-| `POST /accounting/periods/{id}/close`, `/reopen` | Audited |
+| `POST /accounting/periods/{id}/close`, `/reopen` | Audited. Months close in order and reopen in reverse; a draft stock count dated in the month blocks closing; a year with closing entries cannot be reopened |
+| `POST /accounting/year-end/{year}/close` | Needs `accounting.close` and `accounting.post`. Requires January to November closed and December open. Posts one `CLOSING` entry per branch moving profit to retained earnings (3200), then closes December |
 | `GET /accounting/journals` | Filters: `branch_id`, `start`, `end`, `source_type`, paging |
 | `POST /accounting/journals` | Manual entry; must balance |
 | `POST /accounting/journals/{id}/reverse` | Posts a mirrored entry and marks the original `REVERSED` |

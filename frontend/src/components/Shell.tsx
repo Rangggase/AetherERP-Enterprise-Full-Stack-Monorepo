@@ -42,6 +42,7 @@ const NAV: { group: string; items: Item[] }[] = [
       { to: "/accounting/journals", label: "Journal entries", icon: BookOpenText, perm: "accounting.read" },
       { to: "/accounting/invoices", label: "Invoices & bills", icon: FileText, perm: "accounting.read" },
       { to: "/accounting/reports", label: "Financial reports", icon: Scale, perm: "accounting.read" },
+      { to: "/accounting/periods", label: "Fiscal periods", icon: CalendarCheck, perm: "accounting.read" },
     ],
   },
   {
