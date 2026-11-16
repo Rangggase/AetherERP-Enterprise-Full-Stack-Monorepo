@@ -26,10 +26,21 @@ Backend (from `backend/`):
 python -m venv .venv
 .venv/Scripts/activate        # macOS/Linux: source .venv/bin/activate
 pip install -r requirements.txt
-cp .env.example .env          # then set SECRET_KEY
-python -m app.cli reset       # create schema and load demo data
+cp .env.example .env          # Windows cmd: copy .env.example .env. Set SECRET_KEY.
+python -m app.cli seed        # create the schema, reference data and demo data
 uvicorn app.main:app --reload
 ```
+
+`app.cli` commands:
+
+| Command | Effect |
+| --- | --- |
+| `init` | Create missing tables and reference data (roles, permissions, chart of accounts, branches, fiscal periods) |
+| `seed` | `init` plus demo data; does nothing to the demo data if products already exist |
+| `reset` | **Drops every table**, then runs `seed`. Use only to start over |
+| `createadmin EMAIL PASSWORD` | Create an administrator on an empty system |
+
+The CLI builds the schema directly from the models. Databases for real use should be created and upgraded with Alembic (`alembic upgrade head`), as described in [docs/deployment.md](docs/deployment.md); a database created by the CLI has no Alembic version recorded and cannot be upgraded that way.
 
 API docs: <http://localhost:8000/api/docs>.
 
@@ -52,6 +63,32 @@ Open <http://localhost:5173>. Demo accounts (local demo data only) all use the p
 | sales@aether.local | Sales Staff |
 | auditor@aether.local | Auditor |
 
+## Sales return rules
+
+A sales return is a credit note recorded against an invoiced order.
+
+- The order must be invoiced and not fully paid (`INVOICED` or `PARTIALLY_PAID`).
+- The credit cannot exceed the invoice's outstanding balance.
+- Refunding an invoice that has already been paid is rejected; refunds are not supported.
+- A product cannot be returned in a larger quantity than was sold and not yet returned.
+- Returned stock re-enters as a new FIFO layer at the weighted-average cost of the layers consumed by the delivery.
+- Posting: debit 4150 Sales returns and credit 1200 Accounts receivable for the credit; debit inventory and credit 5100 COGS for the restocked cost.
+
+## Sprint summary
+
+| Sprint | Delivered |
+| --- | --- |
+| 0 | Monorepo, schema, JWT authentication, RBAC, audit log |
+| 1 | Double-entry ledger engine and financial reports |
+| 2 | Procure-to-pay with goods receipts, vendor bills and supplier payments |
+| 3 | FIFO inventory, inter-branch transfers, BOM assembly, stock opname, reorder advice |
+| 4 | Order-to-cash with credit-limit guard and stock reservation |
+| 5 | Application shell, executive dashboard, data tables, reports UI |
+| 6 | Master data screens and CSV export (scope chosen by the developer; the brief defined Sprints 0-5 only) |
+| 7 | Ordered period close, year-end closing entries, write locking, CI (scope chosen by the developer) |
+| 8 | User administration, password policy, printable invoices (scope chosen by the developer) |
+| 9 | Sales returns and the contra-revenue account 4150 (scope chosen by the developer) |
+
 ## Tests
 
 ```bash
@@ -59,7 +96,7 @@ cd backend && pytest
 cd frontend && npm run typecheck
 ```
 
-The suite covers ledger invariants, immutability, period locking, FIFO costing, transfers, assembly, opname, credit limits, overselling, JWT rotation and RBAC. One test asserts that the GL inventory accounts always equal the value of the remaining FIFO layers.
+The backend suite has 44 tests. They cover ledger invariants, immutability, period locking and year-end closing, FIFO costing, transfers, assembly, opname, credit limits, overselling (including a concurrent race), sales returns, user administration, JWT rotation and RBAC. One test asserts that the GL inventory accounts always equal the value of the remaining FIFO layers.
 
 ## Documentation
 
