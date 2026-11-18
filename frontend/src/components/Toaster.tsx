@@ -19,10 +19,10 @@ export function Toaster() {
     return () => window.removeEventListener("aether:toast", on);
   }, []);
   return (
-    <div className="pointer-events-none fixed bottom-4 right-4 z-50 flex w-80 max-w-[calc(100vw-2rem)] flex-col gap-2" role="status" aria-live="polite">
+    <div className="pointer-events-none fixed inset-x-4 bottom-4 z-[60] flex flex-col gap-2 sm:left-auto sm:w-80 max-md:bottom-24" role="status" aria-live="polite">
       {items.map((t) => (
-        <div key={t.id} className={`pointer-events-auto rounded-lg border bg-surface p-3 text-sm shadow-lg ${t.kind === "error" ? "border-bad/50" : "border-line"}`}>
-          <span className={t.kind === "error" ? "font-medium text-bad" : "font-medium"}>{t.kind === "error" ? "Not done. " : ""}</span>
+        <div key={t.id} className={`fade-in pointer-events-auto rounded border bg-surface p-3 text-sm ${t.kind === "error" ? "border-bad" : "border-ink"}`}>
+          {t.kind === "error" && <span className="font-medium text-bad">Gagal. </span>}
           {t.text}
         </div>
       ))}

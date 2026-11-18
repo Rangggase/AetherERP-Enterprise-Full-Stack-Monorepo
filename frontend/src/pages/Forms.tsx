@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Plus, Trash2 } from "lucide-react";
 import { useState, type FormEvent } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { ActionBar, Field, FormGroup, Impact } from "../components/Form";
 import { toast } from "../components/Toaster";
 import { PageHeader } from "../components/ui";
 import { api } from "../lib/api";
@@ -17,36 +17,31 @@ function useCreate(path: string, back: string, keys: string[]) {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (body: unknown) => api(path, { method: "POST", body }),
-    onSuccess: () => { keys.forEach((k) => void qc.invalidateQueries({ queryKey: [k] })); toast("Saved."); nav(back); },
-    onError: (e) => toast(e instanceof Error ? e.message : "Could not save.", "error"),
+    onSuccess: () => { keys.forEach((k) => void qc.invalidateQueries({ queryKey: [k] })); toast("Tersimpan."); nav(back); },
+    onError: (e) => toast(e instanceof Error ? e.message : "Tidak bisa menyimpan. Coba lagi.", "error"),
   });
 }
 
 function LineEditor({ lines, setLines, products, priceKey }: { lines: Line[]; setLines: (l: Line[]) => void; products: Row[]; priceKey: "standard_cost" | "sale_price" }) {
   const set = (i: number, patch: Partial<Line>) => setLines(lines.map((l, j) => (j === i ? { ...l, ...patch } : l)));
-  const total = lines.reduce((s, l) => s + num(l.quantity) * num(l.unit_price), 0);
   return (
-    <fieldset className="space-y-2">
-      <legend className="mb-1 text-sm font-medium">Lines</legend>
+    <div>
       {lines.map((l, i) => (
-        <div key={i} className="grid grid-cols-[1fr_5.5rem_8rem_2.25rem] items-end gap-2">
-          <label className="text-xs text-muted">{i === 0 && "Product"}
-            <select className="field mt-1 text-ink" required value={l.product_id} aria-label={`Product, line ${i + 1}`}
+        <div key={i} className="grid grid-cols-2 items-end gap-x-3 gap-y-2 border-b border-line py-3 first:border-t first:border-ink md:grid-cols-[minmax(0,1fr)_96px_144px_72px]">
+          <Field label={i === 0 || true ? "Produk" : ""} className="col-span-2 md:col-span-1">
+            <select className="field" name={`product-${i}`} required value={l.product_id} aria-label={`Produk, baris ${i + 1}`}
               onChange={(e) => set(i, { product_id: e.target.value, unit_price: String(products.find((p) => String(p.id) === e.target.value)?.[priceKey] ?? "") })}>
-              <option value="">Select a product</option>
-              {products.map((p) => (<option key={p.id} value={p.id}>{p.sku} · {p.name}</option>))}
+              <option value="">Pilih produk</option>
+              {products.map((p) => <option key={p.id} value={p.id}>{p.sku} · {p.name}</option>)}
             </select>
-          </label>
-          <label className="text-xs text-muted">{i === 0 && "Quantity"}<input className="field mt-1 text-right text-ink" type="number" min="0.0001" step="any" required value={l.quantity} aria-label={`Quantity, line ${i + 1}`} onChange={(e) => set(i, { quantity: e.target.value })} /></label>
-          <label className="text-xs text-muted">{i === 0 && "Unit price"}<input className="field mt-1 text-right text-ink" type="number" min="0" step="any" required value={l.unit_price} aria-label={`Unit price, line ${i + 1}`} onChange={(e) => set(i, { unit_price: e.target.value })} /></label>
-          <button type="button" className="btn h-9 w-9 px-0" aria-label={`Remove line ${i + 1}`} disabled={lines.length === 1} onClick={() => setLines(lines.filter((_, j) => j !== i))}><Trash2 size={14} aria-hidden /></button>
+          </Field>
+          <Field label="Jumlah"><input className="field num" name={`quantity-${i}`} inputMode="decimal" type="number" min="0.0001" step="any" required value={l.quantity} aria-label={`Jumlah, baris ${i + 1}`} onChange={(e) => set(i, { quantity: e.target.value })} /></Field>
+          <Field label="Harga satuan"><input className="field num" name={`unit-price-${i}`} inputMode="decimal" type="number" min="0" step="any" required value={l.unit_price} aria-label={`Harga satuan, baris ${i + 1}`} onChange={(e) => set(i, { unit_price: e.target.value })} /></Field>
+          <button type="button" className="btn btn-text col-span-2 md:col-span-1" disabled={lines.length === 1} onClick={() => setLines(lines.filter((_, j) => j !== i))} aria-label={`Hapus baris ${i + 1}`}>Hapus</button>
         </div>
       ))}
-      <div className="flex items-center justify-between pt-1">
-        <button type="button" className="btn" onClick={() => setLines([...lines, blank()])}><Plus size={14} aria-hidden /> Add line</button>
-        <p className="text-sm">Total <strong className="ml-1 text-base">{rupiah(total)}</strong></p>
-      </div>
-    </fieldset>
+      <button type="button" className="btn btn-text mt-2" onClick={() => setLines([...lines, blank()])}>Tambah baris</button>
+    </div>
   );
 }
 
@@ -59,8 +54,10 @@ function OrderForm({ kind }: { kind: "po" | "so" }) {
   const [branch, setBranch] = useState(String(branchId ?? branches.find((b) => b.branch_type !== "HEAD_OFFICE")?.id ?? ""));
   const [when, setWhen] = useState(today());
   const [lines, setLines] = useState<Line[]>([blank()]);
-  const save = useCreate(kind === "po" ? "/procurement/purchase-orders" : "/sales/orders", kind === "po" ? "/procurement/orders" : "/sales/orders", [kind === "po" ? "pos" : "sos", "overview"]);
+  const back = kind === "po" ? "/procurement/orders" : "/sales/orders";
+  const save = useCreate(kind === "po" ? "/procurement/purchase-orders" : "/sales/orders", back, [kind === "po" ? "pos" : "sos", "overview"]);
   const eligible = (products.data ?? []).filter((p) => (kind === "po" ? p.product_type !== "SERVICE" : true));
+  const total = lines.reduce((s, l) => s + num(l.quantity) * num(l.unit_price), 0);
 
   function submit(e: FormEvent) {
     e.preventDefault();
@@ -71,21 +68,31 @@ function OrderForm({ kind }: { kind: "po" | "so" }) {
   }
   return (
     <>
-      <PageHeader title={kind === "po" ? "New purchase order" : "New sales order"} note={kind === "po" ? "Saved as a draft. Submit it from the list to start approval." : "Saved as a quotation. Confirming it later checks credit and reserves stock."} />
-      <form onSubmit={submit} className="max-w-3xl space-y-5 rounded-lg border border-line bg-surface p-5">
-        <div className="grid gap-3 sm:grid-cols-3">
-          <label className="text-sm font-medium">{kind === "po" ? "Supplier" : "Customer"}
-            <select className="field mt-1" required value={party} onChange={(e) => setParty(e.target.value)}>
-              <option value="">Select</option>{(parties.data ?? []).map((p) => (<option key={p.id} value={p.id}>{p.name}</option>))}
-            </select></label>
-          <label className="text-sm font-medium">{kind === "po" ? "Receive into" : "Ship from"}
-            <select className="field mt-1" required value={branch} onChange={(e) => setBranch(e.target.value)}>
-              <option value="">Select</option>{branches.map((b) => (<option key={b.id} value={b.id}>{b.name}</option>))}
-            </select></label>
-          <label className="text-sm font-medium">Order date<input className="field mt-1" type="date" required value={when} onChange={(e) => setWhen(e.target.value)} /></label>
-        </div>
-        <LineEditor lines={lines} setLines={setLines} products={eligible} priceKey={kind === "po" ? "standard_cost" : "sale_price"} />
-        <div className="flex justify-end"><button className="btn btn-primary" disabled={save.isPending}>{save.isPending ? "Saving…" : "Save draft"}</button></div>
+      <PageHeader title={kind === "po" ? "Pesanan pembelian baru" : "Pesanan penjualan baru"}
+        sub={kind === "po" ? "Disimpan sebagai draf. Ajukan dari daftar untuk memulai persetujuan." : "Disimpan sebagai penawaran. Saat dikonfirmasi, batas kredit diperiksa dan stok dicadangkan."} />
+      <form onSubmit={submit}>
+        <FormGroup first title={kind === "po" ? "Pemasok dan tujuan" : "Pelanggan dan asal"} hint={kind === "po" ? "Termin pembayaran pemasok menentukan jatuh tempo tagihan." : "Stok dicadangkan dari gudang yang dipilih."}>
+          <div className="grid gap-3 sm:grid-cols-3">
+            <Field label={kind === "po" ? "Pemasok" : "Pelanggan"}>
+              <select className="field" name="party" required value={party} onChange={(e) => setParty(e.target.value)}>
+                <option value="">Pilih</option>{(parties.data ?? []).map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
+              </select>
+            </Field>
+            <Field label={kind === "po" ? "Diterima di" : "Dikirim dari"}>
+              <select className="field" name="branch" required value={branch} onChange={(e) => setBranch(e.target.value)}>
+                <option value="">Pilih</option>{branches.map((b) => <option key={b.id} value={b.id}>{b.name}</option>)}
+              </select>
+            </Field>
+            <Field label="Tanggal pesanan"><input className="field" name="order-date" type="date" required value={when} onChange={(e) => setWhen(e.target.value)} /></Field>
+          </div>
+        </FormGroup>
+        <FormGroup title="Item" hint="Harga satuan terisi dari data produk dan bisa diubah.">
+          <LineEditor lines={lines} setLines={setLines} products={eligible} priceKey={kind === "po" ? "standard_cost" : "sale_price"} />
+        </FormGroup>
+        <ActionBar summary={<Impact label="Total pesanan" value={rupiah(total, true)} />}>
+          <Link className="btn btn-text" to={back}>Batal</Link>
+          <button className="btn btn-primary" disabled={save.isPending}>{save.isPending ? "Menyimpan…" : "Simpan draf"}</button>
+        </ActionBar>
       </form>
     </>
   );
@@ -113,30 +120,33 @@ export function NewJournal() {
   }
   return (
     <>
-      <PageHeader title="New journal entry" note="Debits must equal credits. Once posted, an entry can only be reversed, not edited." />
-      <form onSubmit={submit} className="max-w-3xl space-y-5 rounded-lg border border-line bg-surface p-5">
-        <div className="grid gap-3 sm:grid-cols-3">
-          <label className="text-sm font-medium">Date<input className="field mt-1" type="date" required value={when} onChange={(e) => setWhen(e.target.value)} /></label>
-          <label className="text-sm font-medium">Branch<select className="field mt-1" required value={branch} onChange={(e) => setBranch(e.target.value)}>{branches.map((b) => (<option key={b.id} value={b.id}>{b.name}</option>))}</select></label>
-          <label className="text-sm font-medium sm:col-span-3">Description<input className="field mt-1" required minLength={3} value={desc} onChange={(e) => setDesc(e.target.value)} /></label>
-        </div>
-        <fieldset className="space-y-2">
-          <legend className="mb-1 text-sm font-medium">Lines</legend>
-          {lines.map((l, i) => (
-            <div key={i} className="grid grid-cols-[1fr_7.5rem_7.5rem] gap-2">
-              <select className="field" aria-label={`Account, line ${i + 1}`} value={l.account_code} onChange={(e) => set(i, { account_code: e.target.value })}>
-                <option value="">Account</option>{(accounts.data ?? []).map((a) => (<option key={a.code} value={a.code}>{a.code} {a.name}</option>))}
-              </select>
-              <input className="field text-right" type="number" min="0" step="0.01" placeholder="Debit" aria-label={`Debit, line ${i + 1}`} value={l.debit} onChange={(e) => set(i, { debit: e.target.value, credit: e.target.value ? "" : l.credit })} />
-              <input className="field text-right" type="number" min="0" step="0.01" placeholder="Credit" aria-label={`Credit, line ${i + 1}`} value={l.credit} onChange={(e) => set(i, { credit: e.target.value, debit: e.target.value ? "" : l.debit })} />
-            </div>
-          ))}
-          <div className="flex items-center justify-between pt-1">
-            <button type="button" className="btn" onClick={() => setLines([...lines, { account_code: "", debit: "", credit: "" }])}><Plus size={14} aria-hidden /> Add line</button>
-            <p className={`text-sm ${ok ? "text-good" : "text-warn"}`} aria-live="polite">{ok ? "Balanced" : `Difference ${rupiah(Math.abs(d - c), true)}`}</p>
+      <PageHeader title="Jurnal baru" sub="Total debit harus sama dengan total kredit. Setelah diposting, jurnal hanya bisa dibalik, tidak bisa diubah." />
+      <form onSubmit={submit}>
+        <FormGroup first title="Dokumen" hint="Tanggal harus jatuh pada periode yang masih terbuka.">
+          <div className="grid gap-3 sm:grid-cols-3">
+            <Field label="Tanggal"><input className="field" name="entry-date" type="date" required value={when} onChange={(e) => setWhen(e.target.value)} /></Field>
+            <Field label="Cabang"><select className="field" name="branch" required value={branch} onChange={(e) => setBranch(e.target.value)}>{branches.map((b) => <option key={b.id} value={b.id}>{b.name}</option>)}</select></Field>
+            <Field label="Keterangan" className="sm:col-span-3"><input className="field" name="description" required minLength={3} value={desc} onChange={(e) => setDesc(e.target.value)} /></Field>
           </div>
-        </fieldset>
-        <div className="flex justify-end"><button className="btn btn-primary" disabled={!ok || save.isPending}>{save.isPending ? "Posting…" : "Post entry"}</button></div>
+        </FormGroup>
+        <FormGroup title="Baris jurnal" hint="Isi debit atau kredit pada setiap baris, tidak keduanya.">
+          <div>
+            {lines.map((l, i) => (
+              <div key={i} className="grid grid-cols-2 gap-2 border-b border-line py-2 first:border-t first:border-ink md:grid-cols-[minmax(0,1fr)_136px_136px]">
+                <select className="field col-span-2 md:col-span-1" name={`account-${i}`} aria-label={`Akun, baris ${i + 1}`} value={l.account_code} onChange={(e) => set(i, { account_code: e.target.value })}>
+                  <option value="">Pilih akun</option>{(accounts.data ?? []).map((a) => <option key={a.code} value={a.code}>{a.code} {a.name}</option>)}
+                </select>
+                <input className="field num" name={`debit-${i}`} inputMode="decimal" type="number" min="0" step="0.01" placeholder="Debit" aria-label={`Debit, baris ${i + 1}`} value={l.debit} onChange={(e) => set(i, { debit: e.target.value, credit: e.target.value ? "" : l.credit })} />
+                <input className="field num" name={`credit-${i}`} inputMode="decimal" type="number" min="0" step="0.01" placeholder="Kredit" aria-label={`Kredit, baris ${i + 1}`} value={l.credit} onChange={(e) => set(i, { credit: e.target.value, debit: e.target.value ? "" : l.debit })} />
+              </div>
+            ))}
+            <button type="button" className="btn btn-text mt-2" onClick={() => setLines([...lines, { account_code: "", debit: "", credit: "" }])}>Tambah baris</button>
+          </div>
+        </FormGroup>
+        <ActionBar summary={<><Impact label="Total debit" value={rupiah(d, true)} /><Impact label="Total kredit" value={rupiah(c, true)} /><div className={ok ? "text-good" : "text-warn"} aria-live="polite">{ok ? "Seimbang" : `Selisih ${rupiah(Math.abs(d - c), true)}`}</div></>}>
+          <Link className="btn btn-text" to="/accounting/journals">Batal</Link>
+          <button className="btn btn-primary" disabled={!ok || save.isPending}>{save.isPending ? "Memposting…" : "Posting jurnal"}</button>
+        </ActionBar>
       </form>
     </>
   );

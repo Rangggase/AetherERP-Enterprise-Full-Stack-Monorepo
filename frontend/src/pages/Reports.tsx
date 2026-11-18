@@ -1,39 +1,41 @@
 import { useQuery } from "@tanstack/react-query";
-import { CheckCircle2, XCircle } from "lucide-react";
 import { useState } from "react";
-import { ErrorNote, PageHeader } from "../components/ui";
+import { Field } from "../components/Form";
+import { ScrollX } from "../components/ScrollX";
+import { ErrorNote, PageHeader, Skeleton } from "../components/ui";
 import { api } from "../lib/api";
 import { date, num, rupiah, today } from "../lib/format";
 import { useSession } from "../lib/session";
 
 type Row = Record<string, any>;
 const TABS = [
-  ["tb", "Trial balance"], ["is", "Income statement"], ["bs", "Balance sheet"], ["ar", "Receivables aging"], ["ap", "Payables aging"], ["gl", "General ledger"],
+  ["tb", "Neraca saldo"], ["is", "Laba rugi"], ["bs", "Neraca"], ["ar", "Umur piutang"], ["ap", "Umur utang"], ["gl", "Buku besar"],
 ] as const;
 
 const yearStart = () => `${new Date().getFullYear()}-01-01`;
 
+/** The first column stays visible while amounts scroll on narrow screens. */
+const FIRST = "max-md:sticky max-md:left-0 max-md:z-[1] max-md:max-w-[10rem] bg-canvas max-md:shadow-[1px_0_0_rgb(var(--line))]";
+
 function Money({ v, bold }: { v: string | number; bold?: boolean }) {
-  return <td className={`px-3 py-1.5 text-right tabular-nums ${bold ? "font-semibold" : ""}`}>{num(v) === 0 ? "–" : rupiah(v, true)}</td>;
+  return <td className={`num whitespace-nowrap px-3 py-2 ${bold ? "font-semibold" : ""}`}>{num(v) === 0 ? "–" : rupiah(v, true)}</td>;
 }
 
 function Section({ title, rows, total }: { title: string; rows: Row[]; total: string }) {
   return (
     <>
-      <tr className="bg-sunken"><th colSpan={2} className="px-3 py-1.5 text-left font-semibold">{title}</th></tr>
-      {rows.map((r) => (<tr key={r.code} className="border-b border-line/60"><td className="px-3 py-1.5 pl-6"><span className="text-muted">{r.code}</span> {r.name}</td><Money v={r.balance} /></tr>))}
-      <tr className="border-b border-line"><td className="px-3 py-1.5 font-semibold">Total {title.toLowerCase()}</td><Money v={total} bold /></tr>
+      <tr><th colSpan={2} className="border-b border-ink px-3 pb-1 pt-4 text-left text-table font-semibold">{title}</th></tr>
+      {rows.map((r) => (<tr key={r.code} className="border-b border-line"><td className={`px-3 py-2 pl-6 ${FIRST}`}><span className="text-muted">{r.code}</span> {r.name}</td><Money v={r.balance} /></tr>))}
+      <tr className="border-b border-line"><td className={`px-3 py-2 font-semibold ${FIRST}`}>Total {title.toLowerCase()}</td><Money v={total} bold /></tr>
     </>
   );
 }
 
-function Balanced({ ok, label }: { ok: boolean; label: string }) {
-  return (
-    <p className={`mb-3 inline-flex items-center gap-1.5 text-sm font-medium ${ok ? "text-good" : "text-bad"}`}>
-      {ok ? <CheckCircle2 size={15} aria-hidden /> : <XCircle size={15} aria-hidden />}{label}
-    </p>
-  );
-}
+const Balanced = ({ ok, label }: { ok: boolean; label: string }) => (
+  <p className={`mb-2 text-table font-medium ${ok ? "text-good" : "text-bad"}`}><span className="st">{label}</span></p>
+);
+
+const th = "border-b border-ink px-3 py-2 font-medium text-muted";
 
 export function Reports() {
   const { branchId } = useSession();
@@ -61,77 +63,87 @@ export function Reports() {
 
   return (
     <>
-      <PageHeader title="Financial reports" note="Computed live from posted journal entries for the selected branch or the whole company." />
-      <div role="tablist" aria-label="Report" className="mb-4 flex flex-wrap gap-1 border-b border-line">
+      <PageHeader title="Laporan keuangan" sub="Dihitung langsung dari jurnal yang sudah diposting, per cabang atau untuk seluruh perusahaan." />
+      <div role="tablist" aria-label="Laporan" className="mb-4 flex flex-wrap gap-x-5 border-b border-line">
         {TABS.map(([k, label]) => (
           <button key={k} role="tab" aria-selected={tab === k} onClick={() => setTab(k)}
-            className={`-mb-px border-b-2 px-3 py-2 text-sm ${tab === k ? "border-brand font-medium text-ink" : "border-transparent text-muted hover:text-ink"}`}>{label}</button>
+            className={`-mb-px min-h-11 border-b-2 text-sm transition-colors duration-base ease-out md:min-h-9 ${tab === k ? "border-brand font-semibold" : "border-transparent text-muted hover:text-ink"}`}>{label}</button>
         ))}
       </div>
-      <div className="mb-4 flex flex-wrap items-end gap-3 text-sm">
-        {ranged && <label>From<input type="date" className="field mt-1" value={from} onChange={(e) => setFrom(e.target.value)} /></label>}
-        <label>{ranged ? "To" : "As of"}<input type="date" className="field mt-1" value={to} onChange={(e) => setTo(e.target.value)} /></label>
+      <div className="mb-5 flex flex-wrap items-end gap-3">
+        {ranged && <Field label="Dari"><input type="date" name="from" className="field" value={from} onChange={(e) => setFrom(e.target.value)} /></Field>}
+        <Field label={ranged ? "Sampai" : "Per tanggal"}><input type="date" name="to" className="field" value={to} onChange={(e) => setTo(e.target.value)} /></Field>
         {tab === "gl" && (
-          <label>Account
-            <select className="field mt-1" value={acct} onChange={(e) => setAcct(e.target.value)}>
+          <Field label="Akun" className="min-w-0">
+            <select className="field" name="account" value={acct} onChange={(e) => setAcct(e.target.value)}>
               {(accounts.data ?? []).map((a) => (<option key={a.code} value={a.code}>{a.code} {a.name}</option>))}
             </select>
-          </label>
+          </Field>
         )}
       </div>
 
-      {q.isError ? <ErrorNote error={q.error} retry={() => q.refetch()} /> : q.isLoading || !d ? <div className="h-48 animate-pulse rounded-lg bg-sunken" /> : (
-        <div className="overflow-x-auto rounded-lg border border-line bg-surface p-1">
+      {q.isError ? <ErrorNote error={q.error} retry={() => q.refetch()} /> : q.isLoading || !d ? <Skeleton /> : (
+        <div>
           {tab === "tb" && (<>
-            <div className="p-3 pb-0"><Balanced ok={d.balanced} label={d.balanced ? "Debits equal credits" : "Debits and credits differ"} /></div>
-            <table className="w-full min-w-[560px] text-sm" aria-label="Trial balance">
-              <thead><tr className="text-muted"><th className="px-3 py-2 text-left font-medium">Account</th><th className="px-3 text-right font-medium">Debit</th><th className="px-3 text-right font-medium">Credit</th></tr></thead>
-              <tbody>
-                {d.rows.map((r: Row) => (<tr key={r.code} className="border-t border-line/60"><td className="px-3 py-1.5"><span className="text-muted">{r.code}</span> {r.name}</td><Money v={r.debit_balance} /><Money v={r.credit_balance} /></tr>))}
-                <tr className="border-t border-line font-semibold"><td className="px-3 py-2">Total</td><Money v={d.total_debit} bold /><Money v={d.total_credit} bold /></tr>
-              </tbody>
-            </table></>)}
+            <Balanced ok={d.balanced} label={d.balanced ? "Debit sama dengan kredit" : "Debit dan kredit berbeda"} />
+            <ScrollX>
+              <table className="tbl min-w-[560px]" aria-label="Neraca saldo">
+                <thead><tr><th className={`${th} text-left ${FIRST}`}>Akun</th><th className={`${th} text-right`}>Debit</th><th className={`${th} text-right`}>Kredit</th></tr></thead>
+                <tbody>
+                  {d.rows.map((r: Row) => (<tr key={r.code} className="border-b border-line"><td className={`px-3 py-2 ${FIRST}`}><span className="text-muted">{r.code}</span> {r.name}</td><Money v={r.debit_balance} /><Money v={r.credit_balance} /></tr>))}
+                  <tr className="font-semibold"><td className={`px-3 py-2 ${FIRST}`}>Total</td><Money v={d.total_debit} bold /><Money v={d.total_credit} bold /></tr>
+                </tbody>
+              </table>
+            </ScrollX></>)}
 
           {tab === "is" && (
-            <table className="w-full min-w-[480px] text-sm" aria-label="Income statement"><tbody>
-              <Section title="Revenue" rows={d.revenue.rows} total={d.revenue.total} />
-              <Section title="Cost of goods sold" rows={d.cogs.rows} total={d.cogs.total} />
-              <tr className="border-b border-line bg-sunken"><td className="px-3 py-2 font-semibold">Gross profit <span className="font-normal text-muted">({num(d.gross_margin_pct).toFixed(1)}% margin)</span></td><Money v={d.gross_profit} bold /></tr>
-              <Section title="Operating expenses" rows={d.operating_expenses.rows} total={d.operating_expenses.total} />
-              <tr className="bg-sunken"><td className="px-3 py-2 text-base font-semibold">Net income</td><Money v={d.net_income} bold /></tr>
-            </tbody></table>)}
+            <ScrollX>
+              <table className="tbl min-w-[480px]" aria-label="Laporan laba rugi"><tbody>
+                <Section title="Pendapatan" rows={d.revenue.rows} total={d.revenue.total} />
+                <Section title="Harga pokok penjualan" rows={d.cogs.rows} total={d.cogs.total} />
+                <tr className="border-b border-ink"><td className={`px-3 py-2 font-semibold ${FIRST}`}>Laba kotor <span className="font-normal text-muted">(margin {num(d.gross_margin_pct).toFixed(1).replace(".", ",")}%)</span></td><Money v={d.gross_profit} bold /></tr>
+                <Section title="Beban operasional" rows={d.operating_expenses.rows} total={d.operating_expenses.total} />
+                <tr><td className={`px-3 py-3 font-serif text-lg ${FIRST}`}>Laba bersih</td><Money v={d.net_income} bold /></tr>
+              </tbody></table>
+            </ScrollX>)}
 
           {tab === "bs" && (<>
-            <div className="p-3 pb-0"><Balanced ok={d.balanced} label={d.balanced ? "Assets equal liabilities plus equity" : "Balance sheet does not balance"} /></div>
-            <table className="w-full min-w-[480px] text-sm" aria-label="Balance sheet"><tbody>
-              <Section title="Assets" rows={d.assets.rows} total={d.assets.total} />
-              <Section title="Liabilities" rows={d.liabilities.rows} total={d.liabilities.total} />
-              <tr className="bg-sunken"><th colSpan={2} className="px-3 py-1.5 text-left font-semibold">Equity</th></tr>
-              {d.equity.rows.map((r: Row) => (<tr key={r.code} className="border-b border-line/60"><td className="px-3 py-1.5 pl-6"><span className="text-muted">{r.code}</span> {r.name}</td><Money v={r.balance} /></tr>))}
-              <tr className="border-b border-line/60"><td className="px-3 py-1.5 pl-6">Current period earnings</td><Money v={d.equity.current_earnings} /></tr>
-              <tr><td className="px-3 py-1.5 font-semibold">Total equity</td><Money v={d.equity.total} bold /></tr>
-            </tbody></table></>)}
+            <Balanced ok={d.balanced} label={d.balanced ? "Aset sama dengan kewajiban ditambah ekuitas" : "Neraca tidak seimbang"} />
+            <ScrollX>
+              <table className="tbl min-w-[480px]" aria-label="Neraca"><tbody>
+                <Section title="Aset" rows={d.assets.rows} total={d.assets.total} />
+                <Section title="Kewajiban" rows={d.liabilities.rows} total={d.liabilities.total} />
+                <tr><th colSpan={2} className="border-b border-ink px-3 pb-1 pt-4 text-left text-table font-semibold">Ekuitas</th></tr>
+                {d.equity.rows.map((r: Row) => (<tr key={r.code} className="border-b border-line"><td className={`px-3 py-2 pl-6 ${FIRST}`}><span className="text-muted">{r.code}</span> {r.name}</td><Money v={r.balance} /></tr>))}
+                <tr className="border-b border-line"><td className={`px-3 py-2 pl-6 ${FIRST}`}>Laba periode berjalan</td><Money v={d.equity.current_earnings} /></tr>
+                <tr><td className={`px-3 py-2 font-semibold ${FIRST}`}>Total ekuitas</td><Money v={d.equity.total} bold /></tr>
+              </tbody></table>
+            </ScrollX></>)}
 
           {(tab === "ar" || tab === "ap") && (
-            <table className="w-full min-w-[640px] text-sm" aria-label="Aging report">
-              <thead><tr className="text-muted">{["Party", "Not yet due", "1–30 days late", "31–60", "61–90", "Over 90", "Total"].map((h, i) => (<th key={h} className={`px-3 py-2 font-medium ${i ? "text-right" : "text-left"}`}>{h}</th>))}</tr></thead>
-              <tbody>
-                {d.rows.map((r: Row) => (<tr key={r.party_id} className="border-t border-line/60"><td className="px-3 py-1.5">{tab === "ar" ? "Customer" : "Supplier"} #{r.party_id}</td>
-                  <Money v={r.not_due} /><Money v={r.d0_30} /><Money v={r.d31_60} /><Money v={r.d61_90} /><Money v={r.d90_plus} /><Money v={r.total} bold /></tr>))}
-                {d.rows.length === 0 && <tr><td colSpan={7} className="px-3 py-8 text-center text-muted">Nothing outstanding as of this date.</td></tr>}
-                <tr className="border-t border-line font-semibold"><td className="px-3 py-2">Total</td><Money v={d.totals.not_due} bold /><Money v={d.totals.d0_30} bold /><Money v={d.totals.d31_60} bold /><Money v={d.totals.d61_90} bold /><Money v={d.totals.d90_plus} bold /><Money v={d.totals.total} bold /></tr>
-              </tbody>
-            </table>)}
+            <ScrollX>
+              <table className="tbl min-w-[720px]" aria-label="Laporan umur">
+                <thead><tr>{["Pihak", "Belum jatuh tempo", "Terlambat 1–30 hari", "31–60", "61–90", "Lebih dari 90", "Total"].map((h, i) => (<th key={h} className={`${th} ${i ? "text-right" : `text-left ${FIRST}`}`}>{h}</th>))}</tr></thead>
+                <tbody>
+                  {d.rows.map((r: Row) => (<tr key={r.party_id} className="border-b border-line"><td className={`px-3 py-2 ${FIRST}`}>{tab === "ar" ? "Pelanggan" : "Pemasok"} #{r.party_id}</td>
+                    <Money v={r.not_due} /><Money v={r.d0_30} /><Money v={r.d31_60} /><Money v={r.d61_90} /><Money v={r.d90_plus} /><Money v={r.total} bold /></tr>))}
+                  {d.rows.length === 0 && <tr><td colSpan={7} className="px-3 py-8 text-center text-muted">Tidak ada yang belum dibayar per tanggal ini.</td></tr>}
+                  <tr className="font-semibold"><td className={`px-3 py-2 ${FIRST}`}>Total</td><Money v={d.totals.not_due} bold /><Money v={d.totals.d0_30} bold /><Money v={d.totals.d31_60} bold /><Money v={d.totals.d61_90} bold /><Money v={d.totals.d90_plus} bold /><Money v={d.totals.total} bold /></tr>
+                </tbody>
+              </table>
+            </ScrollX>)}
 
           {tab === "gl" && (
-            <table className="w-full min-w-[640px] text-sm" aria-label="General ledger">
-              <thead><tr className="text-muted"><th className="px-3 py-2 text-left font-medium">Date</th><th className="px-3 text-left font-medium">Entry</th><th className="px-3 text-left font-medium">Description</th><th className="px-3 text-right font-medium">Debit</th><th className="px-3 text-right font-medium">Credit</th><th className="px-3 text-right font-medium">Balance</th></tr></thead>
-              <tbody>
-                <tr className="border-t border-line/60 bg-sunken"><td colSpan={5} className="px-3 py-1.5">Opening balance</td><Money v={d.opening_balance} bold /></tr>
-                {d.lines.map((l: Row, i: number) => (<tr key={i} className="border-t border-line/60"><td className="px-3 py-1.5">{date(l.date)}</td><td className="px-3">{l.entry_no}</td><td className="px-3">{l.description}</td><Money v={l.debit} /><Money v={l.credit} /><Money v={l.balance} /></tr>))}
-                <tr className="border-t border-line bg-sunken font-semibold"><td colSpan={5} className="px-3 py-2">Closing balance</td><Money v={d.closing_balance} bold /></tr>
-              </tbody>
-            </table>)}
+            <ScrollX>
+              <table className="tbl min-w-[720px]" aria-label="Buku besar">
+                <thead><tr><th className={`${th} text-left ${FIRST}`}>Tanggal</th><th className={`${th} text-left`}>Jurnal</th><th className={`${th} text-left`}>Keterangan</th><th className={`${th} text-right`}>Debit</th><th className={`${th} text-right`}>Kredit</th><th className={`${th} text-right`}>Saldo</th></tr></thead>
+                <tbody>
+                  <tr className="border-b border-line"><td colSpan={5} className={`px-3 py-2 ${FIRST}`}>Saldo awal</td><Money v={d.opening_balance} bold /></tr>
+                  {d.lines.map((l: Row, i: number) => (<tr key={i} className="border-b border-line"><td className={`whitespace-nowrap px-3 py-2 ${FIRST}`}>{date(l.date)}</td><td className="whitespace-nowrap px-3">{l.entry_no}</td><td className="px-3">{l.description}</td><Money v={l.debit} /><Money v={l.credit} /><Money v={l.balance} /></tr>))}
+                  <tr className="font-semibold"><td colSpan={5} className={`px-3 py-2 ${FIRST}`}>Saldo akhir</td><Money v={d.closing_balance} bold /></tr>
+                </tbody>
+              </table>
+            </ScrollX>)}
         </div>
       )}
     </>

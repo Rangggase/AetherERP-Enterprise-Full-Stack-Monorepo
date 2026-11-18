@@ -1,6 +1,6 @@
-import { Landmark } from "lucide-react";
 import { useState, type FormEvent } from "react";
 import { Navigate, useNavigate } from "react-router-dom";
+import { Field } from "../components/Form";
 import { useSession } from "../lib/session";
 
 export function Login() {
@@ -21,40 +21,39 @@ export function Login() {
       await s.signIn(email.trim(), password);
       nav("/", { replace: true });
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Sign-in failed.");
+      setError(err instanceof Error ? err.message : "Gagal masuk. Periksa email dan kata sandi, lalu coba lagi.");
     } finally {
       setBusy(false);
     }
   }
 
   return (
-    <div className="grid min-h-dvh lg:grid-cols-[1.1fr_1fr]">
-      <div className="hidden flex-col justify-between bg-rail p-10 text-rail-ink lg:flex">
-        <div className="flex items-center gap-2 text-white"><Landmark size={22} className="text-brand" aria-hidden /><span className="text-lg font-semibold">AetherERP</span></div>
+    <main className="grid min-h-dvh md:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)]">
+      <aside className="hidden flex-col justify-between border-r border-line p-12 md:flex">
+        <p className="font-serif text-[17px] font-semibold">AetherERP</p>
         <div>
-          <p className="max-w-md text-3xl font-semibold leading-tight tracking-tight text-white">Every receipt, delivery and payment lands in the ledger the moment it happens.</p>
-          <p className="mt-4 max-w-md text-sm">Multi-branch stock on FIFO layers, double-entry journals that cannot be edited after posting, and statements that tie out to the cent.</p>
+          <p className="max-w-sm font-serif text-xl font-medium">Pengadaan, gudang, penjualan, dan akuntansi dalam satu buku besar.</p>
+          <ul className="mt-6 max-w-sm space-y-2 text-sm text-muted">
+            <li>Stok per gudang dengan biaya FIFO.</li>
+            <li>Jurnal ganda yang tidak bisa diubah setelah diposting.</li>
+            <li>Laporan yang selalu cocok dengan buku besar.</li>
+          </ul>
         </div>
-        <p className="text-xs">Procurement, warehouse, sales and accounting in one system.</p>
-      </div>
+        <p className="text-xs text-muted">Masuk dengan akun perusahaan Anda.</p>
+      </aside>
       <div className="flex items-center justify-center p-6">
-        <form onSubmit={submit} className="w-full max-w-sm space-y-4" noValidate>
+        <form onSubmit={submit} className="w-full max-w-sm space-y-5" noValidate>
+          <p className="font-serif text-[17px] font-semibold md:hidden">AetherERP</p>
           <div>
-            <h1 className="text-2xl font-semibold tracking-tight">Sign in</h1>
-            <p className="mt-1 text-sm text-muted">Use your company account.</p>
+            <h1 className="font-serif text-xl font-medium">Masuk</h1>
+            <p className="mt-1 text-table text-muted">Gunakan akun perusahaan Anda.</p>
           </div>
-          {error && <p role="alert" className="rounded-md border border-bad/40 bg-bad/5 p-2.5 text-sm text-bad">{error}</p>}
-          <label className="block text-sm font-medium">
-            Email
-            <input className="field mt-1 h-10" type="email" autoComplete="username" required value={email} onChange={(e) => setEmail(e.target.value)} />
-          </label>
-          <label className="block text-sm font-medium">
-            Password
-            <input className="field mt-1 h-10" type="password" autoComplete="current-password" required value={password} onChange={(e) => setPassword(e.target.value)} />
-          </label>
-          <button className="btn btn-primary h-10 w-full" disabled={busy || !email || !password}>{busy ? "Signing in…" : "Sign in"}</button>
+          {error && <p role="alert" className="border-y border-bad py-3 text-sm text-bad">{error}</p>}
+          <Field label="Email"><input className="field" type="email" name="email" autoComplete="username" spellCheck={false} required value={email} onChange={(e) => setEmail(e.target.value)} /></Field>
+          <Field label="Kata sandi"><input className="field" type="password" name="password" autoComplete="current-password" required value={password} onChange={(e) => setPassword(e.target.value)} /></Field>
+          <button className="btn btn-primary w-full" disabled={busy || !email || !password}>{busy ? "Memproses…" : "Masuk"}</button>
         </form>
       </div>
-    </div>
+    </main>
   );
 }

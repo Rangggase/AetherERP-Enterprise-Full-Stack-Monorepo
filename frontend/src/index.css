@@ -2,61 +2,121 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Tokens: docs/design-system.md ("kertas dan tinta"). RGB triplets so Tailwind can apply opacity. */
 :root {
-  --canvas: 238 241 244;
-  --surface: 255 255 255;
-  --sunken: 246 248 250;
-  --line: 218 224 231;
-  --ink: 20 29 42;
-  --muted: 98 110 126;
-  --brand: 14 124 123;
-  --brand-ink: 255 255 255;
-  --rail: 17 27 46;
-  --rail-ink: 190 201 217;
-  --good: 22 130 84;
-  --warn: 176 100 8;
-  --bad: 188 48 48;
-}
-:root[data-theme="dark"] {
-  --canvas: 11 16 25;
-  --surface: 19 26 38;
-  --sunken: 15 21 31;
-  --line: 40 51 68;
-  --ink: 228 233 241;
-  --muted: 140 153 171;
-  --brand: 56 189 180;
-  --brand-ink: 6 24 28;
-  --rail: 8 12 20;
-  --rail-ink: 160 173 191;
-  --good: 74 202 142;
-  --warn: 232 172 70;
-  --bad: 242 120 120;
+  color-scheme: light;
+  --canvas: 244 241 234;
+  --surface: 251 250 246;
+  --sunken: 238 234 225;
+  --line: 220 214 202;
+  --control: 140 132 120;
+  --ink: 30 27 24;
+  --muted: 107 100 90;
+  --accent: 122 46 42;
+  --accent-hover: 105 38 34;
+  --good: 63 107 78;
+  --warn: 176 122 30;
+  --warn-ink: 138 95 18;
+  --bad: 158 59 50;
+  --info: 61 90 115;
 }
 
 @layer base {
-  html { font-size: 15px; }
-  body {
-    @apply bg-canvas font-sans text-ink antialiased;
-  }
-  /* Tabular figures only where columns must align; elsewhere they widen commas. */
-  table, .num { font-variant-numeric: tabular-nums; }
-  :focus-visible { outline: 2px solid rgb(var(--brand)); outline-offset: 2px; border-radius: 4px; }
-  * { scrollbar-width: thin; scrollbar-color: rgb(var(--line)) transparent; }
+  html { font-size: 16px; }
+  body { @apply bg-canvas font-sans text-sm text-ink antialiased; }
+  h1, h2, h3 { text-wrap: balance; }
+  th { text-align: left; }
+  :focus-visible { outline: 2px solid rgb(var(--accent)); outline-offset: 2px; border-radius: 4px; }
+  :target, :focus { scroll-margin-top: 4.5rem; }
+  button, a, input, select { touch-action: manipulation; }
+  button:not(:disabled), [role="tab"], summary { cursor: pointer; }
+  dialog { color: inherit; }
+  dialog::backdrop { background: rgb(var(--ink) / 0.38); }
 }
 
 @layer components {
-  .field {
-    @apply h-9 w-full rounded-md border border-line bg-surface px-2.5 text-sm text-ink placeholder:text-muted;
-  }
+  .font-num, .num { font-variant-numeric: tabular-nums lining-nums; }
+  .num { @apply text-right; }
+
+  /* Buttons: no icons (design-system.md). */
   .btn {
-    @apply inline-flex h-9 items-center justify-center gap-1.5 rounded-md border border-line bg-surface px-3 text-sm font-medium text-ink transition-colors hover:bg-sunken disabled:cursor-not-allowed disabled:opacity-50;
+    @apply inline-flex h-11 items-center justify-center rounded border border-control bg-transparent px-3.5 text-sm font-medium text-ink md:h-8;
+    transition: background-color 120ms theme("transitionTimingFunction.out"), transform 100ms theme("transitionTimingFunction.out");
   }
-  .btn-primary {
-    @apply border-transparent bg-brand text-brand-ink hover:opacity-90;
+  .btn:hover:not(:disabled) { background-color: rgb(var(--ink) / 0.05); }
+  .btn:active:not(:disabled) { transform: translateY(1px); }
+  .btn:disabled { @apply cursor-not-allowed border-dashed border-line text-muted; }
+  .btn-primary { @apply border-brand bg-brand text-brand-ink; }
+  .btn-primary:hover:not(:disabled) { background-color: rgb(var(--accent-hover)); }
+  .btn-primary:disabled { @apply border-line bg-sunken text-muted; }
+  .btn-danger { @apply border-bad text-bad; }
+  .btn-text { @apply border-transparent px-1.5; }
+  .btn-text:hover:not(:disabled) { @apply bg-transparent underline; }
+  .btn-sm { @apply h-8 px-2.5 text-table; }
+
+  .field {
+    @apply h-11 w-full min-w-0 rounded border border-control bg-surface px-2.5 text-base text-ink placeholder:text-muted md:h-8 md:text-sm;
   }
-  .num { @apply text-right tabular-nums; }
+  .field:disabled { @apply cursor-not-allowed border-dashed border-line text-muted; }
+  .field-error { @apply border-bad; }
+
+  .chip { @apply inline-flex h-[26px] items-center gap-1.5 rounded border border-control bg-surface px-2 text-table; }
+  .chip button { @apply px-0.5 text-muted hover:text-ink; }
+
+  /* Tables: ruled, not boxed. */
+  .tbl { @apply w-full border-collapse text-table; }
+  .tbl thead th { @apply sticky top-11 z-[1] whitespace-nowrap border-b border-ink bg-canvas px-3 py-2 font-medium text-muted; }
+  .tbl td { @apply border-b border-line px-3 align-middle; padding-top: var(--row-pad, 10px); padding-bottom: var(--row-pad, 10px); }
+  .tbl.dense { --row-pad: 5px; }
+  .tbl tbody tr:hover td { background-color: rgb(var(--ink) / 0.035); }
+  .tbl tbody tr[aria-selected="true"] td { background-color: rgb(var(--accent) / 0.06); }
+  .tbl tbody tr[aria-selected="true"] td:first-child { box-shadow: inset 2px 0 0 rgb(var(--accent)); }
+  .tbl tbody tr[data-open] { cursor: pointer; }
+
+  /* Sticky headers only work without a scrolling ancestor; inside a scroll container they stay in flow. */
+  .scroll-x .tbl thead th { position: static; }
+
+  /* Status: square mark plus word, never a pill. */
+  .st { @apply inline-flex items-center gap-1.5 whitespace-nowrap text-table; }
+  .st::before { content: ""; width: 7px; height: 7px; background: currentColor; display: inline-block; }
+
+  /* Scroll cues for wide report tables. */
+  .scroll-x {
+    overflow-x: auto;
+    background:
+      linear-gradient(to right, rgb(var(--canvas)) 30%, rgb(var(--canvas) / 0)) left center / 28px 100% no-repeat local,
+      linear-gradient(to left, rgb(var(--canvas)) 30%, rgb(var(--canvas) / 0)) right center / 28px 100% no-repeat local,
+      radial-gradient(farthest-side at 0 50%, rgb(var(--ink) / 0.2), transparent) left center / 10px 100% no-repeat scroll,
+      radial-gradient(farthest-side at 100% 50%, rgb(var(--ink) / 0.2), transparent) right center / 10px 100% no-repeat scroll;
+  }
+}
+
+/* Feedback motion only: drawer, dialog, menu, toast. Opacity and transform. */
+@keyframes drawer-in { from { transform: translateX(24px); opacity: 0; } to { transform: none; opacity: 1; } }
+@keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes pop-in { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
+.drawer-in { animation: drawer-in 200ms cubic-bezier(0.2, 0, 0, 1) 1; }
+.fade-in { animation: fade-in 150ms cubic-bezier(0.2, 0, 0, 1) 1; }
+.pop-in { animation: pop-in 150ms cubic-bezier(0.2, 0, 0, 1) 1; }
+dialog[open] { animation: fade-in 150ms cubic-bezier(0.2, 0, 0, 1) 1; }
+
+/* Narrow screens: list rows stack (number and total; customer and date; the rest below). */
+@media (max-width: 799px) {
+  .tbl.stack { display: block; }
+  .tbl.stack thead { display: none; }
+  .tbl.stack tbody { display: block; }
+  .tbl.stack tr { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 2px 12px; padding: 12px 0; border-bottom: 1px solid rgb(var(--line)); }
+  .tbl.stack td { display: block; border: 0 !important; padding: 0 !important; text-align: left; background: transparent !important; box-shadow: none !important; }
+  .tbl.stack td[data-m="t"] { grid-column: 1; grid-row: 1; font-weight: 600; }
+  .tbl.stack td[data-m="v"] { grid-column: 2; grid-row: 1; font-weight: 600; text-align: right; }
+  .tbl.stack td[data-m="s"] { grid-column: 1; grid-row: 2; }
+  .tbl.stack td[data-m="d"] { grid-column: 2; grid-row: 2; text-align: right; color: rgb(var(--muted)); }
+  .tbl.stack td[data-m="x"] { grid-column: 1 / -1; }
+  .tbl.stack td[data-m="x"][data-l]::before { content: attr(data-l) ": "; color: rgb(var(--muted)); }
+  .tbl.stack td[data-m="h"] { display: none; }
+  .tbl.stack tbody tr[aria-selected="true"] { background: rgb(var(--accent) / 0.06); }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  * { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+  *, *::before, *::after { animation: none !important; transition: none !important; }
 }

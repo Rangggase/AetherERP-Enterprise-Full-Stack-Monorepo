@@ -14,8 +14,6 @@ interface Ctx {
   branchId: number | null; // null = consolidated
   setBranchId: (id: number | null) => void;
   period: Period | null;
-  theme: "light" | "dark";
-  toggleTheme: () => void;
 }
 
 const SessionContext = createContext<Ctx | null>(null);
@@ -42,13 +40,6 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     const v = readStored("aether.branch");
     return v ? Number(v) : null;
   });
-  const [theme, setTheme] = useState<"light" | "dark">(() =>
-    readStored("aether.theme") === "dark" || (!readStored("aether.theme") && window.matchMedia("(prefers-color-scheme: dark)").matches) ? "dark" : "light",
-  );
-
-  useEffect(() => {
-    document.documentElement.dataset.theme = theme;
-  }, [theme]);
 
   useEffect(() => {
     const out = () => {
@@ -93,15 +84,8 @@ export function SessionProvider({ children }: { children: ReactNode }) {
         writeStored("aether.branch", id === null ? "" : String(id));
       },
       period: [...open].reverse().find((p) => p.start_date <= today()) ?? open[0] ?? null,
-      theme,
-      toggleTheme: () =>
-        setTheme((t) => {
-          const n = t === "dark" ? "light" : "dark";
-          writeStored("aether.theme", n);
-          return n;
-        }),
     };
-  }, [authed, meQ.data, meQ.isLoading, branchesQ.data, periodsQ.data, branchId, theme, signIn, signOut]);
+  }, [authed, meQ.data, meQ.isLoading, branchesQ.data, periodsQ.data, branchId, signIn, signOut]);
 
   return <SessionContext.Provider value={value}>{children}</SessionContext.Provider>;
 }
