@@ -1,0 +1,36 @@
+<!doctype html><html lang="id"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dasbor keuangan · AetherERP v2 (konsep)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,500;8..60,600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="v2.css"></head><body class="">
+<div class="app">
+<nav class="side" aria-label="Menu utama"><div class="brand">AetherERP</div>
+<a href="#" aria-current="page">Dasbor</a>
+<h6>Pengadaan</h6><a href="#">Pesanan pembelian</a><a href="#">Penerimaan barang</a><a href="#">Pemasok</a>
+<h6>Gudang</h6><a href="#">Produk</a><a href="#">Level stok</a><a href="#">Kartu stok</a><a href="#">Transfer antar gudang</a><a href="#">Perakitan</a><a href="#">Saran pesan ulang</a>
+<h6>Penjualan</h6><a href="#">Pesanan penjualan</a><a href="#">Retur</a><a href="#">Pelanggan</a>
+<h6>Akuntansi</h6><a href="#">Jurnal umum</a><a href="#">Faktur &amp; tagihan</a><a href="#">Laporan keuangan</a><a href="#">Periode fiskal</a>
+<h6>Sistem</h6><a href="#">Log audit</a><a href="#">Pengguna &amp; peran</a></nav>
+<div><header class="top"><button class="btn text menu-btn">Menu</button><div class="crumbs"><b>Dasbor</b></div><div class="sp"></div>
+<span class="pick hide-m">Cabang <b>Semua cabang</b></span><span class="pick hide-m">Periode <b>2026-11 · terbuka</b></span>
+<div class="search" role="search">Cari dokumen, produk, pelanggan <kbd>/</kbd></div><span class="user">System Admin</span></header>
+<main><div class="head"><div><h1>Dasbor</h1><div class="sub">Rabu, 18 November 2026 · semua cabang · Anda melihat tampilan Manajer keuangan</div></div><a class="btn primary" href="#">Buat jurnal</a></div>
+<div class="cols"><div>
+<h2>Perlu tindakan</h2>
+<ul class="act">
+<li><a href="#"><span class="n">4</span><span class="t">faktur piutang lewat jatuh tempo<small>Rp34,5 jt · tertua INV-2026-000019, terlambat 66 hari</small></span><span class="go">Tinjau</span></a></li>
+<li><a href="#"><span class="n">1</span><span class="t">pesanan terkirim belum difaktur<small>SO-2026-000023 · Toko Digital Makmur · Rp1,95 jt</small></span><span class="go">Buat faktur</span></a></li>
+<li><a href="#"><span class="n">7</span><span class="t">pesanan pembelian diterima belum ditagih<small>Rp49,8 jt menunggu tagihan pemasok</small></span><span class="go">Tinjau</span></a></li>
+<li><a href="#"><span class="n">1</span><span class="t">tagihan pemasok jatuh tempo 5 Des<small>BILL-2026-000006 · Rp44,2 jt · 17 hari lagi</small></span><span class="go">Bayar</span></a></li>
+</ul>
+<div class="rule"><h2>Pendapatan bersih November</h2><div class="big">Rp41,4 jt</div><div class="sub">naik 14,1% dari Oktober (Rp36,3 jt), setelah satu retur Rp90.000</div>
+<div style="margin-top:20px"><svg class='chart' viewBox='0 0 700 224' role='img' aria-label='Pendapatan dan harga pokok penjualan, Juni sampai November 2026, dalam jutaan rupiah' width='100%'><line x1='64' x2='564' y1='188' y2='188' stroke='#DCD6CA'/><text x='56' y='192' text-anchor='end'>0</text><line x1='64' x2='564' y1='116.888888888889' y2='116.888888888889' stroke='#DCD6CA'/><text x='56' y='120.888888888889' text-anchor='end'>20</text><line x1='64' x2='564' y1='45.7777777777778' y2='45.7777777777778' stroke='#DCD6CA'/><text x='56' y='49.7777777777778' text-anchor='end'>40</text><text x='64' y='212' text-anchor='middle'>Jun</text><text x='164' y='212' text-anchor='middle'>Jul</text><text x='264' y='212' text-anchor='middle'>Agu</text><text x='364' y='212' text-anchor='middle'>Sep</text><text x='464' y='212' text-anchor='middle'>Okt</text><text x='564' y='212' text-anchor='middle'>Nov</text><polyline fill='none' stroke='#6B645A' stroke-width='2' points='64,166.3 164,158.8 264,147.4 364,143.6 464,135.3 564,124.7'/><polyline fill='none' stroke='#7A2E2A' stroke-width='2' points='64,132.9 164,114.5 264,86.7 364,77.5 464,59 564,40.8'/><circle cx='564' cy='40.8' r='4' fill='#7A2E2A'/><circle cx='564' cy='124.7' r='4' fill='#6B645A'/><text class='lbl' x='574' y='44.8'>Pendapatan 41,4</text><text x='574' y='128.7'>HPP 17,8</text></svg></div><details class='tv'><summary>Lihat sebagai tabel</summary><table class='tbl dense'><thead><tr><th>Bulan</th><th class='r'>Pendapatan (jt)</th><th class='r'>HPP (jt)</th></tr></thead><tbody><tr><td>Jun</td><td class='r'>15,5</td><td class='r'>6,1</td></tr><tr><td>Jul</td><td class='r'>20,7</td><td class='r'>8,2</td></tr><tr><td>Agu</td><td class='r'>28,5</td><td class='r'>11,4</td></tr><tr><td>Sep</td><td class='r'>31,1</td><td class='r'>12,5</td></tr><tr><td>Okt</td><td class='r'>36,3</td><td class='r'>14,8</td></tr><tr><td>Nov</td><td class='r'>41,4</td><td class='r'>17,8</td></tr></tbody></table></details></div>
+</div>
+<aside>
+<h2>Angka lain, bulan ini</h2>
+<dl class="facts"><dt>Laba kotor</dt><dd>Rp23,6 jt · margin 57,0%</dd><dt>Piutang berjalan</dt><dd>Rp75,7 jt</dd><dt>Lewat jatuh tempo</dt><dd>Rp34,5 jt</dd><dt>Utang usaha</dt><dd>Rp44,2 jt</dd><dt>Kas dan bank</dt><dd>Rp1,84 M</dd><dt>Nilai persediaan FIFO</dt><dd>Rp207,2 jt</dd></dl>
+<div class="rule"><h2>Periode</h2><p class="sub" style="margin:0">2026-11 terbuka. Tutup bulan sebelumnya berurutan sebelum menutup tahun.</p></div>
+<div class="rule"><h2>Aktivitas terakhir</h2>
+<div style="font-size:13px"><div>Retur penjualan dicatat<div class="muted">System Admin · 16 Nov, 01.08</div></div><div style="margin-top:8px">Pengiriman dibuat<div class="muted">Warehouse Staff · 16 Nov, 01.07</div></div></div></div>
+</aside></div>
+</main></div></div></body></html>

@@ -1,0 +1,34 @@
+<!doctype html><html lang="id"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dasbor gudang · AetherERP v2 (konsep)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,500;8..60,600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="v2.css"></head><body class="">
+<div class="app">
+<nav class="side" aria-label="Menu utama"><div class="brand">AetherERP</div>
+<a href="#" aria-current="page">Dasbor</a>
+<h6>Pengadaan</h6><a href="#">Pesanan pembelian</a><a href="#">Penerimaan barang</a><a href="#">Pemasok</a>
+<h6>Gudang</h6><a href="#">Produk</a><a href="#">Level stok</a><a href="#">Kartu stok</a><a href="#">Transfer antar gudang</a><a href="#">Perakitan</a><a href="#">Saran pesan ulang</a>
+<h6>Penjualan</h6><a href="#">Pesanan penjualan</a><a href="#">Retur</a><a href="#">Pelanggan</a>
+<h6>Akuntansi</h6><a href="#">Jurnal umum</a><a href="#">Faktur &amp; tagihan</a><a href="#">Laporan keuangan</a><a href="#">Periode fiskal</a>
+<h6>Sistem</h6><a href="#">Log audit</a><a href="#">Pengguna &amp; peran</a></nav>
+<div><header class="top"><button class="btn text menu-btn">Menu</button><div class="crumbs"><b>Dasbor</b></div><div class="sp"></div>
+<span class="pick hide-m">Cabang <b>Semua cabang</b></span><span class="pick hide-m">Periode <b>2026-11 · terbuka</b></span>
+<div class="search" role="search">Cari dokumen, produk, pelanggan <kbd>/</kbd></div><span class="user">System Admin</span></header>
+<main><div class="head"><div><h1>Dasbor</h1><div class="sub">Rabu, 18 November 2026 · Gudang Surabaya · Anda melihat tampilan Staf gudang</div></div><a class="btn primary" href="#">Buat transfer</a></div>
+<div class="cols"><div>
+<h2>Perlu tindakan</h2>
+<ul class="act">
+<li><a href="#"><span class="n">1</span><span class="t">pesanan terkonfirmasi menunggu pengiriman<small>SO-2026-000022 · PT Retail Sentosa · 120 USB-C Cable · stok sudah dicadangkan</small></span><span class="go">Kirim</span></a></li>
+<li><a href="#"><span class="n">1</span><span class="t">pesanan pembelian disetujui menunggu barang<small>PO-2026-000015 · CV Sinar Elektronik · Rp7,4 jt</small></span><span class="go">Terima barang</span></a></li>
+<li><a href="#"><span class="n">1</span><span class="t">transfer dalam perjalanan ke Gudang Bandung<small>TR-2026-000003 · 4 Smart Hub Controller</small></span><span class="go">Lihat</span></a></li>
+<li><a href="#"><span class="n">1</span><span class="t">transfer diminta belum dikirim<small>TR-2026-000002 · 60 USB-C Cable ke Gudang Bandung</small></span><span class="go">Kirim</span></a></li>
+</ul>
+<div class="rule"><h2>Stok di bawah titik pesan ulang</h2>
+<table class="tbl"><thead><tr><th>SKU</th><th>Produk</th><th>Gudang</th><th class="r">Tersedia</th><th class="r">Titik pesan ulang</th></tr></thead>
+<tbody><tr><td>FG-CAB-01</td><td>USB-C Cable 1m</td><td>Gudang Bandung</td><td class="r">100</td><td class="r">200</td></tr></tbody></table>
+<p class="sub">Satu item lain di atas titik pesan ulang. Lihat <a href="#">Saran pesan ulang</a> untuk jumlah yang disarankan.</p></div>
+</div>
+<aside><h2>Persediaan</h2><div class="big" style="font-size:40px;line-height:44px">Rp207,2 jt</div><div class="sub">nilai lapisan FIFO, semua gudang</div>
+<dl class="facts"><dt>Dicadangkan pesanan</dt><dd>120 pcs</dd><dt>Transfer aktif</dt><dd>2</dd><dt>Perintah perakitan draf</dt><dd>0</dd></dl>
+<div class="rule"><h2>Tidak ditampilkan</h2><p class="sub" style="margin:0">Pendapatan, piutang, dan kas tidak muncul di tampilan ini karena peran Staf gudang tidak punya izin menulis di akuntansi.</p></div></aside></div>
+</main></div></div></body></html>

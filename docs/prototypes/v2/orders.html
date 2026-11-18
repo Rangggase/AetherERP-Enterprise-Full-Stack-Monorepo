@@ -1,0 +1,47 @@
+<!doctype html><html lang="id"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pesanan penjualan · AetherERP v2 (konsep)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,500;8..60,600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="v2.css"><style>
+.rows .hd,.rows .r{display:grid;grid-template-columns:150px minmax(0,1fr) 120px 130px 130px;gap:0 16px;align-items:center;padding:0 12px}
+.rows .hd{border-bottom:1px solid var(--ink);padding-top:8px;padding-bottom:8px;color:var(--muted);font-weight:500;font-size:13px;position:sticky;top:44px;background:var(--bg)}
+.rows .hd>:nth-child(4){text-align:right}
+.rows .r{border-bottom:1px solid var(--line);padding-top:10px;padding-bottom:10px;text-decoration:none;font-size:13px;color:inherit}
+.rows .r:hover{background:rgba(30,27,24,.035)} .rows .r.sel{background:rgba(122,46,42,.06);box-shadow:inset 2px 0 0 var(--accent)}
+.rows.dense .r{padding-top:5px;padding-bottom:5px}
+.rows .r>*{grid-row:1}
+.rows .r>:nth-child(1){grid-column:1}.rows .r>:nth-child(3){grid-column:2}.rows .r>:nth-child(4){grid-column:3}.rows .r>:nth-child(2){grid-column:4;text-align:right;font-variant-numeric:tabular-nums}.rows .r>:nth-child(5){grid-column:5}
+@media (max-width:800px){
+.rows .hd{display:none}
+.rows .r{grid-template-columns:minmax(0,1fr) auto;gap:2px 12px;padding:12px 0}
+.rows .r>*{grid-column:auto!important;grid-row:auto!important}
+.rows .r>:nth-child(1){grid-column:1!important;grid-row:1!important;font-weight:600}
+.rows .r>:nth-child(2){grid-column:2!important;grid-row:1!important;font-weight:600}
+.rows .r>:nth-child(3){grid-column:1!important;grid-row:2!important}
+.rows .r>:nth-child(4){grid-column:2!important;grid-row:2!important;text-align:right}
+.rows .r>:nth-child(5){grid-column:1/-1!important;grid-row:3!important}
+.with-drawer main{padding-right:16px}.drawer{display:none}}
+</style></head><body class="with-drawer">
+<div class="app">
+<nav class="side" aria-label="Menu utama"><div class="brand">AetherERP</div>
+<a href="#">Dasbor</a>
+<h6>Pengadaan</h6><a href="#">Pesanan pembelian</a><a href="#">Penerimaan barang</a><a href="#">Pemasok</a>
+<h6>Gudang</h6><a href="#">Produk</a><a href="#">Level stok</a><a href="#">Kartu stok</a><a href="#">Transfer antar gudang</a><a href="#">Perakitan</a><a href="#">Saran pesan ulang</a>
+<h6>Penjualan</h6><a href="#" aria-current="page">Pesanan penjualan</a><a href="#">Retur</a><a href="#">Pelanggan</a>
+<h6>Akuntansi</h6><a href="#">Jurnal umum</a><a href="#">Faktur &amp; tagihan</a><a href="#">Laporan keuangan</a><a href="#">Periode fiskal</a>
+<h6>Sistem</h6><a href="#">Log audit</a><a href="#">Pengguna &amp; peran</a></nav>
+<div><header class="top"><button class="btn text menu-btn">Menu</button><div class="crumbs">Penjualan / <b>Pesanan penjualan</b></div><div class="sp"></div>
+<span class="pick hide-m">Cabang <b>Semua cabang</b></span><span class="pick hide-m">Periode <b>2026-11 · terbuka</b></span>
+<div class="search" role="search">Cari dokumen, produk, pelanggan <kbd>/</kbd></div><span class="user">System Admin</span></header>
+<main><div class="head"><div><h1>Pesanan penjualan</h1><div class="sub">6 dari 26 pesanan · total Rp75,8 jt · 4 lewat jatuh tempo</div></div><a class="btn primary" href="#">Buat pesanan</a></div>
+<div class="tools"><div class="search" style="min-width:220px;background:var(--surface)">Cari nomor atau pelanggan <kbd>/</kbd></div>
+<span class="chip">Status: Terfaktur <button aria-label="Hapus filter status">×</button></span><span class="chip">Cabang: Semua <button aria-label="Hapus filter cabang">×</button></span><a class="btn text" href="#">Tambah filter</a>
+<span class="seg" role="group" aria-label="Kepadatan baris"><span class="on">Nyaman</span><span>Rapat</span></span></div>
+<div class="rows" role="table" aria-label="Pesanan penjualan"><div class="hd" role="row"><span>Nomor</span><span>Pelanggan</span><span>Tanggal</span><span>Total</span><span>Status</span></div><a class='r' href='#'><span>SO-2026-000024</span><span>Rp2.600.000</span><span>Toko Digital Makmur</span><span class='muted'>28 Agu 2026</span><span><span class='st info'>Terfaktur</span></span></a><a class='r' href='#'><span>SO-2026-000018</span><span>Rp285.000</span><span>Andi Pratama</span><span class='muted'>12 Nov 2026</span><span><span class='st info'>Terfaktur</span></span></a><a class='r sel' href='#'><span>SO-2026-000017</span><span>Rp19.750.000</span><span>Toko Digital Makmur</span><span class='muted'>12 Nov 2026</span><span><span class='st info'>Terfaktur</span></span></a><a class='r' href='#'><span>SO-2026-000016</span><span>Rp21.450.000</span><span>PT Retail Sentosa</span><span class='muted'>12 Nov 2026</span><span><span class='st info'>Terfaktur</span></span></a><a class='r' href='#'><span>SO-2026-000014</span><span>Rp17.150.000</span><span>Toko Digital Makmur</span><span class='muted'>12 Okt 2026</span><span><span class='st info'>Terfaktur</span></span></a><a class='r' href='#'><span>SO-2026-000011</span><span>Rp14.550.000</span><span>Toko Digital Makmur</span><span class='muted'>12 Sep 2026</span><span><span class='st info'>Terfaktur</span></span></a></div>
+<div class="pager"><span>Menampilkan 1–6 dari 6</span><span>Halaman 1 dari 1</span></div>
+<aside class="drawer" aria-label="Pratinjau SO-2026-000017"><a class="x" href="#">Tutup · Esc</a>
+<h3>SO-2026-000017</h3><div class="sub">Toko Digital Makmur · Gudang Surabaya</div><div style="margin:12px 0"><span class="st info">Terfaktur</span></div>
+<dl class="facts"><dt>Tanggal pesanan</dt><dd>12 Nov 2026</dd><dt>Total</dt><dd>Rp19.750.000</dd><dt>Faktur</dt><dd>INV-2026-000017</dd><dt>Jatuh tempo</dt><dd>29 Nov 2026 · 11 hari lagi</dd><dt>Sisa tagihan</dt><dd>Rp19.750.000</dd></dl>
+<div class="rule"><h2>Item</h2><table class="tbl dense"><tbody><tr><td>FG-HUB-01 Smart Hub Controller</td><td class="r">26</td></tr><tr><td>FG-CAB-01 USB-C Cable 1m</td><td class="r">60</td></tr><tr><td>SV-INS-01 Installation Service</td><td class="r">1</td></tr></tbody></table></div>
+<div style="display:flex;gap:8px;margin-top:20px"><a class="btn primary" href="#">Buka dokumen</a><a class="btn" href="#">Retur</a></div></aside>
+</main></div></div></body></html>

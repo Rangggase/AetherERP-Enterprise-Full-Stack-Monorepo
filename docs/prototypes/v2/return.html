@@ -1,0 +1,27 @@
+<!doctype html><html lang="id"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Form retur · AetherERP v2 (konsep)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,500;8..60,600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="v2.css"><style>.rtbl td{vertical-align:middle}.rtbl input{width:96px;text-align:right}.two{display:grid;grid-template-columns:200px minmax(0,1fr);gap:16px}
+@media (max-width:800px){.rtbl thead{display:none}.rtbl tr{display:grid;grid-template-columns:1fr 1fr;gap:6px 12px;padding:14px 0;border-bottom:1px solid var(--line)}.rtbl td{border:0!important;padding:0!important;text-align:left!important}.rtbl td:first-child{grid-column:1/-1}.rtbl td[data-l]::before{content:attr(data-l) ": ";color:var(--muted)}.rtbl td.in{grid-column:1/-1}.rtbl td.in::before{display:block;margin-bottom:2px}.rtbl input{width:100%}.two{grid-template-columns:minmax(0,1fr)}.fgroup{grid-template-columns:minmax(0,1fr)!important}.rtbl,.rtbl tbody{display:block;width:100%}.bar .sum{display:grid;grid-template-columns:1fr 1fr;gap:8px 16px}.bar .sum>:nth-child(3){grid-column:1/-1}.bar .sum b{font-size:18px}.bar .btn.text{flex:0 0 auto;width:auto;padding:0 12px}}</style></head><body class="">
+<div class="app">
+<nav class="side" aria-label="Menu utama"><div class="brand">AetherERP</div>
+<a href="#">Dasbor</a>
+<h6>Pengadaan</h6><a href="#">Pesanan pembelian</a><a href="#">Penerimaan barang</a><a href="#">Pemasok</a>
+<h6>Gudang</h6><a href="#">Produk</a><a href="#">Level stok</a><a href="#">Kartu stok</a><a href="#">Transfer antar gudang</a><a href="#">Perakitan</a><a href="#">Saran pesan ulang</a>
+<h6>Penjualan</h6><a href="#" aria-current="page">Pesanan penjualan</a><a href="#">Retur</a><a href="#">Pelanggan</a>
+<h6>Akuntansi</h6><a href="#">Jurnal umum</a><a href="#">Faktur &amp; tagihan</a><a href="#">Laporan keuangan</a><a href="#">Periode fiskal</a>
+<h6>Sistem</h6><a href="#">Log audit</a><a href="#">Pengguna &amp; peran</a></nav>
+<div><header class="top"><button class="btn text menu-btn">Menu</button><div class="crumbs">Penjualan / Pesanan penjualan / SO-2026-000017 / <b>Retur</b></div><div class="sp"></div>
+<span class="pick hide-m">Cabang <b>Semua cabang</b></span><span class="pick hide-m">Periode <b>2026-11 · terbuka</b></span>
+<div class="search" role="search">Cari dokumen, produk, pelanggan <kbd>/</kbd></div><span class="user">System Admin</span></header>
+<main><div class="head"><div><div class="sub" style="margin:0 0 4px">Retur dari pesanan</div><h1>SO-2026-000017</h1><div class="sub">Toko Digital Makmur · faktur INV-2026-000017 · sisa tagihan Rp19.750.000</div></div></div>
+<div class="fgroup" style="border-top:0;padding-top:0"><div><h2>Item yang diretur</h2><p>Hanya jumlah yang belum diretur yang bisa dipilih.</p></div>
+<div><table class="tbl rtbl"><thead><tr><th>Produk</th><th class="r">Terjual</th><th class="r">Bisa diretur</th><th class="r">Jumlah retur</th><th class="r">Kredit</th></tr></thead><tbody>
+<tr><td>FG-HUB-01 · Smart Hub Controller<br><span class="muted">Rp650.000 per unit</span></td><td class="r" data-l="Terjual">26</td><td class="r" data-l="Bisa diretur">26</td><td class="r in" data-l="Jumlah retur"><input class="field" value="2" aria-label="Jumlah retur FG-HUB-01"></td><td class="r" data-l="Kredit">1.300.000</td></tr>
+<tr><td>FG-CAB-01 · USB-C Cable 1m<br><span class="muted">Rp45.000 per unit</span></td><td class="r" data-l="Terjual">60</td><td class="r" data-l="Bisa diretur">60</td><td class="r in" data-l="Jumlah retur"><input class="field" value="10" aria-label="Jumlah retur FG-CAB-01"></td><td class="r" data-l="Kredit">450.000</td></tr>
+<tr><td>SV-INS-01 · Installation Service<br><span class="muted">Jasa, tidak mengembalikan stok</span></td><td class="r" data-l="Terjual">1</td><td class="r" data-l="Bisa diretur">1</td><td class="r in" data-l="Jumlah retur"><input class="field" placeholder="0" aria-label="Jumlah retur SV-INS-01"></td><td class="r" data-l="Kredit">–</td></tr></tbody></table></div></div>
+<div class="fgroup"><div><h2>Alasan dan tanggal</h2><p>Alasan tercatat di riwayat retur.</p></div>
+<div class="two"><label class="f">Tanggal retur<input class="field" type="text" value="18/11/2026"></label><label class="f">Alasan<input class="field" value="Kemasan rusak saat pengiriman"></label></div></div>
+<div class="bar"><div class="sum"><div class="muted">Kredit ke pelanggan<b>Rp1.750.000</b></div><div class="muted">Sisa tagihan setelah retur<b>Rp18.000.000</b></div><div class="muted">Biaya stok kembali<b style="font-size:14px;line-height:24px;font-family:var(--sans);font-weight:400">dihitung saat dicatat</b></div></div><a class="btn text" href="#">Batal</a><a class="btn primary" href="#">Catat retur</a></div>
+</main></div></div></body></html>
