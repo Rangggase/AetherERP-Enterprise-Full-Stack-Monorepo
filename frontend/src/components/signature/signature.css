@@ -1,0 +1,7 @@
+/* Momen khas yang dipakai di banyak halaman. Momen berat punya berkas CSS sendiri yang ikut potongan kodenya. */
+
+/* M3 Angka Mekanis */
+.mn { display: inline-block; white-space: nowrap; font-variant-numeric: tabular-nums lining-nums; }
+.mn-cell { display: inline-block; height: 1lh; overflow: hidden; vertical-align: bottom; }
+.mn-strip { display: flex; flex-direction: column; }
+.mn-strip > span { display: block; height: 1lh; }

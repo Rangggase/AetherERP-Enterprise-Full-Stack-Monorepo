@@ -1,0 +1,65 @@
+/* Tabel lembar buku besar (8). Dimuat bersama halaman yang memakainya, bukan di CSS awal. */
+.tbl-sheet { position: relative; background-color: rgb(var(--paper)); background-image: var(--grain-paper); background-blend-mode: multiply; border: 1px solid rgb(var(--rule)); border-radius: var(--radius-panel); box-shadow: var(--elev-1); }
+.tbl { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 0.8125rem; line-height: 1.25rem; }
+.tbl thead th { position: sticky; top: 52px; z-index: var(--z-sticky); padding: 8px 12px; white-space: nowrap; font-weight: 500; color: rgb(var(--ink-muted)); border-bottom: 1px solid rgb(var(--ink)); background: rgb(var(--paper)); }
+.tbl thead th:first-child { border-top-left-radius: var(--radius-panel); }
+.tbl thead th:last-child { border-top-right-radius: var(--radius-panel); }
+.tbl thead th::after { content: ""; position: absolute; inset: 100% 0 auto; height: 6px; background: linear-gradient(rgb(var(--ink) / 0.1), rgb(var(--ink) / 0)); opacity: 0; transition: opacity var(--dur-fast); pointer-events: none; }
+.tbl.is-stuck thead th::after { opacity: 1; }
+.tbl td { padding: var(--row-pad, 10px) 12px; vertical-align: middle; border-bottom: 1px solid rgb(var(--rule) / 0.7); background: rgb(var(--paper)); transition: background-color var(--dur-fast); }
+.tbl tbody tr:last-child td { border-bottom: 0; }
+.tbl.dense, :root[data-density="compact"] .tbl { --row-pad: 5px; }
+.tbl .code, .tbl td.code { font-family: var(--font-mono); font-size: 0.78rem; }
+.tbl .ck { width: 44px; padding: 0 0 0 4px; }
+.tbl .ck .cb { width: 40px; height: 40px; justify-content: center; margin: -8px 0; }
+.tbl .ck .cb svg { left: 13px; }
+.tbl tbody tr { transition: transform var(--dur-fast) var(--ease-out); }
+.tbl tbody tr:hover td, .tbl tbody tr:focus-visible td, .tbl tbody tr[aria-selected="true"] td { background-color: rgb(var(--highlight)); }
+.tbl tbody tr[data-open]:hover td:first-child, .tbl tbody tr:focus-visible td:first-child, .tbl tbody tr[aria-selected="true"] td:first-child { box-shadow: inset 2px 0 0 rgb(var(--accent)); }
+.tbl tbody tr:focus-visible { outline: 2px solid rgb(var(--accent)); outline-offset: -2px; }
+.tbl tfoot td { padding-top: 10px; padding-bottom: 10px; font-weight: 600; }
+.tbl.ledger tbody tr.sub td { border-top: 1px solid rgb(var(--ink)); }
+.tbl.ledger tbody tr.total td, .tbl tr.total td { border-bottom: 3px double rgb(var(--ink)); }
+.scroll-x .tbl thead th { position: static; }
+@media (min-width: 768px) { :root[data-motion="full"] .tbl tbody tr[data-open]:hover { transform: translateY(var(--lift-hover)); } }
+
+.bulk { position: sticky; bottom: 0; z-index: var(--z-sticky); display: flex; align-items: center; gap: 12px; padding: 6px 12px; border-radius: 0 0 var(--radius-panel) var(--radius-panel); background: rgb(var(--ink)); color: rgb(var(--paper)); font-size: 0.8125rem;
+  opacity: 0; transform: translateY(100%); pointer-events: none; transition: transform var(--dur-base) var(--ease-out), opacity var(--dur-base) var(--ease-out); }
+.bulk.on { opacity: 1; transform: none; pointer-events: auto; }
+.bulk .btn:focus-visible { outline-color: rgb(var(--paper)); }
+.swipe-hint { display: flex; align-items: center; gap: 6px; padding: 0 2px 6px; font-size: 0.78rem; color: rgb(var(--ink-muted)); }
+
+.chip { display: inline-flex; height: 28px; align-items: center; gap: 4px; padding: 0 4px 0 10px; border: 1px solid rgb(var(--rule-strong)); border-radius: 9999px; background: rgb(var(--paper)); font-size: 0.8125rem; }
+.chip button { display: grid; place-items: center; width: 22px; height: 22px; border-radius: 9999px; color: rgb(var(--ink-muted)); }
+.chip button:hover { background: rgb(var(--highlight)); color: rgb(var(--ink)); }
+.chip-toggle { display: inline-flex; min-height: 32px; align-items: center; gap: 6px; padding: 0 12px; border: 1px solid rgb(var(--rule-strong)); border-radius: 9999px; background: rgb(var(--paper)); font-size: 0.8125rem; font-weight: 500; color: rgb(var(--ink)); }
+.chip-toggle[aria-pressed="true"] { background: rgb(var(--ink)); border-color: rgb(var(--ink)); color: rgb(var(--paper)); }
+
+.ledger-paper { position: relative; padding-left: 24px; }
+.ledger-paper::before { content: ""; position: absolute; left: 12px; top: 0; bottom: 0; width: 1px; background: rgb(var(--accent) / 0.25); pointer-events: none; }
+
+@media (max-width: 767px) {
+  .tbl-sheet { overflow-x: auto; }
+  .tbl-sheet .tbl { min-width: 640px; }
+  .tbl-sheet .tbl thead th { position: static; top: auto; }
+  .tbl-sheet .tbl td:first-child, .tbl-sheet .tbl:has(.ck) td:nth-child(2) { white-space: nowrap; }
+  .tbl-sheet .tbl th:first-child, .tbl-sheet .tbl td:first-child { position: sticky; left: 0; z-index: var(--z-sticky); box-shadow: 6px 0 6px -6px rgb(var(--ink) / 0.25); }
+  .tbl-sheet .tbl:has(.ck) th:nth-child(2), .tbl-sheet .tbl:has(.ck) td:nth-child(2) { position: sticky; left: 48px; z-index: var(--z-sticky); box-shadow: 6px 0 6px -6px rgb(var(--ink) / 0.25); }
+  .tbl-sheet .tbl:has(.ck) th:first-child, .tbl-sheet .tbl:has(.ck) td:first-child { box-shadow: none; }
+  .tbl .ck .cb { width: 44px; height: 44px; }
+  .tbl .ck .cb svg { left: 15px; }
+  .bulk { position: fixed; left: 12px; right: 12px; bottom: calc(68px + env(safe-area-inset-bottom)); border-radius: var(--radius-control); box-shadow: var(--elev-3); }
+  main:has(.page-cta) .bulk { bottom: calc(124px + env(safe-area-inset-bottom)); }
+}
+@media (prefers-contrast: more) { .tbl td { border-bottom-color: rgb(var(--rule-strong)); } }
+@media (forced-colors: active) {
+  .tbl-sheet { border: 1px solid CanvasText; }
+  .tbl tbody tr[aria-selected="true"] td:first-child { box-shadow: none; border-left: 3px solid Highlight; }
+}
+@media print {
+  .tbl-sheet, .tbl td, .tbl thead th { background: none !important; border-color: rgb(var(--ink)) !important; }
+  .tbl thead th { position: static !important; color: rgb(var(--ink)) !important; }
+  .tbl td { border-color: rgb(var(--rule-strong)) !important; }
+  .bulk, .swipe-hint { display: none !important; }
+  .ledger-paper::before { background: rgb(var(--rule-strong)) !important; }
+}

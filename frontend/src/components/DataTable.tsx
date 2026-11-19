@@ -12,10 +12,15 @@ import {
 } from "@tanstack/react-table";
 import clsx from "clsx";
 import { useEffect, useId, useRef, useState, type ReactNode } from "react";
+import { setPrefs, usePrefs } from "../lib/preferences";
+import { play } from "../motion/animate";
+import { exitMs } from "../motion/tokens";
 import { Glyph } from "./glyphs";
 import { EmptyState, Skeleton, statusText, type Art } from "./ui";
+import "../styles/tables.css";
+import "../styles/controls.css";
 
-type Meta = { right?: boolean; m?: "t" | "v" | "s" | "d" | "x" | "h" };
+type Meta = { right?: boolean; code?: boolean; m?: "t" | "v" | "s" | "d" | "x" | "h" };
 const metaOf = (c: { columnDef: { meta?: unknown } }): Meta => (c.columnDef.meta ?? {}) as Meta;
 
 interface Props<T> {
@@ -37,6 +42,8 @@ interface Props<T> {
   selectable?: boolean;
   /** Filters to start with, e.g. from the URL; shown as removable chips. */
   initialFilters?: ColumnFiltersState;
+  /** Baris total di kaki tabel (garis ganda). */
+  foot?: ReactNode;
 }
 
 /** Column filter: "contains", or an exact match when the value starts with "=" (used by links that open a list on one status). */
@@ -45,10 +52,6 @@ const includes = (row: Row<any>, id: string, value: string) => {
   if (v.startsWith("=")) return String(row.getValue(id) ?? "") === v.slice(1);
   return String(row.getValue(id) ?? "").toLowerCase().includes(v.toLowerCase());
 };
-const readDensity = (): "comfortable" | "dense" => {
-  try { return localStorage.getItem("aether.density") === "dense" ? "dense" : "comfortable"; } catch { return "comfortable"; }
-};
-const reduced = () => window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
 
 function Check({ checked, indeterminate, onChange, label }: { checked: boolean; indeterminate?: boolean; onChange: (v: boolean) => void; label: string }) {
   const ref = useRef<HTMLInputElement>(null);
@@ -61,23 +64,20 @@ function Check({ checked, indeterminate, onChange, label }: { checked: boolean; 
   );
 }
 
-export function DataTable<T>({ data, columns, loading, empty = "Belum ada data.", emptyAction, emptyArt, pageSize = 15, label, onOpen, selectedId, toolbar, selectable, initialFilters }: Props<T>) {
+export function DataTable<T>({ data, columns, loading, empty = "Belum ada data.", emptyAction, emptyArt, pageSize = 15, label, onOpen, selectedId, toolbar, selectable, initialFilters, foot }: Props<T>) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [filters, setFilters] = useState<ColumnFiltersState>(initialFilters ?? []);
   const [global, setGlobal] = useState("");
   const [adding, setAdding] = useState(false);
   const [newCol, setNewCol] = useState("");
   const [newVal, setNewVal] = useState("");
-  const [density, setDensityState] = useState(readDensity);
+  const { density } = usePrefs();
   const [picked, setPicked] = useState<Set<string>>(new Set());
   const [stuck, setStuck] = useState(false);
   const sentinel = useRef<HTMLDivElement>(null);
   const searchId = useId();
-
-  const setDensity = (d: "comfortable" | "dense") => {
-    setDensityState(d);
-    try { localStorage.setItem("aether.density", d); } catch { /* ignore */ }
-  };
+  /** Kepadatan adalah preferensi tampilan per perangkat (juga di Akun saya). */
+  const setDensity = (d: "comfortable" | "compact") => setPrefs({ density: d });
 
   const table = useReactTable({
     data,
@@ -143,7 +143,7 @@ export function DataTable<T>({ data, columns, loading, empty = "Belum ada data."
   function removeChip(e: React.MouseEvent<HTMLButtonElement>, id: string) {
     const chip = e.currentTarget.closest(".chip") as HTMLElement | null;
     const go = () => setFilters((x) => x.filter((y) => y.id !== id));
-    const a = chip?.animate(reduced() ? [{ opacity: 1 }, { opacity: 0 }] : [{ opacity: 1, transform: "none" }, { opacity: 0, transform: "scale(.92)" }], { duration: 110, easing: "cubic-bezier(0.4, 0, 1, 1)" });
+    const a = play(chip, [{ opacity: 1, transform: "none" }, { opacity: 0, transform: "scale(.92)" }], { duration: exitMs("dur-fast"), easing: "in", reduced: [{ opacity: 1 }, { opacity: 0 }] });
     if (a) a.onfinish = go; else go();
   }
   const shown = (id: string, v: unknown) => { const t = String(v).replace(/^=/, ""); return id === "status" ? statusText(t) : t; };
@@ -157,7 +157,7 @@ export function DataTable<T>({ data, columns, loading, empty = "Belum ada data."
         <label htmlFor={searchId} className="sr-only">Cari di {label}</label>
         <span className="relative w-full max-w-[280px] max-md:max-w-none">
           <Glyph name="cari" size={16} className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-muted" />
-          <input id={searchId} className="field pl-8" name="search" type="search" placeholder="Cari di daftar ini" autoComplete="off" spellCheck={false} value={global} onChange={(e) => setGlobal(e.target.value)} />
+          <input id={searchId} data-page-search="" className="field pl-8" name="search" type="search" placeholder="Cari di daftar ini (/)" autoComplete="off" spellCheck={false} value={global} onChange={(e) => setGlobal(e.target.value)} />
         </span>
         {filters.map((f) => (
           <span key={f.id} className="chip pop-in">
@@ -180,8 +180,8 @@ export function DataTable<T>({ data, columns, loading, empty = "Belum ada data."
         <div className="ml-auto flex items-center gap-3">
           <button type="button" className="btn btn-text btn-sm" onClick={() => exportCsv()} disabled={loading || total === 0}><Glyph name="ekspor" size={16} />Ekspor CSV</button>
           <div role="group" aria-label="Kepadatan baris" className="seg hidden md:inline-flex">
-            {(["comfortable", "dense"] as const).map((d) => (
-              <button key={d} type="button" aria-pressed={density === d} onClick={() => setDensity(d)}>{d === "dense" ? "Rapat" : "Nyaman"}</button>
+            {(["comfortable", "compact"] as const).map((d) => (
+              <button key={d} type="button" aria-pressed={density === d} onClick={() => setDensity(d)}>{d === "compact" ? "Rapat" : "Nyaman"}</button>
             ))}
           </div>
         </div>
@@ -198,7 +198,7 @@ export function DataTable<T>({ data, columns, loading, empty = "Belum ada data."
           <div ref={sentinel} aria-hidden="true" />
           <p className="swipe-hint md:hidden"><Glyph name="kirim" size={16} />Geser ke kanan untuk kolom lain</p>
           <div className="tbl-sheet">
-            <table className={clsx("tbl", density === "dense" && "dense", stuck && "is-stuck")} aria-label={label}>
+            <table className={clsx("tbl", stuck && "is-stuck")} aria-label={label}>
               <thead>
                 {table.getHeaderGroups().map((hg) => (
                   <tr key={hg.id}>
@@ -232,12 +232,13 @@ export function DataTable<T>({ data, columns, loading, empty = "Belum ada data."
                       onKeyDown={(e) => { if (open && e.key === "Enter" && e.target === e.currentTarget) { e.preventDefault(); open(); } }}>
                       {selectable && <td className="ck"><Check label={`Pilih baris ${String(r.getVisibleCells()[0]?.getValue() ?? r.id)}`} checked={on} onChange={(v) => toggle(r.id, v)} /></td>}
                       {r.getVisibleCells().map((c) => (
-                        <td key={c.id} className={metaOf(c.column).right ? "num" : ""}>{flexRender(c.column.columnDef.cell, c.getContext())}</td>
+                        <td key={c.id} className={clsx(metaOf(c.column).right && "num", metaOf(c.column).code && "code")}>{flexRender(c.column.columnDef.cell, c.getContext())}</td>
                       ))}
                     </tr>
                   );
                 })}
               </tbody>
+              {foot && <tfoot>{foot}</tfoot>}
             </table>
             {selectable && (
               <div className={clsx("bulk", live.length > 0 && "on")} aria-hidden={live.length === 0}>

@@ -1,6 +1,8 @@
 import clsx from "clsx";
 import { useEffect, useRef, useState, type ButtonHTMLAttributes, type ReactNode } from "react";
 import { Link } from "react-router-dom";
+import { play } from "../motion/animate";
+import { ms } from "../motion/tokens";
 import { Glyph, Tick, type GlyphName } from "./glyphs";
 
 type Tone = "primary" | "secondary" | "danger" | "text";
@@ -8,8 +10,6 @@ type Visual = "idle" | "loading" | "success" | "error";
 
 /** The parts of a TanStack Query mutation a key needs to show the real request state. */
 export interface MutationLike { status: "idle" | "pending" | "success" | "error"; submittedAt?: number }
-
-const reduced = () => typeof window !== "undefined" && window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
 
 /**
  * Key state follows the request: pending → loading; a new success → tick for 1.5 s; a new error → "!" for 2 s.
@@ -28,7 +28,7 @@ function useVisual(m?: MutationLike, pending?: boolean): Visual {
     seen.current = sig;
     if (status === "success" || status === "error") {
       setFlash(status);
-      const t = window.setTimeout(() => setFlash(null), status === "success" ? 1500 : 2000);
+      const t = window.setTimeout(() => setFlash(null), ms(status === "success" ? "hold-success" : "hold-error"));
       return () => window.clearTimeout(t);
     }
     setFlash(null);
@@ -44,14 +44,14 @@ function Inner({ glyph, visual, children, size }: { glyph?: GlyphName; visual: V
   return (
     <>
       {glyph && (
-        <span className="cap" aria-hidden="true">
+        <span className="cap-key" aria-hidden="true">
           {visual === "success" ? <Tick size={g} /> : <Glyph name={visual === "error" ? "gagal" : glyph} size={g} />}
         </span>
       )}
       <span className="label">{children}</span>
       {/* The label is hidden while loading, so the key keeps a spoken state. */}
       {visual === "loading" && <span className="sr-only">Memproses…</span>}
-      <span className="bar" aria-hidden="true" />
+      <span className="bar" aria-hidden="true" data-loading-indicator="" />
     </>
   );
 }
@@ -72,7 +72,7 @@ export function Key({ tone = "secondary", glyph, size, m, pending, className, on
   const visual = useVisual(m, pending);
   const ref = useRef<HTMLButtonElement>(null);
   useEffect(() => {
-    if (visual === "error" && !reduced()) ref.current?.animate([0, -4, 4, -4, 4, 0].map((x) => ({ transform: `translateX(${x}px)` })), { duration: 300, easing: "linear" });
+    if (visual === "error") play(ref.current, [0, -4, 4, -4, 4, 0].map((x) => ({ transform: `translateX(${x}px)` })), { duration: "dur-shake", easing: "linear", reduced: null });
   }, [visual]);
   const loading = visual === "loading";
   return (

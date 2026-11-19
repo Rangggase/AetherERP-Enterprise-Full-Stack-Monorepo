@@ -6,15 +6,29 @@ Sumber kebenaran untuk melanjutkan pekerjaan. Brief: `docs/brief-ui-v3.md`.
 
 | Fase | Status |
 |---|---|
-| 0. Persiapan dan peta data | Selesai, **menunggu Gerbang 1** |
-| 1. Storyboard dan purwarupa | Belum mulai |
-| 2–9 | Belum mulai |
+| 0. Persiapan dan peta data | Selesai (commit `c1fbc27`) |
+| 1. Storyboard dan purwarupa | Purwarupa langsung menjadi komponen nyata di rute Katalog dan halaman; storyboard diambil dari Katalog (lihat catatan) |
+| 2. Fondasi | Selesai: token, font sendiri, tekstur, gerak dan preferensi, saklar fitur, Katalog, skrip kontras |
+| 3. Komponen dan kerangka | Selesai |
+| 4. Gerak dan ruang (M2, M3, M4) | Selesai, diuji skrip e2e |
+| 5. Logika akuntansi (M1, M5, M7) | Selesai (M1 dan M5 terbatas: relasi id) |
+| 6. Persediaan dan aliran (M6, M8, M9) | M8 selesai; M6 dan M9 ditunda (tidak ada data API) |
+| 7. Penyapuan halaman | Berjalan |
+| 8. Opsional | O2 dan O3 dikerjakan (bawaan mati); O1 tidak |
+| 9. Pengerasan | Belum |
 
 ## Keputusan pengguna
 
 | Tanggal | Keputusan |
 |---|---|
 | 20 Nov 2026 | D1: relasi dokumen hanya dari id eksplisit API. Nomor dokumen di deskripsi jurnal **tidak** dipakai sebagai relasi. Akibat: M1 hanya untuk retur (`journal_entry_id` di daftar retur) dan laci dari struk M2 (`journal_entry_id` di respons POST); M5 tanpa langkah pengiriman. |
+| 20 Nov 2026 | Pengguna: "kerjakan sesuai yang tertera, tidak usah bertanya, semua izin diperbolehkan". Gerbang 1–5 tidak lagi menunggu jawaban; keputusan di bawah diambil Claude atas izin itu dan bisa dibatalkan pengguna. |
+| 20 Nov 2026 | D2 (Claude): M6 dan M9 ditunda, saklar `fifoStack` dan `goodsFlow` mati. Laci produk dan dasbor menyebut alasannya. |
+| 20 Nov 2026 | D3 (Claude): tebakan faktur dari pesanan (v2 `Details.tsx` dan form retur) dihapus. Detail pesanan menampilkan "Faktur pelanggan" (relasi `customer_id`) dengan Bayar penuh; form retur hanya menyebut faktur bila retur sebelumnya menautkannya lewat `invoice_id`. |
+| 20 Nov 2026 | D4 (Claude): arketipe dasbor dari izin: pimpinan (`users.manage`), keuangan, pengadaan, gudang, penjualan, auditor. |
+| 20 Nov 2026 | D5 (Claude): commit lokal per fase di `ui-v3`, author Rangggase, tanpa atribusi AI. Tidak push, tidak merge ke `main`. |
+| 20 Nov 2026 | Dependensi (Claude): `motion` tidak dipakai (WAAPI + CSS, pegas lewat easing `linear()` di `motion/spring.ts`); `three`/`@react-three/fiber` tidak dipakai (O1 tidak dikerjakan); `recharts` dan `lucide-react` yang tidak terpakai dihapus. `@playwright/test` gagal dipasang (ditolak pengaman mode otomatis lingkungan), jadi uji e2e memakai skrip Playwright dari cache npx (`frontend/tests/e2e/run.cjs`). |
+| 20 Nov 2026 | Gerbang 4 (Claude): O2 Cahaya meja dan O3 Suara dikerjakan, bawaan mati di Akun saya. O1 Gudang 3D tidak dikerjakan: data hanya 6 produk, tidak lolos uji akal sehat no. 2 (tidak membuat lebih cepat paham dibanding SVG M8) dan menambah ±150 kB gzip. |
 
 ## Git (20 Nov 2026)
 

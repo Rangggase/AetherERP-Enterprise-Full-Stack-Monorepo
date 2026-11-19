@@ -58,6 +58,8 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     async (email: string, password: string) => {
       await apiLogin(email, password);
       qc.clear();
+      // Profil dimuat sebelum navigasi, agar kerangka aplikasi langsung tampil (M11) dan izin menu sudah benar.
+      await qc.fetchQuery({ queryKey: ["me"], queryFn: () => api<Me>("/auth/me") });
       setAuthed(true);
     },
     [qc],

@@ -1,3 +1,5 @@
+import "../styles/forms.css";
+
 /** Number input with physical − and + keys (C2). Arrow keys step; the keys disable at the limits. The value stays a string so typing is free. */
 export function Stepper({ value, onChange, min = 0, max = Infinity, step = 1, name, label, disabled, invalid }: {
   value: string; onChange: (v: string) => void; min?: number; max?: number; step?: number; name?: string; label: string; disabled?: boolean; invalid?: boolean;

@@ -1,0 +1,21 @@
+/* M8 Gudang Hidup */
+.wh-floor { fill: rgb(var(--highlight)); stroke: rgb(var(--rule-strong)); stroke-width: 1; }
+.wh-slab { fill: rgb(var(--paper)); stroke: rgb(var(--rule-strong)); stroke-width: 1; }
+.wh-frame { fill: none; stroke: rgb(var(--rule-strong)); stroke-width: 0.75; stroke-dasharray: 2 2; }
+.wh-box { outline: none; cursor: pointer; transition: opacity var(--dur-fast) var(--ease-out); }
+.wh-box .wh-lift { transition: transform var(--dur-fast) var(--ease-out); }
+.wh-box:hover .wh-lift, .wh-box:focus-visible .wh-lift, .wh-box.on .wh-lift { transform: translateY(var(--lift-box)); }
+.wh-box.ok { color: rgb(var(--ok)); }
+.wh-box.warn { color: rgb(var(--warn)); }
+.wh-box.bad { color: rgb(var(--bad)); }
+.wh-top { fill: currentColor; fill-opacity: 0.55; stroke: rgb(var(--ink)); stroke-width: 0.75; }
+.wh-left { fill: currentColor; stroke: rgb(var(--ink)); stroke-width: 0.75; }
+.wh-right { fill: currentColor; stroke: rgb(var(--ink)); stroke-width: 0.75; }
+.wh-shade { fill: rgb(var(--ink)); fill-opacity: 0.2; stroke: none; }
+.wh-box.dim { opacity: 0.3; }
+.wh-box:focus-visible .wh-hit { stroke: rgb(var(--accent)); stroke-width: 2; }
+.wh-hit { fill: transparent; stroke: none; }
+.wh-label { font-family: var(--font-mono); font-size: 11px; fill: rgb(var(--ink)); paint-order: stroke; stroke: rgb(var(--canvas)); stroke-width: 3px; stroke-linejoin: round; }
+.wh-rack { font-size: 12px; font-weight: 600; fill: rgb(var(--ink-muted)); }
+.wh-slip { position: absolute; z-index: var(--z-sticky); min-width: 168px; padding: 6px 10px 8px; border: 1px solid rgb(var(--rule)); border-radius: var(--radius-control); background: rgb(var(--paper)); box-shadow: var(--elev-2); font-size: 0.75rem; line-height: 1.1rem; pointer-events: none; transform: translate(-50%, calc(-100% - 8px)); }
+@media (forced-colors: active) { .wh-top, .wh-left, .wh-right { stroke: CanvasText; } .wh-box.dim { opacity: 0.5; } }

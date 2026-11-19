@@ -1,14 +1,14 @@
 import { useEffect, useId, useRef, type ReactNode } from "react";
+import { play } from "../motion/animate";
 import { Glyph, type GlyphName } from "./glyphs";
-
-const reduced = () => window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+import "../styles/tabs.css";
 
 /**
- * Folder tabs (C4): the active tab joins its panel, the others sit lower on a darker paper.
- * Changing tab shifts the panel 8 px toward the new tab with a 220 ms crossfade. Arrow keys, Home and End move.
+ * Tab map berkas (8): tab aktif menyatu dengan panelnya, yang lain sedikit lebih rendah. Jumlah tampil di tab ("Jurnal 4").
+ * Berganti tab menggeser panel 8 px ke arah tab baru dengan crossfade --dur-base; dengan papan ketik hanya crossfade singkat.
  */
 export function FolderTabs<K extends string>({ tabs, active, onChange, label, children, className = "mt-8" }: {
-  tabs: { key: K; label: string; glyph?: GlyphName }[]; active: K; onChange: (k: K) => void; label: string; children: ReactNode; className?: string;
+  tabs: { key: K; label: string; glyph?: GlyphName; count?: number }[]; active: K; onChange: (k: K) => void; label: string; children: ReactNode; className?: string;
 }) {
   const id = useId();
   const btns = useRef<(HTMLButtonElement | null)[]>([]);
@@ -21,10 +21,9 @@ export function FolderTabs<K extends string>({ tabs, active, onChange, label, ch
     if (prev.current === active) return;
     const dir = keys.indexOf(active) > keys.indexOf(prev.current) ? 1 : -1;
     prev.current = active;
-    // Keyboard changes get a short crossfade only: someone moving with arrows should never wait on motion.
-    const quiet = reduced() || byKey.current;
+    const quick = byKey.current;
     byKey.current = false;
-    panel.current?.animate(quiet ? [{ opacity: 0.4 }, { opacity: 1 }] : [{ opacity: 0, transform: `translateX(${8 * dir}px)` }, { opacity: 1, transform: "none" }], { duration: quiet ? 120 : 220, easing: "cubic-bezier(0.2, 0.8, 0.2, 1)" });
+    play(panel.current, quick ? [{ opacity: 0.4 }, { opacity: 1 }] : [{ opacity: 0, transform: `translateX(${8 * dir}px)` }, { opacity: 1, transform: "none" }], { duration: quick ? "dur-fade" : "dur-base" });
   }, [active]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const go = (i: number) => { byKey.current = true; const k = keys[(i + keys.length) % keys.length]!; onChange(k); btns.current[(i + keys.length) % keys.length]?.focus(); };
@@ -42,6 +41,7 @@ export function FolderTabs<K extends string>({ tabs, active, onChange, label, ch
         {tabs.map((t, i) => (
           <button key={t.key} ref={(el) => { btns.current[i] = el; }} type="button" role="tab" id={`${id}-t-${t.key}`} aria-controls={`${id}-p`} aria-selected={active === t.key} tabIndex={active === t.key ? 0 : -1} className="tab" onClick={() => onChange(t.key)}>
             {t.glyph && <Glyph name={t.glyph} size={16} />}{t.label}
+            {t.count !== undefined && <span className="count" aria-label={`${t.count} item`}>{t.count}</span>}
           </button>
         ))}
       </div>

@@ -1,0 +1,61 @@
+/* Font di-host sendiri (subset Latin dari Google Fonts, lisensi OFL). Lihat docs/design-system.md, bagian Tipografi.
+   Nilai override font cadangan dihitung dengan fontTools dari metrik berkas woff2 dan font sistem (lebar rata-rata a–z dan spasi). */
+
+@font-face {
+  font-family: "Source Serif 4";
+  src: url("/fonts/source-serif-4-latin-var.woff2") format("woff2");
+  font-weight: 200 900;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: "IBM Plex Sans";
+  src: url("/fonts/ibm-plex-sans-latin-var.woff2") format("woff2");
+  font-weight: 100 700;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: "IBM Plex Mono";
+  src: url("/fonts/ibm-plex-mono-latin-400.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: "IBM Plex Mono";
+  src: url("/fonts/ibm-plex-mono-latin-500.woff2") format("woff2");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+/* Font cadangan dengan metrik yang disamakan, agar tata letak tidak bergeser saat font asli selesai dimuat. */
+@font-face {
+  font-family: "Source Serif 4 Cadangan";
+  src: local("Georgia");
+  size-adjust: 102.14%;
+  ascent-override: 101.43%;
+  descent-override: 32.8%;
+  line-gap-override: 0%;
+}
+@font-face {
+  font-family: "IBM Plex Sans Cadangan";
+  src: local("Arial"), local("Arial MT");
+  size-adjust: 102.76%;
+  ascent-override: 99.75%;
+  descent-override: 26.76%;
+  line-gap-override: 0%;
+}
+@font-face {
+  font-family: "IBM Plex Mono Cadangan";
+  src: local("Courier New");
+  size-adjust: 99.98%;
+  ascent-override: 102.52%;
+  descent-override: 27.5%;
+  line-gap-override: 0%;
+}

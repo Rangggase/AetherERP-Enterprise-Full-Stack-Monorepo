@@ -8,12 +8,21 @@
     <meta name="color-scheme" content="light" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <title>AetherERP</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,500;8..60,600&display=swap"
-      rel="stylesheet"
-    />
+    <!-- Font di-host sendiri (public/fonts). Dua berkas terpenting dimuat lebih dulu. -->
+    <link rel="preload" href="/fonts/ibm-plex-sans-latin-var.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/fonts/source-serif-4-latin-var.woff2" as="font" type="font/woff2" crossorigin />
+    <!-- Preferensi tampilan diterapkan sebelum render pertama agar tidak berkedip (src/lib/preferences.ts). -->
+    <script>
+      (function () {
+        var d = document.documentElement, p = {};
+        try { p = JSON.parse(localStorage.getItem("aether.prefs") || "{}") || {}; } catch (e) {}
+        var m = p.motion;
+        if (m !== "full" && m !== "reduced" && m !== "minimal") m = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches ? "reduced" : "full";
+        d.setAttribute("data-motion", m);
+        d.setAttribute("data-texture", p.texture === false ? "off" : "on");
+        d.setAttribute("data-density", p.density === "compact" ? "compact" : "comfortable");
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>

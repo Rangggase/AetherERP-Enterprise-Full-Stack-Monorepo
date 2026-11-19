@@ -1,0 +1,14 @@
+/* M10 Tutup Buku: deretan buku periode. */
+.books { display: grid; grid-template-columns: repeat(auto-fill, minmax(112px, 1fr)); gap: 20px 16px; perspective: 1200px; }
+.book { position: relative; height: 136px; border-radius: 2px 6px 6px 2px; transform-style: preserve-3d; }
+.book-pages { position: absolute; inset: 4px 2px 4px 8px; border: 1px solid rgb(var(--rule)); border-radius: 1px 4px 4px 1px; background-color: rgb(var(--paper));
+  background-image: repeating-linear-gradient(to bottom, transparent 0 11px, rgb(var(--rule) / 0.8) 11px 12px); box-shadow: var(--elev-1); }
+.book-cover { position: absolute; inset: 0; display: grid; align-content: space-between; padding: 10px 10px 10px 18px; border-radius: 2px 6px 6px 2px; transform-origin: left center; backface-visibility: hidden;
+  background-color: rgb(var(--paper)); background-image: var(--grain-paper); background-blend-mode: multiply; border: 1px solid rgb(var(--rule-strong)); box-shadow: var(--elev-2); }
+.book-cover::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 9px; border-radius: 2px 0 0 2px; background: rgb(var(--ink) / 0.12); }
+.book[data-state="open"] .book-cover { transform: rotateY(-28deg); box-shadow: var(--elev-1); }
+.book[data-state="open"] .book-cover::before { background: rgb(var(--ok) / 0.55); }
+.book[data-state="closed"] .book-cover::before { background: rgb(var(--ink-muted) / 0.6); }
+.book .month { font-family: var(--font-serif); font-size: 1.0625rem; font-weight: 500; line-height: 1.2; }
+@media (forced-colors: active) { .book-cover, .book-pages { border: 1px solid CanvasText; } }
+@media print { .book[data-state="open"] .book-cover { transform: none; } }

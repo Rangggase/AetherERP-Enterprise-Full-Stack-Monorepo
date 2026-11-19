@@ -1,0 +1,192 @@
+/*
+ * Token UI v3 "Buku Besar Hidup": satu-satunya sumber nilai warna, kedalaman, gerak, lapisan, dan tipografi.
+ * Komponen hanya merujuk token ini (lewat Tailwind atau var()). frontend/scripts/contrast-check.mjs membaca berkas ini.
+ * Warna disimpan sebagai triplet RGB agar Tailwind bisa memberi opasitas: rgb(var(--ink) / 0.5).
+ */
+:root {
+  color-scheme: light;
+
+  /* ---- 5.1 Warna ---- */
+  --canvas: 244 241 234;      /* #F4F1EA latar aplikasi */
+  --paper: 251 250 246;       /* #FBFAF6 lembar, panel */
+  --ink: 30 27 24;            /* #1E1B18 teks utama */
+  --ink-muted: 107 100 90;    /* #6B645A teks sekunder */
+  --rule: 220 214 202;        /* #DCD6CA garis pemisah (dekoratif) */
+  --rule-strong: 134 126 113; /* #867E71 batas kontrol isian */
+  --accent: 122 46 42;        /* #7A2E2A aksi utama, penanda */
+  --accent-deep: 90 32 29;    /* #5A201D tepi bawah tombol, ditekan */
+  --highlight: 239 235 226;   /* #EFEBE2 sorot hover dan aktif */
+  --ok: 63 107 78;            /* #3F6B4E sukses */
+  --warn: 176 122 30;         /* #B07A1E peringatan: isian, garis, ikon */
+  --warn-ink: 138 93 18;      /* #8A5D12 teks peringatan */
+  --bad: 158 59 50;           /* #9E3B32 galat */
+  --info: 61 90 115;          /* #3D5A73 informasi */
+  --pencil: 207 200 187;      /* #CFC8BB kerangka garis pensil (dekoratif) */
+
+  /* Tinta data: maksimal 4 dalam satu visual. */
+  --data-1: var(--accent);    /* marun */
+  --data-2: var(--info);      /* biru tinta */
+  --data-3: var(--ok);        /* hijau lumut */
+  --data-4: var(--warn);      /* oker */
+  --data-5: var(--ink-muted); /* grafit */
+
+  /* Skala umur lapisan, dari tertua ke termuda. Warna label dipilih pickInk(). */
+  --age-1: 90 32 29;     /* #5A201D */
+  --age-2: 122 46 42;    /* #7A2E2A */
+  --age-3: 163 90 79;    /* #A35A4F */
+  --age-4: 201 142 131;  /* #C98E83 */
+  --age-5: 230 199 191;  /* #E6C7BF */
+
+  /* ---- 5.3 Kedalaman: satu cahaya dari atas, bayangan tidak berwarna ---- */
+  --elev-1: 0 1px 0 rgb(var(--ink) / 0.06);
+  --elev-2: 0 1px 1px rgb(var(--ink) / 0.05), 0 8px 18px -8px rgb(var(--ink) / 0.2);
+  --elev-3: 0 2px 4px rgb(var(--ink) / 0.06), 0 20px 48px -16px rgb(var(--ink) / 0.32);
+  --inset: inset 0 1px 2px rgb(var(--ink) / 0.1);
+  --stack-1: translate(3px, 3px);
+  --stack-2: translate(6px, 6px);
+  --key-edge: rgb(var(--ink) / 0.2);
+
+  /* ---- 5.2 Material ---- */
+  --radius-control: 4px;
+  --radius-panel: 8px;
+  --rule-row: 24px; /* garis samar kartu indeks */
+
+  /* ---- 5.4 Tekstur: serat kertas statis (feTurbulence), tidak pernah dianimasikan ---- */
+  --grain-canvas: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .118 0 0 0 0 .106 0 0 0 0 .094 0 0 0 1 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)' opacity='.07'/%3E%3C/svg%3E");
+  --grain-paper: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .118 0 0 0 0 .106 0 0 0 0 .094 0 0 0 1 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)' opacity='.04'/%3E%3C/svg%3E");
+  /* Tinta cap: masker bintik statis. */
+  --ink-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='60'%3E%3Cfilter id='m'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' seed='7'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 -9 7.4'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23m)'/%3E%3C/svg%3E");
+  --chevron: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%231E1B18' stroke-width='2' stroke-linecap='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+
+  /* ---- 5.5 Tipografi ---- */
+  --font-serif: "Source Serif 4", "Source Serif 4 Cadangan", Georgia, serif;
+  --font-sans: "IBM Plex Sans", "IBM Plex Sans Cadangan", Arial, system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", "IBM Plex Mono Cadangan", "Courier New", monospace;
+
+  /* ---- 5.8 Lapisan ---- */
+  --z-base: 0;
+  --z-sticky: 10;
+  --z-rail: 20;
+  --z-topbar: 30;
+  --z-drawer: 40;
+  --z-dialog: 50;
+  --z-palette: 60;
+  --z-receipt: 70;
+
+  /* ---- 6.1 Gerak ---- */
+  --dur-press: 90ms;
+  --dur-fast: 140ms;
+  --dur-base: 220ms;
+  --dur-slow: 360ms;
+  --dur-draw: 600ms;
+  --dur-fade: 120ms;        /* crossfade mode Dikurangi, cadangan transisi ruang */
+  --dur-roll: 260ms;        /* M3 per digit */
+  --stagger-digit: 18ms;    /* M3 jeda antar-digit, dari kanan */
+  --debounce-number: 120ms; /* M3 masukan cepat */
+  --dur-thread: 280ms;      /* M1 per benang tinta */
+  --gap-thread: 60ms;       /* M1 jeda antar-benang */
+  --dur-level: 240ms;       /* M1 timbangan menjadi datar */
+  --dur-print: 260ms;       /* struk keluar dari printer */
+  --receipt-life: 6000ms;   /* struk hilang sendiri */
+  --dur-room: 300ms;        /* M4 desktop */
+  --dur-room-phone: 220ms;  /* M4 ponsel */
+  --dur-open-book: 700ms;   /* M11 */
+  --dur-t-draw: 300ms;      /* M7 garis T */
+  --dur-shake: 300ms;       /* login gagal */
+  --dur-pulse: 1200ms;      /* denyut kerangka pensil */
+  --dur-loading: 1000ms;    /* indikator memuat (tetap berjalan pada mode Minimal) */
+  --dur-desk-light: 60000ms;/* O2 pergantian nada */
+  --stagger: 30ms;          /* koreografi kelompok, maksimal 6 */
+  --delay-tooltip: 400ms;
+  --delay-loading: 200ms;
+  --budget-ink: 1200ms;     /* M1 total paling lama */
+  --budget-ceremony: 1600ms;/* M2 total paling lama */
+  --hold-success: 1500ms;   /* centang di tombol setelah sukses */
+  --hold-error: 2000ms;     /* tanda gagal di tombol */
+  --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --ease-in: cubic-bezier(0.4, 0, 1, 1);
+  --ease-inout: cubic-bezier(0.65, 0, 0.35, 1);
+  --ease-spring: cubic-bezier(0.3, 1.35, 0.5, 1);
+  /* Titik awal pegas (kekakuan redaman), diubah ke easing linear() oleh motion/spring.ts. */
+  --spring-press: 520 34;
+  --spring-drawer: 320 32;
+  --spring-stamp: 600 26;
+
+  /* Jarak gerak. */
+  --lift-hover: -1px;
+  --lift-box: -2px;
+  --page-shift: 12px;
+  --page-tilt: 4deg;
+  --parallax-max: 6px;
+  --ribbon-pull: 1.15;
+}
+
+/* Gerak Dikurangi: tanpa gerak posisi, skala, rotasi. */
+:root[data-motion="reduced"] {
+  --lift-hover: 0px;
+  --lift-box: 0px;
+  --page-shift: 0px;
+  --page-tilt: 0deg;
+  --parallax-max: 0px;
+  --ribbon-pull: 1;
+}
+
+/* Gerak Minimal: tanpa animasi kecuali indikator memuat. */
+:root[data-motion="minimal"] {
+  --dur-press: 0ms;
+  --dur-fast: 0ms;
+  --dur-base: 0ms;
+  --dur-slow: 0ms;
+  --dur-draw: 0ms;
+  --dur-fade: 0ms;
+  --dur-roll: 0ms;
+  --dur-thread: 0ms;
+  --dur-level: 0ms;
+  --dur-print: 0ms;
+  --dur-room: 0ms;
+  --dur-room-phone: 0ms;
+  --dur-open-book: 0ms;
+  --dur-t-draw: 0ms;
+  --dur-shake: 0ms;
+  --dur-desk-light: 0ms;
+  --stagger: 0ms;
+  --stagger-digit: 0ms;
+  --gap-thread: 0ms;
+  --lift-hover: 0px;
+  --lift-box: 0px;
+  --page-shift: 0px;
+  --page-tilt: 0deg;
+  --parallax-max: 0px;
+  --ribbon-pull: 1;
+}
+
+/* Tekstur dimatikan: preferensi, cetak, warna paksa, kontras tinggi. */
+:root[data-texture="off"] {
+  --grain-canvas: none;
+  --grain-paper: none;
+}
+@media print, (forced-colors: active), (prefers-contrast: more) {
+  :root {
+    --grain-canvas: none;
+    --grain-paper: none;
+  }
+}
+
+/*
+ * O2 Cahaya Meja (bawaan mati). Nada kertas bergeser sangat halus mengikuti jam.
+ * Keempat varian diuji kontrasnya oleh contrast-check.mjs. Tidak berlaku saat cetak.
+ */
+@media screen {
+  :root[data-desk="pagi"] {
+    --canvas: 241 240 235;
+    --paper: 250 250 247;
+  }
+  :root[data-desk="sore"] {
+    --canvas: 245 241 232;
+    --paper: 252 250 244;
+  }
+  :root[data-desk="malam"] {
+    --canvas: 243 238 229;
+    --paper: 250 247 240;
+  }
+}

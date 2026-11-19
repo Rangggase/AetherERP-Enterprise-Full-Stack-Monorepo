@@ -6,6 +6,7 @@ const apiTarget = process.env.VITE_API_TARGET ?? "http://127.0.0.1:8000";
 
 export default defineConfig({
   plugins: [react()],
-  build: { rollupOptions: { output: { manualChunks: { charts: ["recharts"], vendor: ["react", "react-dom", "react-router-dom", "@tanstack/react-query", "@tanstack/react-table"] } } } },
+  // Tabel (@tanstack/react-table) dipisah dari vendor: hanya dimuat halaman daftar, bukan JS awal Dasbor.
+  build: { rollupOptions: { output: { manualChunks: { vendor: ["react", "react-dom", "react-router-dom", "@tanstack/react-query"], table: ["@tanstack/react-table"] } } } },
   server: { port: 5173, proxy: { "/api": apiTarget } },
 });

@@ -1,0 +1,14 @@
+/* Tab map berkas (8): tab aktif menyatu dengan panelnya. */
+.tabs { position: relative; z-index: 1; display: flex; gap: 4px; padding-left: 8px; overflow-x: auto; }
+.tab { position: relative; display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding: 0 14px; border: 1px solid rgb(var(--rule)); border-bottom: 0; border-radius: var(--radius-control) var(--radius-control) 0 0;
+  background: rgb(var(--highlight)); color: rgb(var(--ink-muted)); font-size: 0.8125rem; font-weight: 500; white-space: nowrap; transform: translateY(3px); transition: transform var(--dur-fast) var(--ease-out), color var(--dur-fast); }
+@media (min-width: 768px) { .tab { min-height: 34px; } }
+.tab:hover { color: rgb(var(--ink)); }
+.tab[aria-selected="true"] { background: rgb(var(--paper)); color: rgb(var(--ink)); transform: none; }
+.tab[aria-selected="true"]::after { content: ""; position: absolute; inset: auto 0 -1px; height: 2px; background: rgb(var(--paper)); }
+.tab .count { min-width: 18px; padding: 0 5px; border-radius: 9px; background: rgb(var(--ink) / 0.08); font-size: 0.6875rem; line-height: 18px; text-align: center; font-variant-numeric: tabular-nums; }
+.tab:focus-visible { outline-offset: -2px; }
+.tab-panel { position: relative; padding: 16px; background-color: rgb(var(--paper)); background-image: var(--grain-paper); background-blend-mode: multiply; border: 1px solid rgb(var(--rule)); border-radius: var(--radius-panel); box-shadow: var(--elev-1); }
+:root:not([data-motion="full"]) .tab { transition: color var(--dur-fast); }
+@media (forced-colors: active) { .tab-panel { border: 1px solid CanvasText; } }
+@media print { .tabs { display: none !important; } .tab-panel { background: none !important; border-color: rgb(var(--ink)) !important; } }

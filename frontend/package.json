@@ -7,17 +7,16 @@
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
     "typecheck": "tsc --noEmit",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "contrast": "node scripts/contrast-check.mjs"
   },
   "dependencies": {
     "@tanstack/react-query": "^5.107.1",
     "@tanstack/react-table": "^8.21.3",
     "clsx": "^2.1.1",
-    "lucide-react": "^1.73.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "react-router-dom": "^6.30.6",
-    "recharts": "^2.15.4"
+    "react-router-dom": "^6.30.6"
   },
   "devDependencies": {
     "@types/react": "^18.3.31",

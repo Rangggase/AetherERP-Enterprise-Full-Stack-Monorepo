@@ -1,379 +1,276 @@
+@import "./design/fonts.css";
+@import "./design/tokens.css";
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* Tokens: docs/design-system.md v3 ("meja kerja akuntan"). Colours are RGB triplets so Tailwind can apply opacity. */
-:root {
-  color-scheme: light;
-  --canvas: 244 241 234;
-  --surface: 251 250 246;
-  --highlight: 239 235 226;
-  --sunken: 238 234 225;
-  --line: 220 214 202;
-  --control: 140 132 120;
-  --key-edge: 201 194 180;
-  --ink: 30 27 24;
-  --muted: 107 100 90;
-  --accent: 122 46 42;
-  --accent-deep: 90 32 29;
-  --accent-hover: 105 38 34;
-  --good: 63 107 78;
-  --warn: 176 122 30;
-  --warn-ink: 138 95 18;
-  --bad: 158 59 50;
-  --info: 61 90 115;
-
-  /* B1 depth: one light source from above. */
-  --elev-0: none;
-  --elev-1: 0 1px 0 rgb(30 27 24 / 0.06);
-  --elev-2: 0 1px 0 rgb(30 27 24 / 0.06), 0 6px 14px -6px rgb(30 27 24 / 0.18);
-  --elev-3: 0 16px 40px -12px rgb(30 27 24 / 0.3);
-  --inset: inset 0 1px 2px rgb(30 27 24 / 0.1);
-  --stack-1: translate(3px, 3px);
-  --stack-2: translate(6px, 6px);
-
-  /* B2 motion. */
-  --t-press: 90ms;
-  --t-fast: 140ms;
-  --t-mid: 220ms;
-  --t-slow: 360ms;
-  --t-draw: 600ms;
-  --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
-  --ease-in: cubic-bezier(0.4, 0, 1, 1);
-  --ease-spring: cubic-bezier(0.3, 1.35, 0.5, 1);
-}
+/* UI v3 "Buku Besar Hidup" (docs/design-system.md). Nilai warna, durasi, dan lapisan hanya dari design/tokens.css.
+   CSS awal hanya memuat kerangka dan komponen yang dipakai di mana-mana; tabel, form, kontrol, tab, dan momen berat
+   ada di src/styles/*.css dan berkas CSS momen, yang ikut potongan kode rutenya. */
 
 @layer base {
-  html { font-size: 16px; }
-  body { @apply bg-canvas font-sans text-sm text-ink antialiased; }
+  html { font-size: 16px; scrollbar-gutter: stable; -webkit-text-size-adjust: 100%; }
+  body {
+    font-family: var(--font-sans); font-size: 0.875rem; line-height: 1.25rem; color: rgb(var(--ink));
+    background-color: rgb(var(--canvas)); background-image: var(--grain-canvas); background-blend-mode: multiply;
+    -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;
+  }
+  :root[data-desk] body { transition: background-color var(--dur-desk-light) linear; }
   h1, h2, h3 { text-wrap: balance; }
+  .font-serif, h1 { font-optical-sizing: auto; }
   th { text-align: left; }
-  :focus-visible { outline: 2px solid rgb(var(--accent)); outline-offset: 2px; border-radius: 4px; }
+  :focus-visible { outline: 2px solid rgb(var(--accent)); outline-offset: 2px; border-radius: var(--radius-control); }
   :target, :focus { scroll-margin-top: 4.5rem; }
-  button, a, input, select { touch-action: manipulation; }
-  button:not(:disabled), [role="tab"], summary { cursor: pointer; }
+  button, a, input, select, summary { touch-action: manipulation; }
+  button:not(:disabled), [role="tab"], summary, [data-open] { cursor: pointer; }
   dialog { color: inherit; }
   dialog::backdrop { background: rgb(var(--ink) / 0.38); }
+  code, kbd, samp, .code { font-family: var(--font-mono); font-size: 0.95em; font-variant-numeric: tabular-nums; }
   .glyph { flex: none; display: block; }
+  ::selection { background: rgb(var(--accent) / 0.18); }
 }
 
 @layer components {
   .font-num, .num { font-variant-numeric: tabular-nums lining-nums; }
-  .num { @apply text-right; }
+  .num { text-align: right; }
 
-  /* ---- Sheets (C6). A lifted sheet paints paper behind (-3), shadow (-2), face (-1), then content. ---- */
-  .sheet { position: relative; background: rgb(var(--surface)); border: 1px solid rgb(var(--line)); border-radius: 4px; box-shadow: var(--elev-1); }
-
-  /* Lifted sheet: paper behind (-3), shadow (-2), face (-1), then content. Elevation animates the shadow's opacity only. */
-  .lift { isolation: isolate; background: transparent; border-color: transparent; box-shadow: none; transition: transform var(--t-fast) var(--ease-out); }
-  .lift::before { content: ""; position: absolute; inset: -1px; z-index: -1; border-radius: inherit; background: rgb(var(--surface)); border: 1px solid rgb(var(--line)); box-shadow: var(--elev-1); pointer-events: none; }
-  .lift::after { content: ""; position: absolute; inset: -1px; z-index: -2; border-radius: inherit; box-shadow: var(--elev-2); opacity: 0; transition: opacity var(--t-fast) var(--ease-out); pointer-events: none; }
-  .lift:hover::after, .lift:focus-visible::after { opacity: 1; }
-  .stack-back { position: absolute; inset: -1px; z-index: -3; border-radius: inherit; background: rgb(var(--surface)); border: 1px solid rgb(var(--line)); pointer-events: none; transition: transform var(--t-fast) var(--ease-out); }
+  /* ---- 5.2 Lembar ---- */
+  .sheet { position: relative; background-color: rgb(var(--paper)); background-image: var(--grain-paper); background-blend-mode: multiply; border: 1px solid rgb(var(--rule)); border-radius: var(--radius-panel); box-shadow: var(--elev-1); }
+  .lift { isolation: isolate; background: transparent; border-color: transparent; box-shadow: none; transition: transform var(--dur-fast) var(--ease-out); }
+  .lift::before { content: ""; position: absolute; inset: -1px; z-index: -1; border-radius: inherit; background-color: rgb(var(--paper)); background-image: var(--grain-paper); background-blend-mode: multiply; border: 1px solid rgb(var(--rule)); box-shadow: var(--elev-1); pointer-events: none; }
+  /* Terangkat: opasitas pseudo-elemen pembawa bayangan --elev-2 yang dianimasikan, bukan bayangannya. */
+  .lift::after { content: ""; position: absolute; inset: -1px; z-index: -2; border-radius: inherit; box-shadow: var(--elev-2); opacity: 0; transition: opacity var(--dur-fast) var(--ease-out); pointer-events: none; }
+  .lift:hover::after, .lift:focus-visible::after, .lift:focus-within::after { opacity: 1; }
+  .stack-back { position: absolute; inset: -1px; z-index: -3; border-radius: inherit; background: rgb(var(--paper)); border: 1px solid rgb(var(--rule)); pointer-events: none; transition: transform var(--dur-fast) var(--ease-out); }
   .stack-back.b1 { transform: var(--stack-1); }
   .stack-back.b2 { transform: var(--stack-2); }
-  .task { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 2px 14px; align-items: center; height: 100%; padding: 14px 16px; color: rgb(var(--ink)); text-decoration: none; }
-  .task .n { grid-row: span 2; font-family: "Source Serif 4", Georgia, serif; font-size: 30px; font-weight: 500; line-height: 1; color: rgb(var(--accent)); min-width: 1.4ch; font-variant-numeric: tabular-nums lining-nums; }
-  .task .t { font-weight: 500; }
-  .task .d { grid-column: 2; font-size: 13px; color: rgb(var(--muted)); }
-  .task .go { grid-row: 1 / span 2; grid-column: 3; color: rgb(var(--muted)); }
 
-  /* ---- Keys (C1). .btn is the secondary key; variants change body and edge. The edge is reserved with a margin so a press never shifts layout. ---- */
+  .task { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 2px 14px; align-items: center; height: 100%; padding: 14px 16px; color: rgb(var(--ink)); text-decoration: none; }
+  .task .n { grid-row: span 2; font-family: var(--font-serif); font-size: 1.875rem; font-weight: 500; line-height: 1; color: rgb(var(--accent)); min-width: 1.4ch; font-variant-numeric: tabular-nums lining-nums; }
+  .task .t { font-weight: 500; }
+  .task .d { grid-column: 2; font-size: 0.8125rem; color: rgb(var(--ink-muted)); }
+  .task .go { grid-row: 1 / span 2; grid-column: 3; color: rgb(var(--ink-muted)); }
+
+  /* ---- Tombol: tuts mesin kasir. Tepi bawah memakai margin agar tekan tidak menggeser tata letak. ---- */
   .btn {
     position: relative; display: inline-flex; align-items: center; justify-content: center; gap: 8px;
-    height: 44px; margin-bottom: 2px; padding: 0 14px; border: 0; border-radius: 4px;
-    background: rgb(var(--surface)); color: rgb(var(--ink)); font-size: 14px; font-weight: 500; line-height: 1; white-space: nowrap; text-decoration: none; user-select: none;
-    box-shadow: inset 0 0 0 1px rgb(var(--line)), 0 2px 0 rgb(var(--key-edge));
-    transition: transform var(--t-press) var(--ease-spring), box-shadow var(--t-press) var(--ease-spring), background-color var(--t-fast) var(--ease-out), color var(--t-fast) var(--ease-out);
+    height: 44px; margin-bottom: 2px; padding: 0 14px; border: 0; border-radius: var(--radius-control);
+    background: rgb(var(--paper)); color: rgb(var(--ink)); font-size: 0.875rem; font-weight: 500; line-height: 1; white-space: nowrap; text-decoration: none; user-select: none;
+    box-shadow: inset 0 0 0 1px rgb(var(--rule-strong) / 0.55), 0 2px 0 var(--key-edge);
+    transition: transform var(--dur-press) var(--ease-spring), box-shadow var(--dur-press) var(--ease-spring), background-color var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out);
   }
   @media (min-width: 768px) { .btn { height: 36px; } }
   .btn:hover:not(:disabled) { background-color: rgb(var(--highlight)); }
-  .btn-primary { margin-bottom: 3px; background: rgb(var(--accent)); color: rgb(var(--surface)); box-shadow: 0 3px 0 rgb(var(--accent-deep)); }
+  .btn-primary { margin-bottom: 3px; background: rgb(var(--accent)); color: rgb(var(--paper)); box-shadow: 0 3px 0 rgb(var(--accent-deep)); }
   .btn-primary:hover:not(:disabled) { background-color: rgb(var(--accent)); }
-  .btn-danger { color: rgb(var(--bad)); box-shadow: inset 0 0 0 1px rgb(var(--bad)), 0 2px 0 rgb(var(--key-edge)); }
+  .btn-danger { color: rgb(var(--bad)); box-shadow: inset 0 0 0 1px rgb(var(--bad)), 0 2px 0 var(--key-edge); }
   .btn-text { margin-bottom: 0; padding: 0 6px; background: transparent; box-shadow: none; gap: 6px; }
   .btn-text:hover:not(:disabled) { background: transparent; text-decoration: underline; text-underline-offset: 3px; }
-  .btn-sm { height: 44px; padding: 0 10px; font-size: 13px; }
+  .btn-sm { height: 44px; padding: 0 10px; font-size: 0.8125rem; }
   @media (min-width: 768px) { .btn-sm { height: 30px; } }
-  .btn:disabled, .btn[aria-disabled="true"] { cursor: not-allowed; background: rgb(var(--highlight)); color: rgb(var(--muted)); box-shadow: inset 0 0 0 1px rgb(var(--line)); }
+  .btn:disabled, .btn[aria-disabled="true"] { cursor: not-allowed; background: rgb(var(--highlight)); color: rgb(var(--ink-muted)); box-shadow: inset 0 0 0 1px rgb(var(--rule)); }
   .btn-text:disabled { background: transparent; box-shadow: none; }
   .btn-primary:disabled { transform: translateY(3px); }
   .btn:not(.btn-primary):not(.btn-text):disabled { transform: translateY(2px); }
-  /* Glyph cap on the left of a key. */
-  .btn .cap { display: grid; place-items: center; align-self: stretch; width: 36px; margin: 0 4px 0 -14px; border-radius: 4px 0 0 4px; background: rgb(var(--highlight)); box-shadow: inset -1px 0 0 rgb(var(--line)); }
-  .btn-primary .cap { background: rgb(var(--accent-deep)); box-shadow: none; }
-  .btn-danger .cap { box-shadow: inset -1px 0 0 rgb(var(--bad)); }
-  .btn-sm .cap { width: 30px; margin-left: -10px; }
-  .btn:disabled .cap { background: transparent; box-shadow: inset -1px 0 0 rgb(var(--line)); }
-  /* Loading: the label gives way to a progress bar of the same width. */
+  .btn .cap-key { display: grid; place-items: center; align-self: stretch; width: 36px; margin: 0 4px 0 -14px; border-radius: var(--radius-control) 0 0 var(--radius-control); background: rgb(var(--highlight)); box-shadow: inset -1px 0 0 rgb(var(--rule)); }
+  .btn-primary .cap-key { background: rgb(var(--accent-deep)); box-shadow: none; }
+  .btn-danger .cap-key { box-shadow: inset -1px 0 0 rgb(var(--bad)); }
+  .btn-sm .cap-key { width: 30px; margin-left: -10px; }
+  .btn:disabled .cap-key { background: transparent; box-shadow: inset -1px 0 0 rgb(var(--rule)); }
   .btn .bar { display: none; position: absolute; left: 14px; right: 14px; top: calc(50% - 1px); height: 2px; overflow: hidden; background: currentColor; opacity: 0.25; }
   .btn.has-cap .bar { left: 50px; }
-  .btn .bar::after { content: ""; position: absolute; inset: 0; width: 40%; background: currentColor; animation: key-progress 900ms var(--ease-in) infinite; }
+  .btn .bar::after { content: ""; position: absolute; inset: 0; width: 40%; background: currentColor; animation: key-progress var(--dur-loading) var(--ease-in) infinite; }
   .btn[data-state="loading"] { cursor: progress; }
-  .btn[data-state="loading"] .label, .btn[data-state="loading"] .cap > svg { visibility: hidden; }
-  .btn[data-state="loading"] .bar { display: block; opacity: 1; background: rgb(var(--surface) / 0.3); }
+  .btn[data-state="loading"] .label, .btn[data-state="loading"] .cap-key > svg { visibility: hidden; }
+  .btn[data-state="loading"] .bar { display: block; opacity: 1; background: rgb(var(--paper) / 0.3); }
   .btn:not(.btn-primary)[data-state="loading"] .bar { background: rgb(var(--ink) / 0.15); }
   .btn .tick path { stroke-dasharray: 1; stroke-dashoffset: 1; }
-  .btn[data-state="success"] .tick path { stroke-dashoffset: 0; transition: stroke-dashoffset 300ms var(--ease-out); }
+  .btn[data-state="success"] .tick path { stroke-dashoffset: 0; transition: stroke-dashoffset var(--dur-slow) var(--ease-out); }
 
-  /* ---- Fields (C2): pressed in; on focus they rise to the surface. ---- */
+  /* ---- Isian: tertekan; saat fokus terangkat ke permukaan. Batas memakai --rule-strong. ---- */
   .field {
-    @apply h-11 w-full min-w-0 rounded border border-control px-2.5 text-base text-ink placeholder:text-muted md:h-9 md:text-sm;
-    background: rgb(var(--highlight)); box-shadow: var(--inset);
-    transition: background-color var(--t-fast) var(--ease-out), border-color var(--t-fast) var(--ease-out), box-shadow var(--t-fast) var(--ease-out);
+    @apply h-11 w-full min-w-0 rounded px-2.5 text-base text-ink placeholder:text-muted md:h-9 md:text-sm;
+    border: 1px solid rgb(var(--rule-strong)); background: rgb(var(--highlight)); box-shadow: var(--inset);
+    transition: background-color var(--dur-fast) var(--ease-out), border-color var(--dur-fast) var(--ease-out), box-shadow var(--dur-fast) var(--ease-out);
   }
   .field:hover:not(:disabled) { border-color: rgb(var(--ink)); }
-  .field:focus { outline: 2px solid rgb(var(--accent)); outline-offset: 1px; border-color: rgb(var(--accent)); background: rgb(var(--surface)); box-shadow: var(--elev-1); }
-  .field:disabled { @apply cursor-not-allowed border-dashed text-muted; background: rgb(var(--canvas)); box-shadow: none; }
-  .field-error { border-color: rgb(var(--bad)); }
-  select.field { appearance: none; padding-right: 30px; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%231E1B18' stroke-width='2' stroke-linecap='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 10px center; }
+  .field:focus { outline: 2px solid rgb(var(--accent)); outline-offset: 1px; border-color: rgb(var(--accent)); background: rgb(var(--paper)); box-shadow: var(--elev-1); }
+  .field:disabled { cursor: not-allowed; color: rgb(var(--ink-muted)); border-style: dashed; background: rgb(var(--canvas)); box-shadow: none; }
+  .field-error, .field[aria-invalid="true"] { border-color: rgb(var(--bad)); }
+  .field.code { font-family: var(--font-mono); }
+  select.field { appearance: none; padding-right: 30px; background-image: var(--chevron); background-repeat: no-repeat; background-position: right 10px center; }
   input[type="date"].field { color-scheme: light; }
+  .seg { display: inline-flex; gap: 2px; padding: 2px; border-radius: var(--radius-control); background: rgb(var(--highlight)); box-shadow: var(--inset); }
+  .seg button { min-height: 28px; padding: 0 10px; border-radius: 3px; font-size: 0.8125rem; font-weight: 500; color: rgb(var(--ink-muted)); }
+  .seg button[aria-pressed="true"] { background: rgb(var(--paper)); color: rgb(var(--ink)); box-shadow: var(--elev-2); }
 
-  /* Number stepper: two small keys around a right-aligned figure. */
-  .stepper { display: inline-flex; align-items: flex-start; gap: 6px; }
-  .stepper .field { width: 96px; text-align: right; font-variant-numeric: tabular-nums lining-nums; }
-  .mini-key { display: grid; place-items: center; width: 44px; height: 42px; margin-bottom: 2px; border: 0; border-radius: 4px; background: rgb(var(--surface)); color: rgb(var(--ink));
-    box-shadow: inset 0 0 0 1px rgb(var(--line)), 0 2px 0 rgb(var(--key-edge)); transition: transform var(--t-press) var(--ease-spring), box-shadow var(--t-press) var(--ease-spring); }
-  @media (min-width: 768px) { .mini-key { width: 34px; height: 34px; } }
-  .mini-key:disabled { color: rgb(var(--muted)); cursor: not-allowed; box-shadow: inset 0 0 0 1px rgb(var(--line)); transform: translateY(2px); }
-
-  /* ---- Checkbox, radio, switch (C3). ---- */
-  .cb, .rd { display: inline-flex; align-items: center; gap: 8px; min-height: 32px; cursor: pointer; position: relative; }
-  .cb input, .rd input { appearance: none; margin: 0; width: 18px; height: 18px; flex: none; border: 1px solid rgb(var(--control)); background: rgb(var(--highlight)); box-shadow: var(--inset); cursor: pointer; transition: background-color var(--t-fast), border-color var(--t-fast); }
-  .cb input { border-radius: 3px; }
-  .cb svg { position: absolute; left: 2px; top: 50%; margin-top: -7px; width: 14px; height: 14px; pointer-events: none; color: rgb(var(--surface)); }
-  .cb svg path { stroke-dasharray: 1; stroke-dashoffset: 1; transition: stroke-dashoffset 160ms var(--ease-out); }
-  .cb input:checked, .cb input:indeterminate { background: rgb(var(--accent)); border-color: rgb(var(--accent)); box-shadow: none; }
-  .cb input:checked + svg path { stroke-dashoffset: 0; }
-  .cb input:indeterminate + svg { display: none; }
-  .cb:has(input:indeterminate)::after { content: ""; position: absolute; left: 4px; top: 50%; width: 10px; height: 2px; margin-top: -1px; border-radius: 1px; background: rgb(var(--surface)); pointer-events: none; }
-  .rd input { border-radius: 50%; display: grid; place-items: center; }
-  .rd input::after { content: ""; width: 8px; height: 8px; border-radius: 50%; background: rgb(var(--accent)); box-shadow: inset 0 1px 1px rgb(30 27 24 / 0.35); transform: scale(0); transition: transform var(--t-fast) var(--ease-spring); }
-  .rd input:checked { border-color: rgb(var(--accent)); background: rgb(var(--surface)); }
-  .rd input:checked::after { transform: scale(1); }
-  .sw { display: inline-flex; align-items: center; gap: 10px; min-height: 32px; border: 0; background: none; padding: 0; font: inherit; color: inherit; }
-  .sw .rail { position: relative; width: 40px; height: 22px; flex: none; border-radius: 11px; background: rgb(var(--highlight)); border: 1px solid rgb(var(--control)); box-shadow: var(--inset); transition: background-color var(--t-fast); }
-  .sw .knob { position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; border-radius: 50%; background: rgb(var(--surface)); border: 1px solid rgb(var(--control)); box-shadow: 0 1px 0 rgb(30 27 24 / 0.12), 0 2px 4px -1px rgb(30 27 24 / 0.25); transition: transform var(--t-fast) var(--ease-spring); }
-  .sw[aria-checked="true"] .rail { background: rgb(var(--accent)); border-color: rgb(var(--accent)); }
-  .sw[aria-checked="true"] .knob { transform: translateX(18px); border-color: rgb(var(--accent-deep)); }
-
-  .chip { @apply inline-flex h-[28px] items-center gap-1 rounded-full border border-control bg-surface pl-2.5 pr-1 text-table; }
-  .chip button { @apply grid h-[22px] w-[22px] place-items-center rounded-full text-muted hover:bg-sunken hover:text-ink; }
-
-  /* Small stamp: the accounting period in the top bar (C5, D2). */
-  .stamp-sm { display: inline-flex; align-items: center; gap: 4px; padding: 3px 7px 2px; border: 3px double currentColor; border-radius: 3px; font-size: 10.5px; font-weight: 700; line-height: 1.1; letter-spacing: 0.06em; text-transform: uppercase; white-space: nowrap; }
-
-  /* Raised initials. */
-  .avatar { display: grid; place-items: center; width: 32px; height: 32px; border-radius: 50%; border: 0; background: rgb(var(--surface)); color: rgb(var(--accent)); font-size: 12.5px; font-weight: 600; letter-spacing: 0.02em;
-    box-shadow: inset 0 0 0 1px rgb(var(--line)), 0 2px 0 rgb(var(--key-edge)), 0 4px 8px -4px rgb(30 27 24 / 0.25); }
-
-  /* Menu (C8): a level 3 sheet that drops 4px. */
-  .menu { position: absolute; z-index: 50; min-width: 200px; padding: 4px; background: rgb(var(--surface)); border: 1px solid rgb(var(--line)); border-radius: 4px; box-shadow: var(--elev-3); }
-  .menu [role^="menuitem"] { display: flex; width: 100%; align-items: center; gap: 8px; min-height: 36px; padding: 0 10px; border-radius: 3px; text-align: left; font-size: 14px; color: rgb(var(--ink)); }
-  .menu [role^="menuitem"]:hover, .menu [role^="menuitem"]:focus-visible { background: rgb(var(--highlight)); outline-offset: -2px; }
-  .menu [aria-checked="true"] { font-weight: 600; }
-
-  /* ---- Tables (C7): a ledger sheet. ---- */
-  .tbl-sheet { position: relative; background: rgb(var(--surface)); border: 1px solid rgb(var(--line)); border-radius: 4px; box-shadow: var(--elev-1); }
-  .tbl { @apply w-full border-separate border-spacing-0 text-table; }
-  .tbl thead th { @apply sticky top-[52px] z-[2] whitespace-nowrap border-b border-ink bg-surface px-3 py-2 font-medium text-muted; }
-  /* The header's shadow appears only once it sticks. */
-  .tbl thead th::after { content: ""; position: absolute; inset: 100% 0 auto; height: 6px; background: linear-gradient(rgb(30 27 24 / 0.1), rgb(30 27 24 / 0)); opacity: 0; transition: opacity var(--t-fast); pointer-events: none; }
-  .tbl.is-stuck thead th::after { opacity: 1; }
-  .tbl td { @apply border-b border-line px-3 align-middle; padding-top: var(--row-pad, 10px); padding-bottom: var(--row-pad, 10px); background: rgb(var(--surface)); transition: background-color var(--t-fast); }
-  .tbl tbody tr:last-child td { border-bottom: 0; }
-  .tbl.dense { --row-pad: 5px; }
-  .tbl .ck { width: 44px; padding: 0 0 0 4px; }
-  /* The whole cell is the checkbox target: 40 px on desktop, 44 px on phones. */
-  .tbl .ck .cb { width: 40px; height: 40px; justify-content: center; margin: -8px 0; }
-  .tbl .ck .cb svg { left: 13px; }
-  .tbl tbody tr:hover td, .tbl tbody tr:focus-visible td, .tbl tbody tr[aria-selected="true"] td { background-color: rgb(var(--highlight)); }
-  .tbl tbody tr:hover td:first-child, .tbl tbody tr:focus-visible td:first-child, .tbl tbody tr[aria-selected="true"] td:first-child { box-shadow: inset 2px 0 0 rgb(var(--accent)); }
-  .tbl tbody tr:focus-visible { outline: 2px solid rgb(var(--accent)); outline-offset: -2px; }
-  .tbl tbody tr[data-open] { cursor: pointer; }
-  .bulk { position: sticky; bottom: 0; z-index: 3; display: flex; align-items: center; gap: 12px; padding: 6px 12px; border-radius: 0 0 4px 4px; background: rgb(var(--ink)); color: rgb(var(--surface)); font-size: 13px;
-    opacity: 0; transform: translateY(100%); pointer-events: none; transition: transform var(--t-mid) var(--ease-out), opacity var(--t-mid) var(--ease-out); }
-  .bulk.on { opacity: 1; transform: none; pointer-events: auto; }
-  .bulk .btn:focus-visible { outline-color: rgb(var(--surface)); }
-  .swipe-hint { display: flex; align-items: center; gap: 6px; padding: 0 2px 6px; font-size: 12.5px; color: rgb(var(--muted)); }
-  .seg { display: inline-flex; gap: 2px; padding: 2px; border-radius: 4px; background: rgb(var(--highlight)); box-shadow: var(--inset); }
-  .seg button { min-height: 28px; padding: 0 10px; border-radius: 3px; font-size: 13px; font-weight: 500; color: rgb(var(--muted)); }
-  .seg button[aria-pressed="true"] { background: rgb(var(--surface)); color: rgb(var(--ink)); box-shadow: var(--elev-2); }
-
-  /* Sticky headers only work without a scrolling ancestor; inside a scroll container they stay in flow. */
-  .scroll-x .tbl thead th { position: static; }
-
-  /* ---- Status (C5): badge in lists, ink stamp on documents. ---- */
-  .badge { display: inline-flex; align-items: center; gap: 5px; height: 22px; padding: 0 7px 0 5px; border-radius: 3px; font-size: 12.5px; font-weight: 500; white-space: nowrap; }
-  .badge.good, .stamp.good { color: rgb(var(--good)); }
-  .badge.warn, .stamp.warn { color: rgb(var(--warn-ink)); }
-  .badge.bad, .stamp.bad { color: rgb(var(--bad)); }
-  .badge.info, .stamp.info { color: rgb(var(--info)); }
-  .badge.idle, .stamp.idle { color: rgb(var(--muted)); }
-  .badge.good { background: rgb(var(--good) / 0.1); }
-  .badge.warn { background: rgb(var(--warn) / 0.12); }
-  .badge.bad { background: rgb(var(--bad) / 0.1); }
-  .badge.info { background: rgb(var(--info) / 0.1); }
-  .badge.idle { background: rgb(var(--muted) / 0.1); }
-  .stamp { display: inline-block; padding: 5px 12px 4px; border: 3px double currentColor; border-radius: 3px; font-size: 13px; font-weight: 700; line-height: 1.1; letter-spacing: 0.12em; text-transform: uppercase; white-space: nowrap; transform: rotate(-4deg); filter: url(#ink); }
-
-  /* ---- Stage rail on a document: pressed-in track, ink stops for finished stages, a raised marker on the current one. ---- */
-  .rail-track { position: relative; display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: 0 4px; margin: 0; padding: 0; list-style: none; }
-  .rail-track::before { content: ""; position: absolute; top: 7px; left: 7px; right: 7px; height: 4px; border-radius: 2px; background: rgb(var(--highlight)); box-shadow: var(--inset); }
-  .rail-track li { position: relative; padding-top: 26px; font-size: 12.5px; line-height: 1.3; color: rgb(var(--muted)); }
-  .rail-track li::before { content: ""; position: absolute; z-index: 1; top: 2px; left: 0; width: 14px; height: 14px; border-radius: 50%; background: rgb(var(--surface)); border: 1px solid rgb(var(--control)); }
-  .rail-track li.done { color: rgb(var(--ink)); }
-  .rail-track li.done::before { background: rgb(var(--ink)); border-color: rgb(var(--ink)); }
-  .rail-track li.done::after { content: ""; position: absolute; top: 7px; left: 7px; right: -11px; height: 4px; border-radius: 2px; background: rgb(var(--ink)); }
-  .rail-track li.now { color: rgb(var(--ink)); font-weight: 600; }
-  .rail-track li.now::before { top: 0; left: -2px; width: 18px; height: 18px; background: rgb(var(--accent)); border: 3px solid rgb(var(--surface)); box-shadow: 0 0 0 1px rgb(var(--accent)), 0 2px 0 rgb(var(--accent-deep)); }
-
-  /* Ledger conventions: one rule above a subtotal, a double rule under a total. */
-  .tbl.ledger tbody tr.sub td { border-top: 1px solid rgb(var(--ink)); }
-  .tbl.ledger tbody tr.total td { border-bottom: 3px double rgb(var(--ink)); }
-  .doc-paper { position: relative; }
-
-  /* ---- Receipt summary bar on forms: torn top edge, stuck to the bottom. ---- */
-  .receipt { background: rgb(var(--surface)); box-shadow: 0 -8px 20px -14px rgb(30 27 24 / 0.35);
-    clip-path: polygon(0 6px, 4% 0, 8% 6px, 12% 0, 16% 6px, 20% 0, 24% 6px, 28% 0, 32% 6px, 36% 0, 40% 6px, 44% 0, 48% 6px, 52% 0, 56% 6px, 60% 0, 64% 6px, 68% 0, 72% 6px, 76% 0, 80% 6px, 84% 0, 88% 6px, 92% 0, 96% 6px, 100% 0, 100% 100%, 0 100%); }
-
-  /* ---- Folder tabs (C4). ---- */
-  .tabs { position: relative; z-index: 1; display: flex; gap: 4px; padding-left: 8px; overflow-x: auto; }
-  .tab { position: relative; display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding: 0 14px; border: 1px solid rgb(var(--line)); border-bottom: 0; border-radius: 4px 4px 0 0;
-    background: rgb(var(--highlight)); color: rgb(var(--muted)); font-size: 13px; font-weight: 500; white-space: nowrap; transform: translateY(3px); transition: transform var(--t-fast) var(--ease-out), color var(--t-fast); }
-  @media (min-width: 768px) { .tab { min-height: 34px; } }
-  .tab:hover { color: rgb(var(--ink)); }
-  .tab[aria-selected="true"] { background: rgb(var(--surface)); color: rgb(var(--ink)); transform: none; }
-  .tab[aria-selected="true"]::after { content: ""; position: absolute; inset: auto 0 -1px; height: 2px; background: rgb(var(--surface)); }
-  .tab:focus-visible { outline-offset: -2px; }
-  .tab-panel { position: relative; padding: 16px; background: rgb(var(--surface)); border: 1px solid rgb(var(--line)); border-radius: 4px; box-shadow: var(--elev-1); }
-  .tab-panel:focus-visible { outline-offset: 2px; }
-
-  /* ---- Skeleton (C9): grey bars with a very soft paper sheen. ---- */
-  .sk { position: relative; overflow: hidden; border-radius: 2px; background: rgb(var(--highlight)); }
-  .sk::after { content: ""; position: absolute; inset: 0; background: linear-gradient(90deg, rgb(var(--surface) / 0), rgb(var(--surface) / 0.7), rgb(var(--surface) / 0)); transform: translateX(-100%); }
-
-  /* ---- Toast (C8): a receipt slip with a torn bottom edge. ---- */
-  .slip { position: relative; background: rgb(var(--surface)); border: 1px solid rgb(var(--line)); box-shadow: var(--elev-3);
-    clip-path: polygon(0 0, 100% 0, 100% calc(100% - 6px), 95% 100%, 90% calc(100% - 6px), 85% 100%, 80% calc(100% - 6px), 75% 100%, 70% calc(100% - 6px), 65% 100%, 60% calc(100% - 6px), 55% 100%, 50% calc(100% - 6px), 45% 100%, 40% calc(100% - 6px), 35% 100%, 30% calc(100% - 6px), 25% 100%, 20% calc(100% - 6px), 15% 100%, 10% calc(100% - 6px), 5% 100%, 0 calc(100% - 6px)); }
-
-  /* Status: square mark plus word, never a pill. */
-  .st { @apply inline-flex items-center gap-1.5 whitespace-nowrap text-table; }
+  /* ---- Cap (5.2): garis ganda, huruf kapital, rotasi dari hash id dokumen, tekstur tinta lewat masker statis. ---- */
+  .cap { display: inline-flex; align-items: center; gap: 6px; padding: 5px 12px 4px; border: 3px double currentColor; border-radius: var(--radius-control); font-size: 0.8125rem; font-weight: 600; line-height: 1.1; letter-spacing: 0.08em; text-transform: uppercase; white-space: nowrap;
+    transform: rotate(var(--cap-tilt, -3deg)); -webkit-mask-image: var(--ink-mask); mask-image: var(--ink-mask); -webkit-mask-size: 120px 60px; mask-size: 120px 60px; }
+  .cap-sm { padding: 3px 7px 2px; font-size: 0.65625rem; letter-spacing: 0.06em; }
+  .cap.ok, .badge.ok { color: rgb(var(--ok)); }
+  .cap.warn, .badge.warn { color: rgb(var(--warn-ink)); }
+  .cap.bad, .badge.bad { color: rgb(var(--bad)); }
+  .cap.info, .badge.info { color: rgb(var(--info)); }
+  .cap.idle, .badge.idle { color: rgb(var(--ink-muted)); }
+  .badge { display: inline-flex; align-items: center; gap: 5px; height: 22px; padding: 0 7px 0 5px; border-radius: 3px; font-size: 0.78rem; font-weight: 500; white-space: nowrap; }
+  /* Tint lencana dijaga ringan agar teks status tetap ≥4,5:1 juga di atas latar bertekstur (contrast-check.mjs). */
+  .badge.ok { background: rgb(var(--ok) / 0.08); }
+  .badge.warn { background: rgb(var(--warn) / 0.08); }
+  .badge.bad { background: rgb(var(--bad) / 0.08); }
+  .badge.info { background: rgb(var(--info) / 0.08); }
+  .badge.idle { background: rgb(var(--ink-muted) / 0.07); }
+  .st { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; font-size: 0.8125rem; }
   .st::before { content: ""; width: 7px; height: 7px; background: currentColor; display: inline-block; }
 
-  /* Scroll cues for wide report tables. */
-  .scroll-x {
-    overflow-x: auto;
-    background:
-      linear-gradient(to right, rgb(var(--canvas)) 30%, rgb(var(--canvas) / 0)) left center / 28px 100% no-repeat local,
-      linear-gradient(to left, rgb(var(--canvas)) 30%, rgb(var(--canvas) / 0)) right center / 28px 100% no-repeat local,
-      radial-gradient(farthest-side at 0 50%, rgb(var(--ink) / 0.2), transparent) left center / 10px 100% no-repeat scroll,
-      radial-gradient(farthest-side at 100% 50%, rgb(var(--ink) / 0.2), transparent) right center / 10px 100% no-repeat scroll;
+  .avatar { display: grid; place-items: center; width: 32px; height: 32px; border-radius: 50%; border: 0; background: rgb(var(--paper)); color: rgb(var(--accent)); font-size: 0.78rem; font-weight: 600; letter-spacing: 0.02em;
+    box-shadow: inset 0 0 0 1px rgb(var(--rule)), 0 2px 0 var(--key-edge), 0 4px 8px -4px rgb(var(--ink) / 0.25); }
+  .menu { position: absolute; z-index: var(--z-palette); min-width: 200px; padding: 4px; background: rgb(var(--paper)); border: 1px solid rgb(var(--rule)); border-radius: var(--radius-control); box-shadow: var(--elev-3); }
+  .menu [role^="menuitem"] { display: flex; width: 100%; align-items: center; gap: 8px; min-height: 36px; padding: 0 10px; border-radius: 3px; text-align: left; font-size: 0.875rem; color: rgb(var(--ink)); }
+  .menu [role^="menuitem"]:hover, .menu [role^="menuitem"]:focus-visible { background: rgb(var(--highlight)); outline-offset: -2px; }
+  .menu [aria-checked="true"] { font-weight: 600; }
+  .doc-paper { position: relative; }
+
+  /* ---- Kerangka "garis pensil" dan garis tinta pemuatan. Tidak ada spinner. ---- */
+  .pencil { display: block; height: 6px; border-radius: 3px; background: rgb(var(--pencil)); }
+  :root[data-motion="full"] .pencil { animation: pencil-pulse var(--dur-pulse) var(--ease-inout) infinite alternate; }
+  .ink-line { position: fixed; left: 0; right: 0; top: 52px; z-index: var(--z-topbar); height: 2px; overflow: hidden; pointer-events: none; background: rgb(var(--accent) / 0.25); }
+  .ink-line::after { content: ""; position: absolute; inset: 0; width: 30%; background: rgb(var(--accent)); }
+  :root[data-motion="full"] .ink-line::after { animation: ink-run var(--dur-loading) var(--ease-inout) infinite; }
+  :root:not([data-motion="full"]) .ink-line::after { width: 100%; opacity: 0.6; }
+
+  /* ---- Struk (5.2): 320 px, tepi bawah bergerigi, angka dalam Plex Mono, pemisah putus-putus. ---- */
+  .struk { width: min(320px, calc(100vw - 24px)); pointer-events: auto; filter: drop-shadow(0 10px 16px rgb(var(--ink) / 0.22)); }
+  .struk-paper { position: relative; padding: 12px 14px 22px; background-color: rgb(var(--paper)); background-image: var(--grain-paper); background-blend-mode: multiply; font-size: 0.8125rem;
+    clip-path: polygon(0 0, 100% 0, 100% calc(100% - 6px), 95% 100%, 90% calc(100% - 6px), 85% 100%, 80% calc(100% - 6px), 75% 100%, 70% calc(100% - 6px), 65% 100%, 60% calc(100% - 6px), 55% 100%, 50% calc(100% - 6px), 45% 100%, 40% calc(100% - 6px), 35% 100%, 30% calc(100% - 6px), 25% 100%, 20% calc(100% - 6px), 15% 100%, 10% calc(100% - 6px), 5% 100%, 0 calc(100% - 6px)); }
+  .struk-paper .mono, .struk-paper dd { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+  .struk-paper hr { border: 0; border-top: 1px dashed rgb(var(--rule-strong)); margin: 8px 0; }
+  .struk-print { animation: struk-print var(--dur-print) var(--ease-out) 1; }
+  :root:not([data-motion="full"]) .struk-print { animation-name: fade-in; animation-duration: var(--dur-fade); }
+
+  .tip { position: fixed; z-index: var(--z-palette); max-width: 280px; padding: 5px 9px; border: 1px solid rgb(var(--rule)); border-radius: var(--radius-control); background: rgb(var(--paper)); box-shadow: var(--elev-2); color: rgb(var(--ink)); font-size: 0.75rem; line-height: 1rem; pointer-events: none; }
+
+  /* ---- Laci: lembar --elev-3 dari kanan; di ponsel menjadi lembar bawah dengan pegangan. ---- */
+  .drawer { position: fixed; inset: 0 0 0 auto; margin: 0 0 0 auto; height: 100dvh; max-height: none; width: min(460px, 100vw); max-width: none; padding: 0; border: 0; border-left: 1px solid rgb(var(--rule));
+    background-color: rgb(var(--paper)); background-image: var(--grain-paper); background-blend-mode: multiply; box-shadow: var(--elev-3); }
+  .drawer[open] { animation: drawer-in var(--dur-base) var(--ease-out) 1; }
+  .drawer .handle { display: none; }
+  @media (max-width: 639px) {
+    .drawer { inset: auto 0 0 0; margin: auto 0 0; width: 100%; height: auto; max-height: 88dvh; border-left: 0; border-top: 1px solid rgb(var(--rule)); border-radius: var(--radius-panel) var(--radius-panel) 0 0; }
+    .drawer[open] { animation-name: sheet-in; }
+    .drawer .handle { display: block; width: 36px; height: 4px; margin: 8px auto 0; border-radius: 2px; background: rgb(var(--rule-strong)); }
   }
+  .dialog-sheet { border: 1px solid rgb(var(--rule)); border-radius: var(--radius-panel); background-color: rgb(var(--paper)); background-image: var(--grain-paper); background-blend-mode: multiply; box-shadow: var(--elev-3); padding: 0; }
+  .dialog-sheet[open] { animation: dlg-in var(--dur-base) var(--ease-out) 1; }
+
+  /* ---- Palet perintah: kartu indeks dengan garis atas --accent dan garis samar setiap 24 px. ---- */
+  .index-card { border: 1px solid rgb(var(--rule)); border-top: 2px solid rgb(var(--accent)); border-radius: var(--radius-control); background-color: rgb(var(--paper));
+    background-image: repeating-linear-gradient(to bottom, transparent 0 calc(var(--rule-row) - 1px), rgb(var(--rule) / 0.55) calc(var(--rule-row) - 1px) var(--rule-row)); box-shadow: var(--elev-3); padding: 0; }
+  .index-card[open] { animation: dlg-in var(--dur-base) var(--ease-out) 1; }
+  .index-card.instant[open] { animation: none; }
+  @media (max-width: 639px) { .index-card { width: 100vw; height: 100dvh; max-width: none; max-height: none; margin: 0; border-radius: 0; } }
+
+  .scroll-x { overflow-x: auto; background:
+      linear-gradient(to right, rgb(var(--paper)) 30%, rgb(var(--paper) / 0)) left center / 28px 100% no-repeat local,
+      linear-gradient(to left, rgb(var(--paper)) 30%, rgb(var(--paper) / 0)) right center / 28px 100% no-repeat local,
+      radial-gradient(farthest-side at 0 50%, rgb(var(--ink) / 0.2), transparent) left center / 10px 100% no-repeat scroll,
+      radial-gradient(farthest-side at 100% 50%, rgb(var(--ink) / 0.2), transparent) right center / 10px 100% no-repeat scroll; }
+  .sr-live { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 }
 
 @keyframes key-progress { from { transform: translateX(-100%); } to { transform: translateX(250%); } }
+@keyframes ink-run { from { transform: translateX(-100%); } to { transform: translateX(340%); } }
+@keyframes pencil-pulse { from { opacity: 1; } to { opacity: 0.45; } }
 @keyframes drawer-in { from { transform: translateX(24px); opacity: 0; } to { transform: none; opacity: 1; } }
 @keyframes sheet-in { from { transform: translateY(100%); } to { transform: none; } }
 @keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
-@keyframes slip-in { from { opacity: 0; transform: translateY(-12px); } to { opacity: 1; transform: none; } }
 @keyframes dlg-in { from { opacity: 0; transform: scale(0.98); } to { opacity: 1; transform: none; } }
-@keyframes sheen { to { transform: translateX(100%); } }
 @keyframes pop-in { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
-.drawer-in { animation: drawer-in var(--t-mid) var(--ease-out) 1; }
-.sheet-in { animation: sheet-in var(--t-mid) var(--ease-out) 1; }
-.fade-in { animation: fade-in var(--t-fast) var(--ease-out) 1; }
-.pop-in { animation: pop-in var(--t-fast) var(--ease-out) 1; }
-dialog[open] { animation: fade-in var(--t-fast) var(--ease-out) 1; }
-.dlg-in[open] { animation: dlg-in var(--t-mid) var(--ease-out) 1; }
-.drawer-in[open] { animation: drawer-in var(--t-mid) var(--ease-out) 1; }
-.slip-in { animation: slip-in var(--t-mid) var(--ease-out) 1; }
-dialog[open]::backdrop { animation: fade-in var(--t-mid) var(--ease-out) 1; }
-
-/* Chart (C10): the lines draw once; end labels follow. */
-.trend-line { stroke-dasharray: 1; stroke-dashoffset: 1; }
-.trend-line.go { stroke-dashoffset: 0; transition: stroke-dashoffset var(--t-draw) var(--ease-out); }
-.trend-end { opacity: 0; }
-.trend-end.drawn { opacity: 1; transition: opacity 200ms var(--ease-out) 450ms; }
-
-/* Group entrance: 30 ms apart, at most six staggered; the rest arrive with the sixth. */
 @keyframes rise { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
-.stagger > * { animation: rise var(--t-mid) var(--ease-out) backwards; }
-.stagger > :nth-child(2) { animation-delay: 30ms; }
-.stagger > :nth-child(3) { animation-delay: 60ms; }
-.stagger > :nth-child(4) { animation-delay: 90ms; }
-.stagger > :nth-child(5) { animation-delay: 120ms; }
-.stagger > :nth-child(n + 6) { animation-delay: 150ms; }
+@keyframes struk-print { from { clip-path: inset(0 0 100% 0); transform: translateY(-6px); } to { clip-path: inset(0 0 0 0); transform: none; } }
 
-/* Movement (position and scale) only when the user has not asked for less motion. */
-@media (prefers-reduced-motion: no-preference) {
-  .btn:hover:not(:disabled):not([data-state="loading"]) { transform: translateY(-1px); box-shadow: inset 0 0 0 1px rgb(var(--line)), 0 3px 0 rgb(var(--key-edge)); }
-  .btn-primary:hover:not(:disabled):not([data-state="loading"]) { box-shadow: 0 4px 0 rgb(var(--accent-deep)); }
-  .btn-danger:hover:not(:disabled):not([data-state="loading"]) { box-shadow: inset 0 0 0 1px rgb(var(--bad)), 0 3px 0 rgb(var(--key-edge)); }
-  .btn-text:hover:not(:disabled) { transform: none; box-shadow: none; }
-  .task:hover, .task:focus-visible { transform: translateY(-1px); }
-  .task:hover .stack-back.b1, .task:focus-visible .stack-back.b1 { transform: translate(4px, 5px); }
-  .task:hover .stack-back.b2, .task:focus-visible .stack-back.b2 { transform: translate(8px, 10px); }
-  .btn:active:not(:disabled):not([data-state="loading"]) { transform: translateY(2px); box-shadow: inset 0 0 0 1px rgb(var(--line)), 0 0 0 rgb(var(--key-edge)); }
-  .btn-primary:active:not(:disabled):not([data-state="loading"]) { transform: translateY(3px); box-shadow: 0 0 0 rgb(var(--accent-deep)); }
-  .btn-danger:active:not(:disabled):not([data-state="loading"]) { box-shadow: inset 0 0 0 1px rgb(var(--bad)), 0 0 0 rgb(var(--key-edge)); }
-  .btn-text:active:not(:disabled) { transform: none; box-shadow: none; }
-  .sk::after { animation: sheen 1.6s var(--ease-in) infinite; }
-  .mini-key:active:not(:disabled) { transform: translateY(2px); box-shadow: inset 0 0 0 1px rgb(var(--line)), 0 0 0 rgb(var(--key-edge)); }
-}
-@media (prefers-reduced-motion: reduce) {
-  /* The press is still visible: the edge goes and the body darkens, with no movement. */
-  .btn:active:not(:disabled):not(.btn-text) { box-shadow: inset 0 0 0 1px rgb(var(--line)); background: rgb(var(--highlight)); }
-  .btn-primary:active:not(:disabled) { box-shadow: none; background: rgb(var(--accent-deep)); }
-  .btn-primary:disabled, .btn:not(.btn-primary):not(.btn-text):disabled, .mini-key:disabled { transform: none; }
-  .drawer-in[open], .dlg-in[open], .pop-in, .sheet-in, .slip-in { animation-name: fade-in; }
-  .tab { transition: color var(--t-fast); }
-  .stagger > * { animation-name: fade-in; }
-  .trend-end.drawn { transition: opacity 200ms; }
-  .btn .bar::after { animation-duration: 1800ms; }
-  .rack-body, .sw .knob, .rd input::after { transition: none; }
-}
+.fade-in { animation: fade-in var(--dur-fast) var(--ease-out) 1; }
+.pop-in { animation: pop-in var(--dur-fast) var(--ease-out) 1; }
+dialog[open]::backdrop { animation: fade-in var(--dur-base) var(--ease-out) 1; }
 
-.rack-body { transition: transform 150ms var(--ease-out); }
-@media (prefers-reduced-motion: no-preference) {
-  .rack:hover .rack-body, .rack:focus .rack-body { transform: translateY(-6px); }
-}
-.rack:focus-visible { outline: 2px solid rgb(var(--accent)); outline-offset: 0; }
-.plan-label { paint-order: stroke; stroke: rgb(var(--canvas)); stroke-width: 4px; stroke-linejoin: round; }
+/* Kelompok masuk: jeda --stagger, paling banyak 6 bertahap; sisanya bersama yang keenam. */
+.stagger > * { animation: rise var(--dur-base) var(--ease-out) backwards; }
+.stagger > :nth-child(2) { animation-delay: var(--stagger); }
+.stagger > :nth-child(3) { animation-delay: calc(var(--stagger) * 2); }
+.stagger > :nth-child(4) { animation-delay: calc(var(--stagger) * 3); }
+.stagger > :nth-child(5) { animation-delay: calc(var(--stagger) * 4); }
+.stagger > :nth-child(n + 6) { animation-delay: calc(var(--stagger) * 5); }
 
-/* Narrow screens: tables scroll sideways inside their sheet; the first column stays, with an edge shadow. */
+/* ---- M4 Transisi Ruang (View Transition API). Tidak menahan input: lapisan transisi tidak menangkap pointer. ---- */
+::view-transition { pointer-events: none; }
+::view-transition-group(*) { animation-duration: var(--dur-room); animation-timing-function: var(--ease-inout); }
+::view-transition-old(root) { animation: fade-out-room calc(var(--dur-room) * 0.7) var(--ease-in) both; }
+::view-transition-new(root) { animation: fade-in var(--dur-room) var(--ease-out) both; }
+@media (max-width: 639px) { ::view-transition-group(*) { animation-duration: var(--dur-room-phone); } }
+@keyframes fade-out-room { to { opacity: 0; } }
+
+/* M11 Membuka Buku: lembar login menutup menjadi sampul, lalu buku terbuka menjadi kerangka aplikasi (≤ --dur-open-book). */
+:root[data-book] ::view-transition-group(book) { animation-duration: var(--dur-open-book); }
+:root[data-book] ::view-transition-old(book) { animation: book-close calc(var(--dur-open-book) / 2) var(--ease-in) both; transform-origin: left center; }
+:root[data-book] ::view-transition-new(book) { animation: book-open calc(var(--dur-open-book) / 2) var(--ease-out) calc(var(--dur-open-book) / 2) both; transform-origin: left center; }
+:root[data-book] ::view-transition-old(root), :root[data-book] ::view-transition-new(root) { animation-duration: var(--dur-open-book); }
+@keyframes book-close { to { transform: perspective(1200px) rotateY(-80deg); opacity: 0.3; } }
+@keyframes book-open { from { transform: perspective(1200px) rotateY(80deg); opacity: 0.3; } }
+
+/* ---- Gerak posisi dan skala hanya pada mode Penuh. ---- */
+:root[data-motion="full"] .btn:hover:not(:disabled):not([data-state="loading"]) { transform: translateY(var(--lift-hover)); box-shadow: inset 0 0 0 1px rgb(var(--rule-strong) / 0.55), 0 3px 0 var(--key-edge); }
+:root[data-motion="full"] .btn-primary:hover:not(:disabled):not([data-state="loading"]) { box-shadow: 0 4px 0 rgb(var(--accent-deep)); }
+:root[data-motion="full"] .btn-danger:hover:not(:disabled):not([data-state="loading"]) { box-shadow: inset 0 0 0 1px rgb(var(--bad)), 0 3px 0 var(--key-edge); }
+:root[data-motion="full"] .btn-text:hover:not(:disabled) { transform: none; box-shadow: none; }
+:root[data-motion="full"] .task:hover, :root[data-motion="full"] .task:focus-visible { transform: translateY(var(--lift-hover)); }
+:root[data-motion="full"] .task:hover .stack-back.b1, :root[data-motion="full"] .task:focus-visible .stack-back.b1 { transform: translate(4px, 5px); }
+:root[data-motion="full"] .task:hover .stack-back.b2, :root[data-motion="full"] .task:focus-visible .stack-back.b2 { transform: translate(8px, 10px); }
+:root[data-motion="full"] .btn:active:not(:disabled):not([data-state="loading"]) { transform: translateY(2px); box-shadow: inset 0 0 0 1px rgb(var(--rule-strong) / 0.55), 0 0 0 var(--key-edge); }
+:root[data-motion="full"] .btn-primary:active:not(:disabled):not([data-state="loading"]) { transform: translateY(3px); box-shadow: 0 0 0 rgb(var(--accent-deep)); }
+:root[data-motion="full"] .btn-danger:active:not(:disabled):not([data-state="loading"]) { box-shadow: inset 0 0 0 1px rgb(var(--bad)), 0 0 0 var(--key-edge); }
+:root[data-motion="full"] .btn-text:active:not(:disabled) { transform: none; box-shadow: none; }
+
+/* Mode Dikurangi dan Minimal: tekan tetap terlihat (tepi hilang, badan menggelap) tanpa gerak. */
+:root:not([data-motion="full"]) .btn:active:not(:disabled):not(.btn-text) { box-shadow: inset 0 0 0 1px rgb(var(--rule)); background: rgb(var(--highlight)); }
+:root:not([data-motion="full"]) .btn-primary:active:not(:disabled) { box-shadow: none; background: rgb(var(--accent-deep)); }
+:root:not([data-motion="full"]) .btn-primary:disabled, :root:not([data-motion="full"]) .btn:not(.btn-primary):not(.btn-text):disabled { transform: none; }
+:root:not([data-motion="full"]) .drawer[open], :root:not([data-motion="full"]) .dialog-sheet[open], :root:not([data-motion="full"]) .index-card[open], :root:not([data-motion="full"]) .pop-in, :root:not([data-motion="full"]) .stagger > * { animation-name: fade-in; }
+:root:not([data-motion="full"]) .btn .bar::after { width: 100%; animation: pencil-pulse var(--dur-loading) var(--ease-inout) infinite alternate; }
+
+/* Mode Minimal: tidak ada animasi atau transisi kecuali indikator memuat. */
+:root[data-motion="minimal"] *:not([data-loading-indicator]),
+:root[data-motion="minimal"] *:not([data-loading-indicator])::before,
+:root[data-motion="minimal"] *:not([data-loading-indicator])::after { animation: none !important; transition: none !important; }
+:root[data-motion="minimal"] ::view-transition-group(*), :root[data-motion="minimal"] ::view-transition-old(*), :root[data-motion="minimal"] ::view-transition-new(*) { animation: none !important; }
+
+/* Ponsel: satu tombol utama halaman menempel di atas bilah tab. */
 @media (max-width: 767px) {
-  .tbl-sheet { overflow-x: auto; }
-  .tbl-sheet .tbl { min-width: 640px; }
-  .tbl-sheet .tbl thead th { position: static; top: auto; }
-  .tbl-sheet .tbl td:first-child, .tbl-sheet .tbl:has(.ck) td:nth-child(2) { white-space: nowrap; }
-  .tbl-sheet .tbl th:first-child, .tbl-sheet .tbl td:first-child { position: sticky; left: 0; z-index: 1; box-shadow: 6px 0 6px -6px rgb(30 27 24 / 0.25); }
-  .tbl-sheet .tbl:has(.ck) th:nth-child(2), .tbl-sheet .tbl:has(.ck) td:nth-child(2) { position: sticky; left: 48px; z-index: 1; box-shadow: 6px 0 6px -6px rgb(30 27 24 / 0.25); }
-  .tbl-sheet .tbl:has(.ck) th:first-child, .tbl-sheet .tbl:has(.ck) td:first-child { box-shadow: none; }
-  /* Inside a sideways-scrolling sheet a sticky bar would stay with the sheet, so on phones it floats above the tab bar. */
-  .tbl .ck .cb { width: 44px; height: 44px; }
-  .tbl .ck .cb svg { left: 15px; }
-  .bulk { position: fixed; left: 12px; right: 12px; bottom: calc(68px + env(safe-area-inset-bottom)); border-radius: 4px; box-shadow: var(--elev-3); }
-}
-
-/* Phones: the page's one primary key sticks above the tab bar. */
-@media (max-width: 767px) {
-  .page-cta { position: fixed; left: 16px; right: 16px; bottom: calc(68px + env(safe-area-inset-bottom)); z-index: 30; }
+  .page-cta { position: fixed; left: 16px; right: 16px; bottom: calc(68px + env(safe-area-inset-bottom)); z-index: var(--z-topbar); }
   .page-cta > .btn { width: 100%; box-shadow: 0 3px 0 rgb(var(--accent-deep)), var(--elev-3); }
-  main:has(.page-cta) .bulk { bottom: calc(124px + env(safe-area-inset-bottom)); }
 }
 
-/* Print: a paper invoice or report. No depth, no motion, black on white, every section visible. */
+@media (prefers-contrast: more) { :root { --rule: var(--rule-strong); --key-edge: rgb(var(--ink) / 0.55); } }
+
+/* Warna paksa (kontras tinggi Windows): batas yang biasanya bayangan menjadi garis; ikon memakai currentColor. */
+@media (forced-colors: active) {
+  .sheet, .lift::before, .drawer, .dialog-sheet, .index-card, .struk-paper, .menu, .tip, .avatar { border: 1px solid CanvasText; }
+  .btn { border: 1px solid ButtonText; }
+  .btn-primary { forced-color-adjust: none; background: Highlight; color: HighlightText; }
+  .cap { -webkit-mask-image: none; mask-image: none; }
+  .badge { border: 1px solid currentColor; }
+  .field { border: 1px solid FieldText; }
+  .pencil, .ink-line, .ink-line::after { background: CanvasText; }
+}
+
+/* Cetak: dokumen kertas sungguhan. Tanpa bayangan, tekstur, dan animasi; tetap terbaca hitam-putih. */
 @media print {
   @page { margin: 16mm; }
-  html, body { background: #fff !important; color: #000 !important; }
+  html, body { background: none !important; color: rgb(var(--ink)) !important; }
   * { box-shadow: none !important; animation: none !important; transition: none !important; }
-  .sheet, .tbl-sheet, .tab-panel, .doc-paper, .lift::before { background: #fff !important; border-color: #000 !important; }
-  .stack-back, .lift::after, .bulk, .swipe-hint, .receipt, .tabs, [role="tablist"] { display: none !important; }
-  .stamp { filter: none !important; color: #000 !important; }
-  .badge { background: none !important; color: #000 !important; padding-left: 0; }
-  .tbl thead th { position: static !important; color: #000 !important; border-color: #000 !important; }
-  .tbl td { border-color: #999 !important; }
-  .rail-track::before, .rail-track li::before, .rail-track li::after { box-shadow: none !important; }
-  a { color: #000 !important; text-decoration: none !important; }
+  .sheet, .doc-paper, .lift::before { background: none !important; border-color: rgb(var(--ink)) !important; }
+  .stack-back, .lift::after, .struk, .ink-line, .tip { display: none !important; }
+  .cap { -webkit-mask-image: none !important; mask-image: none !important; color: rgb(var(--ink)) !important; }
+  .badge { background: none !important; color: rgb(var(--ink)) !important; padding-left: 0; }
+  a { color: rgb(var(--ink)) !important; text-decoration: none !important; }
 }

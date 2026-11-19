@@ -1,0 +1,20 @@
+/* Kotak centang, radio, sakelar: batas --rule-strong. Dimuat bersama halaman yang memakainya. */
+.cb, .rd { display: inline-flex; align-items: center; gap: 8px; min-height: 32px; cursor: pointer; position: relative; }
+.cb input, .rd input { appearance: none; margin: 0; width: 18px; height: 18px; flex: none; border: 1px solid rgb(var(--rule-strong)); background: rgb(var(--highlight)); box-shadow: var(--inset); cursor: pointer; transition: background-color var(--dur-fast), border-color var(--dur-fast); }
+.cb input { border-radius: 3px; }
+.cb svg { position: absolute; left: 2px; top: 50%; margin-top: -7px; width: 14px; height: 14px; pointer-events: none; color: rgb(var(--paper)); }
+.cb svg path { stroke-dasharray: 1; stroke-dashoffset: 1; transition: stroke-dashoffset var(--dur-fast) var(--ease-out); }
+.cb input:checked, .cb input:indeterminate { background: rgb(var(--accent)); border-color: rgb(var(--accent)); box-shadow: none; }
+.cb input:checked + svg path { stroke-dashoffset: 0; }
+.cb input:indeterminate + svg { display: none; }
+.cb:has(input:indeterminate)::after { content: ""; position: absolute; left: 4px; top: 50%; width: 10px; height: 2px; margin-top: -1px; border-radius: 1px; background: rgb(var(--paper)); pointer-events: none; }
+.rd input { border-radius: 50%; display: grid; place-items: center; }
+.rd input::after { content: ""; width: 8px; height: 8px; border-radius: 50%; background: rgb(var(--accent)); transform: scale(0); transition: transform var(--dur-fast) var(--ease-spring); }
+.rd input:checked { border-color: rgb(var(--accent)); background: rgb(var(--paper)); }
+.rd input:checked::after { transform: scale(1); }
+.sw { display: inline-flex; align-items: center; gap: 10px; min-height: 32px; border: 0; background: none; padding: 0; font: inherit; color: inherit; }
+.sw .rail { position: relative; width: 40px; height: 22px; flex: none; border-radius: 11px; background: rgb(var(--highlight)); border: 1px solid rgb(var(--rule-strong)); box-shadow: var(--inset); transition: background-color var(--dur-fast); }
+.sw .knob { position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; border-radius: 50%; background: rgb(var(--paper)); border: 1px solid rgb(var(--rule-strong)); box-shadow: 0 1px 0 rgb(var(--ink) / 0.12), 0 2px 4px -1px rgb(var(--ink) / 0.25); transition: transform var(--dur-fast) var(--ease-spring); }
+.sw[aria-checked="true"] .rail { background: rgb(var(--accent)); border-color: rgb(var(--accent)); }
+.sw[aria-checked="true"] .knob { transform: translateX(18px); border-color: rgb(var(--accent-deep)); }
+@media (forced-colors: active) { .cb input, .rd input, .sw .rail { border: 1px solid FieldText; } }

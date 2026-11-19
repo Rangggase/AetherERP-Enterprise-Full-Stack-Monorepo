@@ -46,6 +46,19 @@ export const GLYPHS = {
   "rel": { label: "Ciutkan menu", d: "<path d=\"M4 4h16v16H4zM9 4v16\"/><path d=\"M15 10l-2 2 2 2\"/>" },
   "keluar": { label: "Keluar", d: "<path d=\"M10 4H5v16h5\"/><path d=\"M14 8l4 4-4 4M18 12H9\"/>" },
   "buka-lengkap": { label: "Buka lengkap", d: "<path d=\"M14 4h6v6M20 4l-8 8\"/><path d=\"M18 14v6H4V6h6\"/>" },
+  // v3 "Buku Besar Hidup"
+  "tinta": { label: "Jurnal (tinta)", d: "<path d=\"M7 9.5 12 3l5 6.5L12 21z\"/><path d=\"M12 10.5v5.5\"/><circle cx=\"12\" cy=\"9\" r=\"1\"/>" },
+  "timbangan": { label: "Timbangan (seimbang)", d: "<path d=\"M12 4.5V20M8.5 20h7M4.5 7.5h15\"/><path d=\"M4.5 7.5 2 13.5h5zM19.5 7.5 17 13.5h5z\"/>" },
+  "lapisan": { label: "Lapisan FIFO", d: "<path d=\"M12 4l9 4.5-9 4.5-9-4.5z\"/><path d=\"M3 12.5 12 17l9-4.5M3 16.5 12 21l9-4.5\"/>" },
+  "klip": { label: "Rantai dokumen", d: "<path d=\"M8.5 12.5 14 7a3 3 0 0 1 4.2 4.2l-7.4 7.4a4.6 4.6 0 0 1-6.5-6.5L11 5.4\"/>" },
+  "buku-tertutup": { label: "Buku tertutup", d: "<path d=\"M5 4.5h12.5A1.5 1.5 0 0 1 19 6v14H6.5A1.5 1.5 0 0 1 5 18.5z\"/><path d=\"M5 18.5A1.5 1.5 0 0 1 6.5 17H19M9 8.5h6\"/>" },
+  "buku-terbuka": { label: "Buku terbuka", d: "<path d=\"M3 5.5c3 0 6 .7 9 2.5 3-1.8 6-2.5 9-2.5v13c-3 0-6 .7-9 2.5-3-1.8-6-2.5-9-2.5z\"/><path d=\"M12 8v12.5\"/>" },
+  "struk": { label: "Struk", d: "<path d=\"M6 3l2 1.5L10 3l2 1.5L14 3l2 1.5L18 3v18l-2-1.5-2 1.5-2-1.5-2 1.5-2-1.5L6 21z\"/><path d=\"M9 9h6M9 12.5h6M13 16h2\"/>" },
+  "cap": { label: "Cap", d: "<path d=\"M9.5 3.5h5v3a2 2 0 0 1-1 1.7V11h-3V8.2a2 2 0 0 1-1-1.7z\"/><path d=\"M5 11h14v4H5zM6.5 19h11\"/>" },
+  "rak": { label: "Rak", d: "<path d=\"M4 3v18M20 3v18M4 8h16M4 14h16M4 20h16\"/><path d=\"M7 5h3v3H7zM13 11h4v3h-4zM6.5 17h3v3h-3z\"/>" },
+  "aliran": { label: "Aliran barang", d: "<path d=\"M3 7h6c4 0 5 10 9 10h3M3 17h4\"/><path d=\"M18.5 14 21 17l-2.5 3\"/>" },
+  "kembali": { label: "Kembali", d: "<path d=\"M20 12H5M10 7l-5 5 5 5\"/>" },
+  "putar-ulang": { label: "Putar ulang", d: "<path d=\"M4 12a8 8 0 1 0 2.3-5.6\"/><path d=\"M4 4v4.5h4.5\"/>" },
 } as const;
 
 export type GlyphName = keyof typeof GLYPHS;
