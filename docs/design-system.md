@@ -165,7 +165,7 @@ Recharts stays (already installed), with rules from the dataviz method: one main
 
 ## Motion
 
-Frequency first: lists, tables and typing are never animated. Allowed: button press (100ms), hover and focus colour (120ms), drawer in from the right (200ms, transform), dialog and menu fade (150ms, opacity), toast fade (150ms). Easing `cubic-bezier(0.2, 0, 0, 1)`. Only `opacity`, `transform` and colour are animated. `prefers-reduced-motion` removes all of it. There are no count-up numbers, bounces or scale effects.
+Frequency first: lists, tables and typing are never animated. Allowed: button press (100ms), hover and focus colour (120ms), drawer in from the right (150ms, transform), dialog and menu fade (150ms, opacity), toast fade (150ms), warehouse-plan rack lift on hover or focus (150ms, transform, 6px). Easing `cubic-bezier(0.2, 0, 0, 1)`. Only `opacity`, `transform` and colour are animated. `prefers-reduced-motion` removes all of it. There are no count-up numbers, bounces or scale effects.
 
 ## Language
 
@@ -186,3 +186,8 @@ Contrast per the table; one focus ring on every control; visible labels; heading
 7. Dark theme and its toggle removed (light only).
 8. Mobile list rows stacked instead of scrolling tables.
 9. Dashboard widgets chosen per role from permissions.
+
+## Isometric visuals
+
+- **Warehouse plan** (Level stok, from 800px up; below that the table is the view). Shown only when stock rows exist, one floor per warehouse, at most 12 racks per floor (the table lists all). Rack fill: aman `#3F6B4E`, menipis `#B07A1E`, habis `#9E3B32`; fill height is available stock against three times the reorder point (habis is a flat slab). Every rack carries its SKU and a status word, so colour is never the only signal. Quantity appears on hover or keyboard focus only; the active rack is drawn last so nothing covers its label. Labels are `ink` / `muted` with a canvas halo, never the status colours.
+- **Empty state illustration**: an open box and a blank sheet, one colour `#6B645A`, 1px line, no fill, decorative (`aria-hidden`).

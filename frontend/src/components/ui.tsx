@@ -69,6 +69,15 @@ export function ErrorNote({ error, retry }: { error: unknown; retry?: () => void
 export function EmptyState({ children, action }: { children: ReactNode; action?: ReactNode }) {
   return (
     <div className="border-y border-line py-10 text-center">
+      {/* One colour, 1 px line, no fill: an open box and a blank ledger sheet. Decorative. */}
+      <svg aria-hidden viewBox="0 0 200 120" className="mx-auto mb-3 h-24 w-auto" fill="none" stroke="#6B645A" strokeWidth={1} strokeLinejoin="round" strokeLinecap="round">
+        <path d="M30 78 L100 113 L170 78 L100 43 Z" strokeDasharray="3 3" />
+        <path d="M56 66 V92 L100 114 V88 Z M100 88 V114 L144 92 V66 Z" />
+        <path d="M56 66 L100 88 L144 66 L100 44 Z" />
+        <path d="M56 66 L40 56 L84 34 L100 44 M144 66 L160 56 L116 34 L100 44" />
+        <path d="M76 62 L100 50 L124 62 L100 74 Z" />
+        <path d="M84 62 L100 54 M92 66 L108 58" />
+      </svg>
       <p className="mx-auto max-w-md text-muted">{children}</p>
       {action && <div className="mt-3">{action}</div>}
     </div>

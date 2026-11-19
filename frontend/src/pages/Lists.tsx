@@ -5,6 +5,7 @@ import { Link } from "react-router-dom";
 import { DataTable } from "../components/DataTable";
 import { Drawer } from "../components/Layers";
 import { toast } from "../components/Toaster";
+import { WarehousePlan, type PlanRow } from "../components/WarehousePlan";
 import { ErrorNote, PageHeader, SectionTitle, Status } from "../components/ui";
 import { api } from "../lib/api";
 import { PO_STEPS, ReturnLink, returnable, RowActions, SO_STEPS, useTransition, type Row, type Step } from "../lib/actions";
@@ -34,13 +35,14 @@ const status = (key = "status") => col("Status", key, { cell: (c) => <Status val
 const actionCol = (render: (row: Row) => React.ReactNode): ColumnDef<Row, any> =>
   ({ id: "aksi", header: "", enableSorting: false, enableColumnFilter: false, cell: (c) => <div className="flex justify-end gap-1.5">{render(c.row.original)}</div>, meta: { m: "x" } }) as ColumnDef<Row, any>;
 
-function ListPage({ title, sub, q, columns, actions, label, onOpen, selectedId, empty, emptyAction, preview }: {
-  title: string; sub?: string; q: ReturnType<typeof useList>; columns: ColumnDef<Row, any>[]; actions?: React.ReactNode; label: string;
+function ListPage({ title, sub, q, columns, actions, label, onOpen, selectedId, empty, emptyAction, preview, lead }: {
+  lead?: React.ReactNode; title: string; sub?: string; q: ReturnType<typeof useList>; columns: ColumnDef<Row, any>[]; actions?: React.ReactNode; label: string;
   onOpen?: (r: Row) => void; selectedId?: (r: Row) => boolean; empty?: string; emptyAction?: React.ReactNode; preview?: React.ReactNode;
 }) {
   return (
     <>
       <PageHeader title={title} sub={sub} actions={actions} />
+      {lead}
       {q.isError ? <ErrorNote error={q.error} retry={() => q.refetch()} /> : <DataTable<Row> label={label} data={q.data ?? []} columns={columns} loading={q.isLoading} onOpen={onOpen} selectedId={selectedId} empty={empty} emptyAction={emptyAction} />}
       {preview}
     </>
@@ -147,6 +149,7 @@ export function Stock() {
         col("Stok fisik", "on_hand", { cell: (c) => qty(c.getValue()), meta: R("x") }), col("Dicadangkan", "reserved", { cell: (c) => qty(c.getValue()), meta: R("x") }),
         col("Tersedia", "available", { cell: (c) => <span className={c.row.original.is_low ? "font-medium text-warn" : ""}>{qty(c.getValue())}{c.row.original.is_low ? " (rendah)" : ""}</span>, meta: R("v") }),
         money("Nilai FIFO", "value", "x")]}
+      lead={q.data && q.data.length > 0 ? <WarehousePlan rows={q.data as PlanRow[]} branchName={name} /> : undefined}
       empty="Belum ada stok. Stok muncul setelah barang diterima atau dirakit." />
   );
 }
