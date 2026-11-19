@@ -104,13 +104,15 @@ function Zone({ title, rows }: { title: string; rows: PlanRow[] }) {
 }
 
 /** Isometric stock plan per warehouse. Shown only when there are balances; hidden below md, where the table is the view. */
-export function WarehousePlan({ rows, branchName }: { rows: PlanRow[]; branchName: (id: number) => string }) {
+export function WarehousePlan({ rows, branchName, compact }: { rows: PlanRow[]; branchName: (id: number) => string; compact?: boolean }) {
   const zones = useMemo(() => {
     const m = new Map<number, PlanRow[]>();
     for (const r of rows) m.set(r.branch_id, [...(m.get(r.branch_id) ?? []), r]);
     return [...m.entries()];
   }, [rows]);
   if (!zones.length) return null;
+  // Dashboard version: floors only, one column; the racks still carry SKU and status word.
+  if (compact) return <div className="grid gap-4">{zones.map(([id, r]) => <Zone key={id} title={branchName(id)} rows={r} />)}</div>;
   return (
     <section aria-label="Denah gudang" className="mb-6 hidden border-y border-line py-4 md:block">
       <div className="mb-3 flex flex-wrap items-center gap-x-5 gap-y-1 text-table text-muted">

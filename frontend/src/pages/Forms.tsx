@@ -7,6 +7,7 @@ import { PageHeader } from "../components/ui";
 import { api } from "../lib/api";
 import { num, rupiah, today } from "../lib/format";
 import { useSession } from "../lib/session";
+import { Key } from "../components/Key";
 
 type Row = Record<string, any>;
 interface Line { product_id: string; quantity: string; unit_price: string }
@@ -91,7 +92,7 @@ function OrderForm({ kind }: { kind: "po" | "so" }) {
         </FormGroup>
         <ActionBar summary={<Impact label="Total pesanan" value={rupiah(total, true)} />}>
           <Link className="btn btn-text" to={back}>Batal</Link>
-          <button className="btn btn-primary" disabled={save.isPending}>{save.isPending ? "Menyimpan…" : "Simpan draf"}</button>
+          <Key type="submit" tone="primary" glyph="simpan" m={save}>Simpan draf</Key>
         </ActionBar>
       </form>
     </>
@@ -145,7 +146,7 @@ export function NewJournal() {
         </FormGroup>
         <ActionBar summary={<><Impact label="Total debit" value={rupiah(d, true)} /><Impact label="Total kredit" value={rupiah(c, true)} /><div className={ok ? "text-good" : "text-warn"} aria-live="polite">{ok ? "Seimbang" : `Selisih ${rupiah(Math.abs(d - c), true)}`}</div></>}>
           <Link className="btn btn-text" to="/accounting/journals">Batal</Link>
-          <button className="btn btn-primary" disabled={!ok || save.isPending}>{save.isPending ? "Memposting…" : "Posting jurnal"}</button>
+          <Key type="submit" tone="primary" glyph="kirim" m={save} disabled={!ok}>Posting jurnal</Key>
         </ActionBar>
       </form>
     </>

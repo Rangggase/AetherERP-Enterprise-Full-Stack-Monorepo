@@ -1,0 +1,391 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Meja kerja akuntan</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,500;8..60,600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="tactile-kit.css">
+<style>
+  /* Kit page layout only. */
+  .kit { max-width: 1180px; margin: 0 auto; padding: 28px 20px 96px; }
+  .kit > header { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: 16px; padding-bottom: 16px; border-bottom: 1px solid var(--ink); }
+  .kit h1 { font-size: 36px; }
+  .kit section.s { margin-top: 48px; scroll-margin-top: 16px; }
+  .kit section.s > h2 { font-size: 24px; display: flex; align-items: baseline; gap: 10px; }
+  .kit section.s > h2 small { font: 500 13px var(--sans); color: var(--muted); }
+  .kit section.s > p.lead { color: var(--muted); max-width: 72ch; margin: 6px 0 16px; }
+  .toc { display: flex; flex-wrap: wrap; gap: 4px 14px; margin-top: 14px; font-size: 13px; }
+  .toc a { color: var(--accent); }
+  .row { display: flex; flex-wrap: wrap; gap: 18px; align-items: flex-start; }
+  .cellx { display: grid; gap: 8px; justify-items: start; }
+  .cellx > .cap-t { font-size: 12px; color: var(--muted); }
+  .states { display: grid; grid-template-columns: 110px repeat(6, minmax(0, 1fr)); gap: 14px 18px; align-items: center; }
+  .states > .h { font-size: 12px; color: var(--muted); }
+  .swatch { width: 132px; }
+  .swatch .chipc { height: 56px; border-radius: var(--r); border: 1px solid var(--line); }
+  .swatch b { display: block; font-size: 13px; margin-top: 6px; }
+  .swatch code { font: 12px ui-monospace, monospace; color: var(--muted); }
+  .depth { width: 150px; height: 92px; display: grid; place-items: center; font-size: 13px; border-radius: var(--r); }
+  .mv-track { position: relative; height: 34px; border-bottom: 1px dashed var(--line); width: 100%; max-width: 520px; }
+  .mv-dot { position: absolute; left: 0; top: 6px; width: 22px; height: 22px; border-radius: 4px; background: var(--accent); box-shadow: 0 2px 0 var(--accent-deep); }
+  .two { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px; }
+  .frame { border: 1px solid var(--control); border-radius: 6px; overflow: hidden; background: var(--canvas); box-shadow: var(--elev-2); }
+  .frame.desk { height: 640px; }
+  .frame.desk .app { height: 100%; }
+  .frame.desk .main { overflow: auto; height: calc(100% - 52px); }
+  .phone { position: relative; width: 390px; height: 780px; max-width: 100%; border: 1px solid var(--control); border-radius: 22px; overflow: hidden; background: var(--canvas); box-shadow: var(--elev-2); }
+  .phone .scroll { position: absolute; inset: 0 0 60px; overflow: auto; }
+  .is-hover.key { transform: translateY(-1px); box-shadow: 0 4px 0 var(--accent-deep); }
+  .is-hover.key.sec { box-shadow: inset 0 0 0 1px var(--line), 0 3px 0 var(--key-edge); }
+  .is-hover.key.danger { box-shadow: inset 0 0 0 1px var(--bad), 0 3px 0 var(--key-edge); }
+  .is-focus { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .input.is-focus { outline-offset: 1px; border-color: var(--accent); background: var(--surface); box-shadow: var(--elev-1); }
+  .note { font-size: 12.5px; color: var(--muted); border-left: 2px solid var(--line); padding-left: 10px; margin-top: 10px; max-width: 80ch; }
+  .page { padding: 24px 28px 40px; }
+  .page-h { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: 12px; padding-bottom: 14px; border-bottom: 1px solid var(--ink); margin-bottom: 20px; }
+  .page-h h1 { font-size: 30px; }
+  .doc-kop { display: grid; grid-template-columns: 1fr auto; gap: 8px 24px; padding: 22px 24px; }
+  .facts { display: grid; grid-template-columns: auto 1fr; gap: 3px 16px; font-size: 13px; margin: 0; }
+  .facts dt { color: var(--muted); }
+  .facts dd { margin: 0; }
+  .lines li + li { margin-top: 2px; }
+  @media (max-width: 760px) { .states { grid-template-columns: 1fr 1fr; } .states > .h:first-child { display: none; } .frame.desk { height: 560px; } }
+</style>
+</head>
+<body>
+<!-- Ink texture for stamps: a light displacement so the rule looks pressed, not printed. Static, never animated. -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <filter id="ink" x="-5%" y="-10%" width="110%" height="120%">
+    <feTurbulence type="fractalNoise" baseFrequency=".9" numOctaves="2" seed="7" result="n"/>
+    <feDisplacementMap in="SourceGraphic" in2="n" scale="1.4" xChannelSelector="R" yChannelSelector="G" result="d"/>
+    <feComponentTransfer in="n" result="speck"><feFuncA type="discrete" tableValues="1 1 1 1 1 1 1 0"/></feComponentTransfer>
+    <feComposite in="d" in2="speck" operator="in"/>
+  </filter>
+</svg>
+
+<div class="toasts" id="toasts" aria-live="polite" aria-atomic="false"></div>
+
+<div class="kit">
+  <header>
+    <div>
+      <p class="muted small" style="margin:0">AetherERP · lemari contoh · tahap persetujuan</p>
+      <h1>Meja kerja akuntan</h1>
+      <p class="muted" style="margin:6px 0 0;max-width:70ch">Setiap elemen adalah benda di atas meja: lembar kertas, tuts, map, cap. Satu sumber cahaya dari atas. Gerak hanya transform, opacity, warna, dan garis yang tergambar. Data di halaman ini adalah contoh dari salinan database.</p>
+    </div>
+    <button class="sw" role="switch" aria-checked="false" id="rmToggle"><span class="rail"><span class="knob"></span></span><span>Simulasikan <i>reduced motion</i></span></button>
+  </header>
+  <nav class="toc" aria-label="Isi">
+    <a href="#token">Token</a><a href="#glyph">Glyph</a><a href="#tombol">Tombol</a><a href="#input">Input</a><a href="#pilihan">Checkbox, radio, saklar</a><a href="#tab">Tab</a><a href="#status">Lencana dan cap</a><a href="#panel">Panel dan kartu</a><a href="#tabel">Tabel</a><a href="#lapisan">Laci, dialog, menu, toast</a><a href="#keadaan">Skeleton dan keadaan</a><a href="#grafik">Grafik</a><a href="#kpi">KPI</a><a href="#palet">Palet perintah</a><a href="#kerangka">Kerangka</a><a href="#mobile">Mobile</a><a href="#dasbor">Tiruan: Dasbor</a><a href="#retur">Tiruan: form retur</a>
+  </nav>
+
+  <!-- ============ B. Tokens ============ -->
+  <section class="s" id="token">
+    <h2>Token <small>B1 kedalaman · B2 gerak · palet</small></h2>
+    <p class="lead">Palet tetap. Dua token lama tetap dipakai untuk kontras: teks peringatan #8A5F12 (karena #B07A1E hanya 3,3:1 sebagai teks) dan garis kontrol #8C8478 (batas input minimal 3:1).</p>
+    <div class="row" id="swatches"></div>
+    <h3 style="font:600 14px var(--sans);margin:28px 0 10px">Kedalaman</h3>
+    <div class="row">
+      <div class="cellx"><div class="depth" style="background:var(--canvas);border:1px dashed var(--line)">Level 0 kanvas</div><code class="small muted">--elev-0</code></div>
+      <div class="cellx"><div class="depth sheet">Level 1 lembar</div><code class="small muted">--elev-1</code></div>
+      <div class="cellx"><div class="depth sheet" style="box-shadow:var(--elev-2)">Level 2 terangkat</div><code class="small muted">--elev-2</code></div>
+      <div class="cellx"><div class="depth sheet" style="box-shadow:var(--elev-3)">Level 3 laci, dialog</div><code class="small muted">--elev-3</code></div>
+      <div class="cellx"><div class="depth" style="background:var(--highlight);box-shadow:var(--inset);border:1px solid var(--control)">Cekung</div><code class="small muted">--inset</code></div>
+      <div class="cellx"><div class="depth sheet lift" tabindex="0"><span class="stack-back b1"></span><span class="stack-back b2"></span>Tumpukan</div><code class="small muted">--stack-1, --stack-2</code></div>
+    </div>
+    <h3 style="font:600 14px var(--sans);margin:28px 0 10px">Gerak <button class="act accent" id="playMotion" style="margin-left:8px"><i data-g="kirim" data-s="16"></i>Putar</button></h3>
+    <div class="sheet" style="padding:14px 18px;display:grid;gap:6px" id="motion"></div>
+  </section>
+
+  <!-- ============ B3. Glyphs ============ -->
+  <section class="s" id="glyph">
+    <h2>Glyph <small>B3 · <a href="glyphs.html" style="color:var(--accent)">katalog lengkap</a></small></h2>
+    <p class="lead">Grid 24, garis 1,5 px, ujung membulat. Selalu bersama teks; <code>aria-hidden</code>.</p>
+    <div class="sheet" style="padding:16px;display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px 14px" id="glyphMini"></div>
+  </section>
+
+  <!-- ============ C1. Buttons ============ -->
+  <section class="s" id="tombol">
+    <h2>Tombol <small>C1</small></h2>
+    <p class="lead">Utama seperti tuts mesin kasir: badan aksen, tepi bawah 3 px, glyph di kotak kiri. Hover naik 1 px, ditekan turun 3 px dan tepinya hilang (90 ms, pegas). Keadaan memuat, berhasil, dan gagal di aplikasi terhubung ke status permintaan yang sebenarnya (status mutasi TanStack Query), bukan pewaktu.</p>
+    <div class="sheet" style="padding:18px">
+      <div class="states">
+        <span class="h"></span><span class="h">Normal</span><span class="h">Hover</span><span class="h">Ditekan</span><span class="h">Fokus</span><span class="h">Nonaktif</span><span class="h">Memuat</span>
+        <span class="h">Utama</span>
+        <span><button class="key has-cap"><span class="cap"><i data-g="simpan" data-s="16"></i></span><span class="label">Simpan</span></button></span>
+        <span><button class="key has-cap is-hover"><span class="cap"><i data-g="simpan" data-s="16"></i></span><span class="label">Simpan</span></button></span>
+        <span><button class="key has-cap is-pressed"><span class="cap"><i data-g="simpan" data-s="16"></i></span><span class="label">Simpan</span></button></span>
+        <span><button class="key has-cap is-focus"><span class="cap"><i data-g="simpan" data-s="16"></i></span><span class="label">Simpan</span></button></span>
+        <span><button class="key has-cap" disabled><span class="cap"><i data-g="simpan" data-s="16"></i></span><span class="label">Simpan</span></button></span>
+        <span><button class="key has-cap" data-state="loading" aria-busy="true"><span class="cap"><i data-g="simpan" data-s="16"></i></span><span class="label">Simpan</span><span class="bar"></span></button></span>
+        <span class="h">Sekunder</span>
+        <span><button class="key sec has-cap"><span class="cap"><i data-g="cetak" data-s="16"></i></span><span class="label">Cetak</span></button></span>
+        <span><button class="key sec has-cap is-hover"><span class="cap"><i data-g="cetak" data-s="16"></i></span><span class="label">Cetak</span></button></span>
+        <span><button class="key sec has-cap is-pressed"><span class="cap"><i data-g="cetak" data-s="16"></i></span><span class="label">Cetak</span></button></span>
+        <span><button class="key sec has-cap is-focus"><span class="cap"><i data-g="cetak" data-s="16"></i></span><span class="label">Cetak</span></button></span>
+        <span><button class="key sec has-cap" disabled><span class="cap"><i data-g="cetak" data-s="16"></i></span><span class="label">Cetak</span></button></span>
+        <span><button class="key sec has-cap" data-state="loading" aria-busy="true"><span class="cap"><i data-g="cetak" data-s="16"></i></span><span class="label">Cetak</span><span class="bar"></span></button></span>
+        <span class="h">Berbahaya</span>
+        <span><button class="key danger has-cap"><span class="cap"><i data-g="tutup" data-s="16"></i></span><span class="label">Batalkan</span></button></span>
+        <span><button class="key danger has-cap is-hover"><span class="cap"><i data-g="tutup" data-s="16"></i></span><span class="label">Batalkan</span></button></span>
+        <span><button class="key danger has-cap is-pressed"><span class="cap"><i data-g="tutup" data-s="16"></i></span><span class="label">Batalkan</span></button></span>
+        <span><button class="key danger has-cap is-focus"><span class="cap"><i data-g="tutup" data-s="16"></i></span><span class="label">Batalkan</span></button></span>
+        <span><button class="key danger has-cap" disabled><span class="cap"><i data-g="tutup" data-s="16"></i></span><span class="label">Batalkan</span></button></span>
+        <span><button class="key danger has-cap" data-state="loading" aria-busy="true"><span class="cap"><i data-g="tutup" data-s="16"></i></span><span class="label">Batalkan</span><span class="bar"></span></button></span>
+        <span class="h">Teks / baris</span>
+        <span><button class="act"><i data-g="edit" data-s="16"></i>Ubah</button></span>
+        <span><button class="act" style="text-decoration:underline;text-underline-offset:3px"><i data-g="edit" data-s="16"></i>Ubah</button></span>
+        <span><button class="act"><i data-g="edit" data-s="16"></i>Ubah</button></span>
+        <span><button class="act is-focus"><i data-g="edit" data-s="16"></i>Ubah</button></span>
+        <span><button class="act" disabled style="color:var(--muted);cursor:not-allowed"><i data-g="edit" data-s="16"></i>Ubah</button></span>
+        <span><button class="act danger"><i data-g="hapus" data-s="16"></i>Hapus</button></span>
+      </div>
+      <div style="border-top:1px solid var(--line);margin-top:18px;padding-top:16px" class="row">
+        <div class="cellx"><span class="cap-t">Coba: memuat → berhasil (centang tergambar 300 ms, kembali setelah 1,5 detik)</span>
+          <button class="key has-cap" id="demoOk"><span class="cap"><i data-g="simpan" data-s="16"></i></span><span class="label">Simpan pesanan</span><span class="bar"></span></button></div>
+        <div class="cellx"><span class="cap-t">Coba: memuat → gagal (getar 2 kali, glyph menjadi tanda seru)</span>
+          <button class="key has-cap" id="demoFail"><span class="cap"><i data-g="kirim" data-s="16"></i></span><span class="label">Kirim ke pelanggan</span><span class="bar"></span></button></div>
+        <div class="cellx"><span class="cap-t">Ukuran kecil, tanpa glyph</span>
+          <span class="row" style="gap:10px"><button class="key sm">Terapkan</button><button class="key sec sm">Batal</button></span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ C2. Inputs ============ -->
+  <section class="s" id="input">
+    <h2>Input <small>C2</small></h2>
+    <p class="lead">Bidang cekung. Saat fokus bidang naik ke permukaan: bayangan dalam hilang, garis menjadi aksen, cincin fokus 2 px. Label di atas, teks bantu di bawah.</p>
+    <div class="sheet" style="padding:18px;display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:18px 22px">
+      <div class="fld"><label for="i1">Nama pelanggan</label><input class="input" id="i1" placeholder="Mis. Toko Digital Makmur" autocomplete="off"><span class="help">Normal. Klik untuk melihat fokus.</span></div>
+      <div class="fld"><label for="i2">Nama pelanggan</label><input class="input is-focus" id="i2" value="Toko Digital Makmur"><span class="help">Fokus (ditampilkan statis).</span></div>
+      <div class="fld"><label for="i3">Email</label><input class="input is-error" id="i3" value="toko@digital" aria-invalid="true" aria-describedby="i3e"><span class="err" id="i3e"><i data-g="peringatan" data-s="16"></i>Alamat email belum lengkap. Tambahkan domain, misalnya toko@digital.co.id.</span></div>
+      <div class="fld"><label for="i4">Kode pelanggan</label><input class="input" id="i4" value="CUST-0007" disabled><span class="help">Nonaktif: kode tidak bisa diubah setelah dibuat.</span></div>
+      <div class="fld"><label for="i5">Gudang</label><select class="select" id="i5"><option>Gudang Surabaya</option><option>Gudang Bandung</option></select><span class="help">Panel pilihan memakai skema terang.</span></div>
+      <div class="fld"><label for="i6">Tanggal retur</label><input class="input" id="i6" type="date" value="2026-11-19"></div>
+      <div class="fld"><span class="lbl" id="st-l">Jumlah retur</span>
+        <div class="stepper" data-stepper data-max="4"><button class="mini-key" data-d="-1" aria-label="Kurangi"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M5 12h14"/></svg></button><input class="input" inputmode="decimal" value="1" aria-labelledby="st-l"><button class="mini-key" data-d="1" aria-label="Tambah"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></button></div>
+        <span class="help">Stepper fisik. Maksimal 4, sisa yang bisa diretur.</span></div>
+    </div>
+  </section>
+
+  <!-- ============ C3. Choice ============ -->
+  <section class="s" id="pilihan">
+    <h2>Checkbox, radio, saklar <small>C3</small></h2>
+    <div class="sheet" style="padding:18px" >
+      <div class="row" style="gap:32px">
+        <div class="cellx"><span class="cap-t">Checkbox: centang tergambar 160 ms</span>
+          <label class="cb"><input type="checkbox"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path pathLength="1" d="M5 12.5 9.5 17 19 7.5"/></svg>Kirim faktur lewat email</label>
+          <label class="cb"><input type="checkbox" checked><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path pathLength="1" d="M5 12.5 9.5 17 19 7.5"/></svg>Cetak setelah disimpan</label>
+          <label class="cb" style="color:var(--muted);cursor:not-allowed"><input type="checkbox" disabled><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" aria-hidden="true"><path pathLength="1" d="M5 12.5 9.5 17 19 7.5"/></svg>Nonaktif</label></div>
+        <fieldset class="cellx" style="border:0;padding:0;margin:0"><legend class="cap-t" style="padding:0;margin-bottom:8px">Radio: titik tertekan ke dalam</legend>
+          <label class="rd"><input type="radio" name="r" checked>Piutang (AR)</label>
+          <label class="rd"><input type="radio" name="r">Utang (AP)</label></fieldset>
+        <div class="cellx"><span class="cap-t">Saklar: kenop timbul di rel cekung</span>
+          <button class="sw" role="switch" aria-checked="true" data-sw><span class="rail"><span class="knob"></span></span><span>Pengguna aktif</span><span class="state">Aktif</span></button>
+          <button class="sw" role="switch" aria-checked="false" data-sw><span class="rail"><span class="knob"></span></span><span>Mode rapat</span><span class="state">Mati</span></button></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ C4. Tabs ============ -->
+  <section class="s" id="tab">
+    <h2>Tab map berkas <small>C4</small></h2>
+    <p class="lead">Tab aktif menyatu dengan panel. Tab lain lebih rendah dan lebih gelap. Panel bergeser 8 px dengan crossfade 220 ms. Panah kiri/kanan berpindah tab.</p>
+    <div data-tabs style="max-width:720px">
+      <div class="tabs" role="tablist" aria-label="Isi dokumen">
+        <button class="tab" role="tab" aria-selected="true" aria-controls="tp1" id="tb1"><i data-g="produk" data-s="16"></i>Item</button>
+        <button class="tab" role="tab" aria-selected="false" aria-controls="tp2" id="tb2" tabindex="-1"><i data-g="jurnal" data-s="16"></i>Jurnal</button>
+        <button class="tab" role="tab" aria-selected="false" aria-controls="tp3" id="tb3" tabindex="-1"><i data-g="audit" data-s="16"></i>Riwayat</button>
+      </div>
+      <div class="tab-panel">
+        <div role="tabpanel" id="tp1" aria-labelledby="tb1"><table class="tbl dense" style="font-size:13px"><tbody><tr><td>FG-HUB-01 Smart Hub Controller</td><td class="num">4</td><td class="num">Rp 2.600.000</td></tr></tbody></table></div>
+        <div role="tabpanel" id="tp2" aria-labelledby="tb2" hidden><table class="tbl dense ledger"><thead><tr><th>Akun</th><th class="num">Debit</th><th class="num">Kredit</th></tr></thead><tbody><tr><td>1-1200 Piutang usaha</td><td class="num">2.600.000</td><td class="num"></td></tr><tr><td>4-1000 Penjualan</td><td class="num"></td><td class="num">2.600.000</td></tr><tr><td class="total">Jumlah</td><td class="num total">2.600.000</td><td class="num total">2.600.000</td></tr></tbody></table></div>
+        <div role="tabpanel" id="tp3" aria-labelledby="tb3" hidden><ul style="margin:0;padding-left:18px" class="lines"><li>Faktur dibuat · System Admin · 28 Agu 2026</li><li>Pengiriman dikirim · Warehouse Staff · 28 Agu 2026</li></ul></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ C5. Status ============ -->
+  <section class="s" id="status">
+    <h2>Lencana dan cap <small>C5</small></h2>
+    <p class="lead">Di tabel: glyph + kata di atas latar tipis warna status. Di dokumen: cap tinta. Cap hanya "dicapkan" jika status berubah dalam sesi ini; saat halaman dibuka biasa, cap langsung tampil.</p>
+    <div class="sheet" style="padding:18px">
+      <div class="row" id="badges"></div>
+      <div class="row" style="margin-top:22px;gap:28px;align-items:center" id="stamps"></div>
+    </div>
+    <div class="sheet" style="margin-top:20px;max-width:760px" id="docDemo">
+      <div class="doc-kop">
+        <div>
+          <p class="muted small" style="margin:0">PT Aether Nusantara · Faktur piutang</p>
+          <h3 style="font-size:24px;margin-top:2px" class="tnum">INV-2026-000019</h3>
+          <dl class="facts" style="margin-top:10px"><dt>Pelanggan</dt><dd>Toko Digital Makmur</dd><dt>Tanggal</dt><dd>28 Agu 2026</dd><dt>Jatuh tempo</dt><dd>13 Sep 2026</dd><dt>Sisa tagihan</dt><dd class="tnum" id="docOut">Rp 2.600.000</dd></dl>
+        </div>
+        <div style="padding-top:8px"><span class="stamp info" id="docStamp">Terbuka</span></div>
+      </div>
+      <ol class="rail-track" style="margin:0 24px;padding-left:0" id="docRail"><li class="now">Terbuka</li><li>Dibayar sebagian</li><li>Lunas</li></ol>
+      <div style="display:flex;gap:10px;padding:18px 24px 20px;flex-wrap:wrap"><button class="key has-cap" id="payBtn"><span class="cap"><i data-g="simpan" data-s="16"></i></span><span class="label">Bayar penuh</span><span class="bar"></span></button><button class="key sec has-cap"><span class="cap"><i data-g="cetak" data-s="16"></i></span><span class="label">Cetak faktur</span></button><button class="act" id="resetPay">Atur ulang contoh</button></div>
+    </div>
+  </section>
+
+  <!-- ============ C6. Panels ============ -->
+  <section class="s" id="panel">
+    <h2>Panel dan kartu tugas <small>C6</small></h2>
+    <p class="lead">Panel adalah lembar kertas level 1, tanpa kartu di dalam kartu. Kartu tugas mewakili kumpulan: 1 item satu lembar, 2 item dua lembar, 3 atau lebih tiga lembar. Hover: naik ke level 2 dan tumpukan menyebar.</p>
+    <div class="two" id="tasks"></div>
+  </section>
+
+  <!-- ============ C7. Table ============ -->
+  <section class="s" id="tabel">
+    <h2>Tabel buku besar <small>C7</small></h2>
+    <p class="lead">Header menempel; bayangannya muncul hanya saat digulir. Hover baris: latar sorot dan garis kiri aksen. Klik atau Enter membuka laci pratinjau. Centang beberapa baris untuk bilah aksi massal.</p>
+    <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:10px">
+      <label class="sr" for="tq">Cari di daftar</label>
+      <span class="searchbox" style="width:240px;cursor:auto"><i data-g="cari" data-s="16"></i><input id="tq" style="border:0;background:none;outline:0;font:inherit;color:var(--ink);width:100%" placeholder="Cari di daftar ini" autocomplete="off"></span>
+      <div class="chips" id="chips"></div>
+      <button class="act" id="addChip"><i data-g="filter" data-s="16"></i>Tambah filter</button>
+      <span style="margin-left:auto;display:flex;gap:10px;align-items:center">
+        <button class="act"><i data-g="ekspor" data-s="16"></i>Ekspor CSV</button>
+        <span class="seg" role="group" aria-label="Kepadatan baris"><button aria-pressed="true" data-density="nyaman">Nyaman</button><button aria-pressed="false" data-density="rapat">Rapat</button></span>
+      </span>
+    </div>
+    <div class="tbl-wrap" id="tblWrap" style="max-height:360px">
+      <table class="tbl" id="tbl" aria-label="Pesanan penjualan">
+        <thead><tr><th class="ck"><label class="cb" style="min-height:0"><input type="checkbox" id="ckAll" aria-label="Pilih semua"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" aria-hidden="true"><path pathLength="1" d="M5 12.5 9.5 17 19 7.5"/></svg></label></th><th>Nomor</th><th>Pelanggan</th><th>Tanggal</th><th>Status</th><th class="num">Total</th></tr></thead>
+        <tbody></tbody>
+      </table>
+      <div class="bulk" id="bulk" aria-live="polite"><span id="bulkN">0 dipilih</span><button class="act"><i data-g="cetak" data-s="16"></i>Cetak</button><button class="act"><i data-g="ekspor" data-s="16"></i>Ekspor</button><button class="act" id="bulkClear" style="margin-left:auto"><i data-g="tutup" data-s="16"></i>Batalkan pilihan</button></div>
+    </div>
+    <p class="note">Aksi massal hanya untuk aksi yang sudah ada per baris (cetak, ekspor). Tidak ada aksi massal yang mengubah data tanpa konfirmasi, dan tidak ada endpoint baru.</p>
+    <h3 style="font:600 14px var(--sans);margin:24px 0 8px">Mobile: kolom pertama menempel, bayangan tepi, petunjuk geser</h3>
+    <div style="width:360px;max-width:100%">
+      <div class="swipe-hint"><i data-g="kirim" data-s="16"></i>Geser ke kanan untuk kolom lain</div>
+      <div class="tbl-wrap tbl-mobile" id="tblMobile"><table class="tbl" style="min-width:560px"><thead><tr><th>Nomor</th><th>Pelanggan</th><th>Status</th><th class="num">Total</th></tr></thead><tbody></tbody></table></div>
+    </div>
+  </section>
+
+  <!-- ============ C8. Layers ============ -->
+  <section class="s" id="lapisan">
+    <h2>Laci, dialog, menu, toast <small>C8</small></h2>
+    <p class="lead">Laci masuk dari kanan 220 ms, latar meredup, Escape menutup, fokus terkunci di dalam. Dialog muncul dengan skala 0,98 → 1. Menu turun 4 px. Toast seperti slip struk: keluar dari kanan atas, tepi bawah bergerigi, hilang setelah 4 detik, bisa ditutup, diumumkan lewat <code>aria-live</code>.</p>
+    <div class="row">
+      <button class="key sec has-cap" id="openDrawer"><span class="cap"><i data-g="buka-lengkap" data-s="16"></i></span><span class="label">Buka laci pratinjau</span></button>
+      <button class="key danger has-cap" id="openDialog"><span class="cap"><i data-g="tutup" data-s="16"></i></span><span class="label">Batalkan pesanan…</span></button>
+      <span style="position:relative"><button class="key sec has-cap" id="openMenu" aria-haspopup="menu" aria-expanded="false"><span class="cap"><i data-g="lainnya" data-s="16"></i></span><span class="label">Menu</span></button></span>
+      <button class="key sec" id="toastOk">Toast berhasil</button>
+      <button class="key sec" id="toastBad">Toast gagal</button>
+    </div>
+  </section>
+
+  <!-- ============ C9. States ============ -->
+  <section class="s" id="keadaan">
+    <h2>Skeleton dan keadaan <small>C9</small></h2>
+    <p class="lead">Skeleton meniru tata letak, dengan kilau kertas yang sangat halus; tidak ada spinner. Keadaan kosong: satu ilustrasi garis (satu warna #6B645A, 1 px), satu kalimat, satu aksi.</p>
+    <div class="two">
+      <div class="sheet" style="padding:16px" aria-hidden="true">
+        <div style="display:flex;gap:12px;margin-bottom:14px"><div class="sk" style="height:28px;width:200px"></div><div class="sk" style="height:28px;width:90px;margin-left:auto"></div></div>
+        <div style="border-top:1px solid var(--ink)"></div>
+        <div id="skRows"></div>
+      </div>
+      <div class="sheet state"><svg class="ill" viewBox="0 0 150 110" fill="none" stroke="#6B645A" stroke-width="1" stroke-linejoin="round" aria-hidden="true"><path d="M30 30 75 8l45 22-45 22z"/><path d="M30 56 75 34l45 22-45 22z"/><path d="M30 82 75 60l45 22-45 22z"/><path d="M30 30v52M120 30v52M75 52v52"/><path d="M75 8v26" stroke-dasharray="2 3"/></svg><p class="t">Rak masih kosong</p><p>Stok muncul setelah barang diterima atau dirakit.</p><button class="key sec has-cap sm"><span class="cap"><i data-g="penerimaan-barang" data-s="16"></i></span><span class="label">Catat penerimaan</span></button></div>
+      <div class="sheet state"><svg class="ill" viewBox="0 0 150 110" fill="none" stroke="#6B645A" stroke-width="1" stroke-linejoin="round" aria-hidden="true"><path d="M24 34h32l7 9h63v55H24z"/><path d="M24 98 37 54h101l-12 44"/><path d="M60 72h40" stroke-dasharray="2 3"/></svg><p class="t">Belum ada pesanan penjualan</p><p>Pesanan muncul di sini setelah penawaran pertama dibuat.</p><button class="key has-cap sm"><span class="cap"><i data-g="buat" data-s="16"></i></span><span class="label">Buat pesanan</span></button></div>
+      <div class="sheet state"><svg class="ill" viewBox="0 0 150 110" fill="none" stroke="#6B645A" stroke-width="1" stroke-linejoin="round" aria-hidden="true"><path d="M50 8h50v92l-5-4-5 4-5-4-5 4-5-4-5 4-5-4-5 4-5-4-5 4z"/><path d="M58 24h34M58 36h34M58 48h22M58 70h34" stroke-dasharray="2 3"/></svg><p class="t">Belum ada retur</p><p>Retur dicatat dari pesanan yang sudah difaktur.</p><button class="key sec has-cap sm"><span class="cap"><i data-g="pesanan-penjualan" data-s="16"></i></span><span class="label">Lihat pesanan</span></button></div>
+      <div class="sheet state" role="alert"><svg class="ill" viewBox="0 0 150 110" fill="none" stroke="#6B645A" stroke-width="1" stroke-linejoin="round" aria-hidden="true"><path d="M44 6h62v38l-7 6-8-5-8 6-8-5-8 6-8-5-8 6-7-5z"/><path d="M50 66l7 5 8-6 8 5 8-6 8 5 8-6 9 5v40H50z"/><path d="M54 18h40M54 28h30M58 84h40M58 94h28"/></svg><p class="t">Data tidak bisa dimuat</p><p>Server tidak menjawab. Periksa koneksi, lalu coba lagi.</p><button class="key sec sm">Coba lagi</button></div>
+      <div class="sheet state"><svg class="ill" viewBox="0 0 150 110" fill="none" stroke="#6B645A" stroke-width="1" stroke-linejoin="round" aria-hidden="true"><path d="M53 50h44v40H53z"/><path d="M62 50V38a13 13 0 0 1 26 0v12"/><circle cx="75" cy="66" r="4"/><path d="M75 70v8"/></svg><p class="t">Halaman ini di luar peran Anda</p><p>Halaman Pengguna dan peran butuh izin <b>users.manage</b>. Peran Auditor tidak memilikinya.</p><button class="key sec sm">Buka Dasbor</button></div>
+    </div>
+  </section>
+
+  <!-- ============ C10. Chart ============ -->
+  <section class="s" id="grafik">
+    <h2>Grafik <small>C10 · skill dataviz</small></h2>
+    <p class="lead">Garis tergambar sekali saat pertama terlihat (600 ms). Ganti rentang: nilai berganti dengan crossfade, tanpa menggambar ulang. Hover atau panah kiri/kanan: garis bidik dan slip tooltip. Label langsung di ujung garis; HPP putus-putus sebagai penanda kedua selain warna.</p>
+    <div class="sheet" style="padding:18px 18px 12px">
+      <div style="display:flex;flex-wrap:wrap;align-items:center;gap:10px;justify-content:space-between">
+        <div class="legend"><span><svg width="22" height="8" aria-hidden="true"><line x1="0" y1="4" x2="22" y2="4" stroke="#7A2E2A" stroke-width="2"/></svg>Pendapatan</span><span><svg width="22" height="8" aria-hidden="true"><line x1="0" y1="4" x2="22" y2="4" stroke="#6B645A" stroke-width="2" stroke-dasharray="5 3"/></svg>HPP</span><span class="muted">Jutaan rupiah per bulan</span></div>
+        <span class="seg" role="group" aria-label="Rentang"><button aria-pressed="true" data-range="6">6 bulan</button><button aria-pressed="false" data-range="12">12 bulan</button></span>
+      </div>
+      <div class="chart" id="chart" tabindex="0" role="img"></div>
+      <details style="margin-top:6px;font-size:13px"><summary style="color:var(--accent);cursor:pointer">Lihat sebagai tabel</summary><div id="chartTable"></div></details>
+    </div>
+    <div class="sheet state" style="margin-top:16px"><svg class="ill" viewBox="0 0 150 110" fill="none" stroke="#6B645A" stroke-width="1" aria-hidden="true"><path d="M20 96h110M20 96V14"/><path d="M28 80h20M56 70h20M84 76h20" stroke-dasharray="2 3"/></svg><p class="t">Belum ada penjualan dalam 6 bulan terakhir</p><p>Grafik muncul setelah faktur pertama diposting. Tanpa data, sumbu tidak digambar.</p></div>
+  </section>
+
+  <!-- ============ C11. KPI ============ -->
+  <section class="s" id="kpi">
+    <h2>Angka ringkasan <small>C11</small></h2>
+    <div class="sheet" style="padding:20px;display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);gap:24px" id="kpiBox">
+      <div class="kpi"><p class="small" style="margin:0;font-weight:600">Pendapatan bersih November</p><span class="fig" id="kpiFig">Rp40,5 jt</span><svg class="spark" viewBox="0 0 160 32" aria-hidden="true"><polyline fill="none" stroke="#7A2E2A" stroke-width="1.5" stroke-linejoin="round" points="2,26 32,22 62,14 92,12 122,7 156,4"/><circle cx="156" cy="4" r="2.5" fill="#7A2E2A"/></svg>
+        <span class="chg up" id="kpiChg"><i data-g="naik" data-s="16"></i>naik 11,5% dari Oktober</span>
+        <div style="margin-top:10px"><button class="act accent" id="kpiSwap"><i data-g="pesan-ulang" data-s="16"></i>Simulasikan nilai baru</button></div></div>
+      <dl class="facts" style="align-self:start;font-size:13.5px;gap:8px 18px"><dt>Margin kotor</dt><dd class="num">57,0%</dd><dt>Piutang berjalan</dt><dd class="num">Rp74,8 jt</dd><dt>Lewat jatuh tempo</dt><dd class="num">Rp33,8 jt</dd><dt>Kas dan bank</dt><dd class="num">Rp1,8 M</dd><dt>Persediaan FIFO</dt><dd class="num">Rp207,6 jt</dd></dl>
+    </div>
+  </section>
+
+  <!-- ============ C12. Palette ============ -->
+  <section class="s" id="palet">
+    <h2>Palet perintah <small>C12</small></h2>
+    <p class="lead">Ctrl+K (atau ⌘K) membuka kertas level 3 di tengah atas. Cari halaman, dokumen (SO, PO, faktur), dan aksi. Hasil dikelompokkan dengan glyph. Panah dan Enter. Tombol "/" membuka palet dengan pencarian halaman.</p>
+    <button class="searchbox" id="openPalette" style="cursor:pointer"><i data-g="cari" data-s="16"></i>Cari halaman, dokumen, aksi<kbd>Ctrl K</kbd></button>
+  </section>
+
+  <!-- ============ D. Shell ============ -->
+  <section class="s" id="kerangka">
+    <h2>Kerangka aplikasi <small>D1 sidebar · D2 bilah atas</small></h2>
+    <p class="lead">Sidebar lebar (glyph + teks) atau rel 56 px (glyph saja, nama sebagai tooltip), pilihan tersimpan. Satu penanda halaman bergeser ke item aktif seperti pita pembatas buku. Panah atas/bawah berpindah item. Bilah atas: jejak halaman, cabang sebagai chip, periode sebagai cap kecil, kolom cari, inisial pengguna timbul.</p>
+    <div class="frame desk" id="shellDemo"></div>
+  </section>
+
+  <!-- ============ D3. Mobile ============ -->
+  <section class="s" id="mobile">
+    <h2>Mobile 390 px <small>D3</small></h2>
+    <p class="lead">Sidebar diganti bilah tab bawah: 4 modul utama sesuai peran + "Lainnya" yang membuka lembar dari bawah. Tombol utama halaman menempel di atas bilah tab. Target sentuh minimal 44 px.</p>
+    <div class="row" style="gap:28px">
+      <div class="phone" id="phone"></div>
+      <div style="max-width:420px" class="small">
+        <p class="note" style="margin-top:0">Empat modul dipilih dari izin peran. Contoh di samping: Sales Staff (Dasbor, Pesanan penjualan, Retur, Pelanggan). Staf gudang: Dasbor, Level stok, Transfer, Penerimaan. Keuangan: Dasbor, Faktur, Jurnal, Laporan.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ E. Mock pages ============ -->
+  <section class="s" id="dasbor">
+    <h2>Tiruan halaman: Dasbor keuangan</h2>
+    <p class="lead">Urutan: kartu "Perlu tindakan" bertumpuk, satu KPI utama besar dengan pendukung, grafik, lalu denah gudang mini. Kartu tugas membuka daftar yang sudah difilter. Elemen dalam satu kelompok muncul berurutan, jeda 30 ms, maksimal 6.</p>
+    <div class="frame desk" id="dashFrame" style="height:980px"></div>
+  </section>
+
+  <section class="s" id="retur">
+    <h2>Tiruan halaman: form retur</h2>
+    <p class="lead">Bagian sebagai lembar bertumpuk, stepper untuk jumlah, bilah ringkasan berbentuk struk yang menempel di bawah. Angka di struk berganti dengan crossfade. Tombol kirim: memuat → berhasil.</p>
+    <div class="frame desk" id="returFrame" style="height:900px"></div>
+    <p class="note">Biaya stok kembali (FIFO) hanya diketahui setelah retur dicatat: API tidak punya pratinjau, jadi struk menulis "dihitung sistem saat dicatat" lalu menampilkan angka dari respons server. Angka di tiruan ini sama dengan hasil uji di salinan: kredit Rp 650.000, biaya kembali Rp 272.440,82.</p>
+  </section>
+</div>
+
+<!-- Layers -->
+<dialog class="drawer" id="drawer" aria-labelledby="drawerT">
+  <div class="drawer-body">
+    <header><div><p class="muted small" style="margin:0">Pesanan penjualan</p><h2 id="drawerT" style="font-size:22px" class="tnum">SO-2026-000024</h2></div><button class="act" data-close aria-label="Tutup laci"><i data-g="tutup" data-s="20"></i></button></header>
+    <div class="content">
+      <div style="display:flex;justify-content:space-between;align-items:start;gap:12px"><dl class="facts"><dt>Pelanggan</dt><dd id="dwCust">Toko Digital Makmur</dd><dt>Tanggal</dt><dd id="dwDate">28 Agu 2026</dd><dt>Total</dt><dd class="tnum" id="dwTotal">Rp 2.600.000</dd></dl><span class="stamp sm info" id="dwStamp">Terfaktur</span></div>
+      <h3 style="font:600 13px var(--sans);margin:22px 0 6px">Item</h3>
+      <table class="tbl dense"><tbody><tr><td>FG-HUB-01 Smart Hub Controller</td><td class="num">4</td></tr></tbody></table>
+    </div>
+    <footer><a class="key has-cap" href="#retur"><span class="cap"><i data-g="buka-lengkap" data-s="16"></i></span><span class="label">Buka lengkap</span></a><button class="key sec has-cap"><span class="cap"><i data-g="retur" data-s="16"></i></span><span class="label">Retur</span></button></footer>
+  </div>
+</dialog>
+
+<dialog class="dlg" id="dialog" aria-labelledby="dlgT" aria-describedby="dlgD">
+  <div class="in"><h2 id="dlgT">Batalkan SO-2026-000022?</h2><p id="dlgD" class="muted" style="margin:8px 0 0">Stok yang dicadangkan untuk pesanan ini dilepas dan pesanan tidak bisa dikonfirmasi lagi.</p></div>
+  <div class="row"><button class="key sec" data-close autofocus>Kembali</button><button class="key danger has-cap" id="dlgGo"><span class="cap"><i data-g="tutup" data-s="16"></i></span><span class="label">Ya, batalkan</span><span class="bar"></span></button></div>
+</dialog>
+
+<dialog class="dlg" id="palette" aria-label="Palet perintah" style="margin-top:12vh;width:min(600px,calc(100vw - 32px))">
+  <div style="display:flex;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid var(--line)"><i data-g="cari" data-s="20"></i><input id="pq" style="flex:1;border:0;background:none;outline:0;font:400 16px var(--sans);color:var(--ink)" placeholder="Cari halaman, dokumen, aksi" autocomplete="off" spellcheck="false" role="combobox" aria-expanded="true" aria-controls="pres" aria-autocomplete="list"><kbd style="font:500 11px var(--sans);padding:1px 6px;border:1px solid var(--line);border-bottom-width:2px;border-radius:3px">Esc</kbd></div>
+  <ul id="pres" role="listbox" style="list-style:none;margin:0;padding:6px;max-height:360px;overflow:auto"></ul>
+</dialog>
+
+<script src="glyphs.js"></script>
+<script src="tactile-kit.js"></script>
+</body>
+</html>

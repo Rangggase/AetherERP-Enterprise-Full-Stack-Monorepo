@@ -1,17 +1,18 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { ColumnDef } from "@tanstack/react-table";
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { DataTable } from "../components/DataTable";
 import { Drawer } from "../components/Layers";
 import { toast } from "../components/Toaster";
 import { WarehousePlan, type PlanRow } from "../components/WarehousePlan";
-import { ErrorNote, PageHeader, SectionTitle, Status } from "../components/ui";
+import { ErrorNote, PageHeader, SectionTitle, Status, type Art } from "../components/ui";
 import { api } from "../lib/api";
 import { PO_STEPS, ReturnLink, returnable, RowActions, SO_STEPS, useTransition, type Row, type Step } from "../lib/actions";
 import { compactRupiah, date, dateTime, num, qty, rupiah } from "../lib/format";
 import { useSession } from "../lib/session";
 import type { Page } from "../lib/types";
+import { KeyLink } from "../components/Key";
 
 type M = "t" | "v" | "s" | "d" | "x" | "h";
 const R = (m?: M) => ({ right: true, m });
@@ -35,15 +36,16 @@ const status = (key = "status") => col("Status", key, { cell: (c) => <Status val
 const actionCol = (render: (row: Row) => React.ReactNode): ColumnDef<Row, any> =>
   ({ id: "aksi", header: "", enableSorting: false, enableColumnFilter: false, cell: (c) => <div className="flex justify-end gap-1.5">{render(c.row.original)}</div>, meta: { m: "x" } }) as ColumnDef<Row, any>;
 
-function ListPage({ title, sub, q, columns, actions, label, onOpen, selectedId, empty, emptyAction, preview, lead }: {
-  lead?: React.ReactNode; title: string; sub?: string; q: ReturnType<typeof useList>; columns: ColumnDef<Row, any>[]; actions?: React.ReactNode; label: string;
+function ListPage({ title, sub, q, columns, actions, label, onOpen, selectedId, empty, emptyAction, preview, lead, art }: {
+  art?: Art; lead?: React.ReactNode; title: string; sub?: string; q: ReturnType<typeof useList>; columns: ColumnDef<Row, any>[]; actions?: React.ReactNode; label: string;
   onOpen?: (r: Row) => void; selectedId?: (r: Row) => boolean; empty?: string; emptyAction?: React.ReactNode; preview?: React.ReactNode;
 }) {
+  const statusParam = useSearchParams()[0].get("status");
   return (
     <>
-      <PageHeader title={title} sub={sub} actions={actions} />
+      <PageHeader title={title} sub={sub} actions={actions} cta />
       {lead}
-      {q.isError ? <ErrorNote error={q.error} retry={() => q.refetch()} /> : <DataTable<Row> label={label} data={q.data ?? []} columns={columns} loading={q.isLoading} onOpen={onOpen} selectedId={selectedId} empty={empty} emptyAction={emptyAction} />}
+      {q.isError ? <ErrorNote error={q.error} retry={() => q.refetch()} /> : <DataTable<Row> selectable initialFilters={statusParam ? [{ id: "status", value: `=${statusParam}` }] : undefined} emptyArt={art} label={label} data={q.data ?? []} columns={columns} loading={q.isLoading} onOpen={onOpen} selectedId={selectedId} empty={empty} emptyAction={emptyAction} />}
       {preview}
     </>
   );
@@ -80,12 +82,12 @@ export function PurchaseOrders() {
   return (
     <ListPage title="Pesanan pembelian" label="Pesanan pembelian" q={q} columns={columns}
       sub={q.data ? `${q.data.length} pesanan · total ${compactRupiah(total)}${pending ? ` · ${pending} perlu persetujuan` : ""}` : "Memuat…"}
-      actions={can("procurement.write") && <Link className="btn btn-primary" to="/procurement/orders/new">Buat pesanan</Link>}
+      actions={can("procurement.write") && <KeyLink tone="primary" glyph="buat" to="/procurement/orders/new">Buat pesanan</KeyLink>}
       empty="Belum ada pesanan pembelian." emptyAction={can("procurement.write") ? <Link className="btn btn-sm" to="/procurement/orders/new">Buat pesanan pembelian</Link> : undefined}
       onOpen={setOpen} selectedId={(r) => r.id === open?.id}
       preview={
         <Drawer open={!!live} onClose={() => setOpen(null)} title={live?.po_no ?? ""} subtitle={live ? `${live.supplier_name}` : undefined}
-          footer={live && <><Link className="btn btn-primary" to={`/procurement/orders/${live.id}`}>Buka dokumen</Link><RowActions row={live} steps={PO_STEPS} run={run} size="md" /></>}>
+          footer={live && <><KeyLink tone="primary" glyph="buka-lengkap" to={`/procurement/orders/${live.id}`}>Buka lengkap</KeyLink><RowActions row={live} steps={PO_STEPS} run={run} size="md" /></>}>
           {live && (<>
             <div className="mb-3"><Status value={live.status} /></div>
             <Facts items={[["Tanggal pesanan", date(live.order_date)], ["Total", rupiah(live.total_amount)], ["Pemasok", live.supplier_name]]} />
@@ -120,12 +122,12 @@ export function SalesOrders() {
   return (
     <ListPage title="Pesanan penjualan" label="Pesanan penjualan" q={q} columns={columns}
       sub={q.data ? `${q.data.length} pesanan · total ${compactRupiah(total)}${quotes ? ` · ${quotes} penawaran menunggu konfirmasi` : ""}` : "Memuat…"}
-      actions={can("sales.write") && <Link className="btn btn-primary" to="/sales/orders/new">Buat pesanan</Link>}
+      actions={can("sales.write") && <KeyLink tone="primary" glyph="buat" to="/sales/orders/new">Buat pesanan</KeyLink>}
       empty="Belum ada pesanan penjualan." emptyAction={can("sales.write") ? <Link className="btn btn-sm" to="/sales/orders/new">Buat pesanan penjualan</Link> : undefined}
       onOpen={setOpen} selectedId={(r) => r.id === open?.id}
       preview={
         <Drawer open={!!live} onClose={() => setOpen(null)} title={live?.so_no ?? ""} subtitle={live ? `${live.customer_name}` : undefined}
-          footer={live && <><Link className="btn btn-primary" to={`/sales/orders/${live.id}`}>Buka dokumen</Link><RowActions row={live} steps={SO_STEPS} run={run} size="md" extra={returnable(live.status) ? <ReturnLink id={live.id} size="md" /> : undefined} /></>}>
+          footer={live && <><KeyLink tone="primary" glyph="buka-lengkap" to={`/sales/orders/${live.id}`}>Buka lengkap</KeyLink><RowActions row={live} steps={SO_STEPS} run={run} size="md" extra={returnable(live.status) ? <ReturnLink id={live.id} size="md" /> : undefined} /></>}>
           {live && (<>
             <div className="mb-3"><Status value={live.status} /></div>
             <Facts items={[["Tanggal pesanan", date(live.order_date)], ["Total", rupiah(live.total_amount)], ["Pelanggan", live.customer_name]]} />
@@ -150,7 +152,7 @@ export function Stock() {
         col("Tersedia", "available", { cell: (c) => <span className={c.row.original.is_low ? "font-medium text-warn" : ""}>{qty(c.getValue())}{c.row.original.is_low ? " (rendah)" : ""}</span>, meta: R("v") }),
         money("Nilai FIFO", "value", "x")]}
       lead={q.data && q.data.length > 0 ? <WarehousePlan rows={q.data as PlanRow[]} branchName={name} /> : undefined}
-      empty="Belum ada stok. Stok muncul setelah barang diterima atau dirakit." />
+      art="rak" empty="Belum ada stok. Stok muncul setelah barang diterima atau dirakit." />
   );
 }
 
@@ -211,7 +213,7 @@ export function Journals() {
   const q = useList("journals", "/accounting/journals", { branch_id: branchId });
   return (
     <ListPage title="Jurnal umum" label="Jurnal umum" q={q} sub="Jurnal yang sudah diposting tidak bisa diubah. Perbaiki kesalahan dengan jurnal pembalik."
-      actions={can("accounting.post") && <Link className="btn btn-primary" to="/accounting/journals/new">Buat jurnal</Link>}
+      actions={can("accounting.post") && <KeyLink tone="primary" glyph="buat" to="/accounting/journals/new">Buat jurnal</KeyLink>}
       columns={[col("Jurnal", "entry_no", { m: "t" }), col("Tanggal", "entry_date", { cell: (c) => date(c.getValue()), m: "d" }), col("Keterangan", "description", { m: "s" }), col("Sumber", "source_type", { m: "x" }),
         money("Jumlah", "total", "v"), status()]}
       empty="Belum ada jurnal." emptyAction={can("accounting.post") ? <Link className="btn btn-sm" to="/accounting/journals/new">Buat jurnal</Link> : undefined} />
@@ -238,7 +240,7 @@ export function Invoices() {
       empty="Belum ada faktur atau tagihan." onOpen={setOpen} selectedId={(r) => r.id === open?.id}
       preview={
         <Drawer open={!!live} onClose={() => setOpen(null)} title={live?.invoice_no ?? ""} subtitle={live ? (live.type === "AR" ? "Faktur piutang" : "Tagihan pemasok") : undefined}
-          footer={live && <><Link className="btn btn-primary" to={`/accounting/invoices/${live.id}`}>Buka dokumen</Link>{can("payments.write") && live.status !== "PAID" && <button className="btn" disabled={pay.isPending} onClick={() => pay.mutate(live)}>Bayar penuh</button>}</>}>
+          footer={live && <><KeyLink tone="primary" glyph="buka-lengkap" to={`/accounting/invoices/${live.id}`}>Buka lengkap</KeyLink>{can("payments.write") && live.status !== "PAID" && <button className="btn" disabled={pay.isPending} onClick={() => pay.mutate(live)}>Bayar penuh</button>}</>}>
           {live && (<>
             <div className="mb-3"><Status value={live.status} /></div>
             <Facts items={[["Tanggal", date(live.invoice_date)], ["Jatuh tempo", date(live.due_date)], ["Total", rupiah(live.total_amount)], ["Dibayar", rupiah(live.paid_amount)], ["Sisa", rupiah(live.outstanding)]]} />

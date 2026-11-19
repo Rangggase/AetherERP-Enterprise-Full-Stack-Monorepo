@@ -8,6 +8,7 @@ import { toast } from "../components/Toaster";
 import { ErrorNote, PageHeader } from "../components/ui";
 import { api } from "../lib/api";
 import { useSession } from "../lib/session";
+import { Key, KeyLink } from "../components/Key";
 
 type Row = Record<string, any>;
 const POLICY = "Minimal 10 karakter, dengan huruf dan angka.";
@@ -39,13 +40,21 @@ export function Users() {
 
   const columns: ColumnDef<Row, any>[] = [
     { header: "Nama", accessorKey: "full_name", meta: { m: "t" } }, { header: "Email", accessorKey: "email", meta: { m: "s" } }, { header: "Peran", accessorKey: "role", meta: { m: "d" } },
-    { header: "Status", accessorKey: "is_active", cell: (c) => <span className={`st ${c.getValue() ? "text-good" : "text-muted"}`}>{c.getValue() ? "Aktif" : "Nonaktif"}</span>, meta: { m: "x" } },
+    { header: "Status", accessorKey: "is_active", meta: { m: "x" }, cell: (c) => {
+      const u = c.row.original, self = u.id === me?.id;
+      // Same request as the former "Nonaktifkan / Aktifkan" button, as a switch.
+      return (
+        <button type="button" role="switch" aria-checked={!!u.is_active} className="sw" disabled={self || toggle.isPending}
+          aria-label={`Akun ${u.full_name} aktif`} title={self ? "Anda tidak bisa menonaktifkan diri sendiri" : undefined} onClick={() => toggle.mutate(u)}>
+          <span className="rail"><span className="knob" /></span><span className="text-table text-muted">{u.is_active ? "Aktif" : "Nonaktif"}</span>
+        </button>
+      );
+    } },
     { id: "aksi", header: "", enableSorting: false, enableColumnFilter: false, meta: { m: "x" }, cell: (c) => {
       const u = c.row.original;
       return (
         <div className="flex justify-end gap-1.5">
           <button className="btn btn-sm" onClick={() => { setResetFor(u); setPw(""); }}>Reset kata sandi</button>
-          <button className="btn btn-sm" disabled={u.id === me?.id || toggle.isPending} title={u.id === me?.id ? "Anda tidak bisa menonaktifkan diri sendiri" : undefined} onClick={() => toggle.mutate(u)}>{u.is_active ? "Nonaktifkan" : "Aktifkan"}</button>
         </div>
       );
     } },
@@ -53,12 +62,12 @@ export function Users() {
 
   return (
     <>
-      <PageHeader title="Pengguna dan peran" sub={q.data ? `${q.data.length} pengguna. Perubahan peran dan penonaktifan berlaku segera dan mengeluarkan pengguna dari sesi yang ada.` : "Memuat…"} actions={<Link className="btn btn-primary" to="/system/users/new">Tambah pengguna</Link>} />
+      <PageHeader title="Pengguna dan peran" sub={q.data ? `${q.data.length} pengguna. Perubahan peran dan penonaktifan berlaku segera dan mengeluarkan pengguna dari sesi yang ada.` : "Memuat…"} actions={<KeyLink tone="primary" glyph="buat" to="/system/users/new">Tambah pengguna</KeyLink>} />
       {resetFor && (
         <form className="mb-5 flex flex-wrap items-end gap-3 border-y border-ink py-4" onSubmit={(e: FormEvent) => { e.preventDefault(); reset.mutate(resetFor); }}>
           <div className="min-w-64 flex-1"><PasswordField label={`Kata sandi baru untuk ${resetFor.full_name}`} value={pw} onChange={setPw} autoComplete="new-password" hint={POLICY} /></div>
           <button type="button" className="btn btn-text" onClick={() => setResetFor(null)}>Batal</button>
-          <button className="btn btn-primary" disabled={reset.isPending}>Reset kata sandi</button>
+          <Key type="submit" tone="primary" glyph="simpan" m={reset}>Reset kata sandi</Key>
         </form>
       )}
       {q.isError ? <ErrorNote error={q.error} retry={() => q.refetch()} /> : <DataTable<Row> label="Pengguna" data={q.data ?? []} columns={columns} loading={q.isLoading} empty="Belum ada pengguna." />}
@@ -105,7 +114,7 @@ export function NewUser() {
             </Field>
           </div>
         </FormGroup>
-        <ActionBar><Link className="btn btn-text" to="/system/users">Batal</Link><button className="btn btn-primary" disabled={save.isPending}>{save.isPending ? "Membuat…" : "Buat pengguna"}</button></ActionBar>
+        <ActionBar><Link className="btn btn-text" to="/system/users">Batal</Link><Key type="submit" tone="primary" glyph="buat" m={save}>Buat pengguna</Key></ActionBar>
       </form>
     </>
   );
@@ -126,7 +135,11 @@ export function Account() {
   const mismatch = again !== "" && again !== next;
   return (
     <>
-      <PageHeader title="Akun saya" sub={`${me?.full_name} · ${me?.email} · ${me?.role}`} />
+      <PageHeader title="Akun saya" sub={`${me?.email} · ${me?.role}`} />
+      <div className="mb-6 flex items-center gap-4">
+        <span className="avatar h-14 w-14 text-lg" aria-hidden="true">{(me?.full_name ?? "?").split(/\s+/).filter(Boolean).slice(0, 2).map((w) => w[0]!.toUpperCase()).join("")}</span>
+        <div><p className="font-serif text-lg font-medium">{me?.full_name}</p><p className="text-table text-muted">{me?.role}</p></div>
+      </div>
       <form onSubmit={(e) => { e.preventDefault(); setError(null); if (!mismatch) save.mutate(); }}>
         {error && <p role="alert" className="mb-2 border-y border-bad py-3 text-sm text-bad">{error}</p>}
         <FormGroup first title="Ganti kata sandi" hint="Setelah diganti, Anda keluar dari semua sesi.">
@@ -138,7 +151,7 @@ export function Account() {
             </Field>
           </div>
         </FormGroup>
-        <ActionBar><button className="btn btn-primary" disabled={save.isPending || mismatch}>{save.isPending ? "Menyimpan…" : "Ganti kata sandi"}</button></ActionBar>
+        <ActionBar><Key type="submit" tone="primary" glyph="simpan" m={save} disabled={mismatch}>Ganti kata sandi</Key></ActionBar>
       </form>
     </>
   );

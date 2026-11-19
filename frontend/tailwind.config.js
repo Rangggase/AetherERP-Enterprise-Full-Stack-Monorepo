@@ -4,7 +4,7 @@ const token = (name) => `rgb(var(--${name}) / <alpha-value>)`;
 export default {
   content: ["./index.html", "./src/**/*.{ts,tsx}"],
   theme: {
-    // docs/design-system.md: a single 4px radius, no elevation.
+    // docs/design-system.md v3: 4px radius; depth comes from the --elev-* tokens.
     borderRadius: { none: "0", DEFAULT: "4px", sm: "4px", md: "4px", lg: "4px", xl: "4px", full: "9999px" },
     fontSize: {
       xs: ["0.75rem", { lineHeight: "1rem" }],
@@ -26,21 +26,25 @@ export default {
         canvas: token("canvas"),
         surface: token("surface"),
         sunken: token("sunken"),
+        highlight: token("highlight"),
+        "accent-deep": token("accent-deep"),
+        "key-edge": token("key-edge"),
         line: token("line"),
         control: token("control"),
         ink: token("ink"),
         muted: token("muted"),
         brand: token("accent"),
         "brand-hover": token("accent-hover"),
-        "brand-ink": "rgb(255 255 255 / <alpha-value>)",
+        "brand-ink": token("surface"),
         good: token("good"),
         warn: token("warn-ink"),
         "warn-mark": token("warn"),
         bad: token("bad"),
         info: token("info"),
       },
-      transitionDuration: { fast: "100ms", base: "120ms", slow: "200ms" },
-      transitionTimingFunction: { out: "cubic-bezier(0.2, 0, 0, 1)" },
+      boxShadow: { "elev-1": "var(--elev-1)", "elev-2": "var(--elev-2)", "elev-3": "var(--elev-3)", inset: "var(--inset)" },
+      transitionDuration: { press: "90ms", fast: "140ms", base: "140ms", mid: "220ms", slow: "360ms" },
+      transitionTimingFunction: { out: "cubic-bezier(0.2, 0.8, 0.2, 1)", in: "cubic-bezier(0.4, 0, 1, 1)", spring: "cubic-bezier(0.3, 1.35, 0.5, 1)" },
     },
   },
   plugins: [],

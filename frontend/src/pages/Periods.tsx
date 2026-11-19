@@ -39,7 +39,7 @@ export function Periods() {
         return (
           <section key={y} className="mb-10" aria-label={`Tahun fiskal ${y}`}>
             <div className="mb-2 flex flex-wrap items-end justify-between gap-2 border-b border-ink pb-2">
-              <div><h2 className="font-serif text-lg font-medium">{y}</h2><p className="text-table text-muted">{closed} dari {rows.length} periode ditutup</p></div>
+              <div><h2 className="text-table font-semibold">{y}</h2><p className="text-table text-muted">{closed} dari {rows.length} periode ditutup</p></div>
               {allowed && <button className="btn" disabled={!ready} title={ready ? undefined : "Tutup Januari sampai November dulu dan biarkan Desember terbuka"} onClick={() => setConfirmYear(y)}>Tutup tahun fiskal</button>}
             </div>
             <ul>
@@ -59,7 +59,7 @@ export function Periods() {
                         <button className="btn btn-sm" disabled={toggle.isPending || blocked}
                           title={blocked ? (p.status === "OPEN" ? "Tutup bulan sebelumnya dulu" : "Buka kembali bulan berikutnya dulu") : undefined}
                           onClick={() => toggle.mutate({ id: p.id, action: p.status === "OPEN" ? "close" : "reopen" })}>
-                          {p.status === "OPEN" ? "Tutup" : "Buka kembali"}
+                          {p.status === "OPEN" ? "Tutup bulan" : "Buka kembali"}
                         </button>
                       )}
                     </div>

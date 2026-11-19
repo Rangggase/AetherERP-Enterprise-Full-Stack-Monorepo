@@ -7,11 +7,13 @@ import { ActionBar, Field, FormGroup, Impact } from "../components/Form";
 import { ConfirmDialog, Drawer } from "../components/Layers";
 import { useCrumb } from "../components/Shell";
 import { toast } from "../components/Toaster";
-import { ErrorNote, PageHeader, SectionTitle } from "../components/ui";
+import { DetailSkeleton, ErrorNote, PageHeader, SectionTitle } from "../components/ui";
 import { api } from "../lib/api";
 import { date, num, qty, rupiah, today } from "../lib/format";
 import { useSession } from "../lib/session";
 import type { Page } from "../lib/types";
+import { Key, KeyLink } from "../components/Key";
+import { Stepper } from "../components/Stepper";
 
 type Row = Record<string, any>;
 const meta = (m: string, right = false) => ({ m, ...(right ? { right: true } : {}) });
@@ -32,11 +34,11 @@ export function Returns() {
     <>
       <PageHeader title="Retur penjualan" sub={q.data ? `${q.data.length} retur · kredit ${rupiah(total)}. Setiap retur mengkredit faktur dan mengembalikan stok dengan biaya saat barang keluar.` : "Memuat…"} />
       {q.isError ? <ErrorNote error={q.error} retry={() => q.refetch()} /> : (
-        <DataTable<Row> label="Retur penjualan" data={q.data ?? []} columns={columns} loading={q.isLoading} onOpen={setOpen} selectedId={(r) => r.id === open?.id}
+        <DataTable<Row> selectable emptyArt="struk" label="Retur penjualan" data={q.data ?? []} columns={columns} loading={q.isLoading} onOpen={setOpen} selectedId={(r) => r.id === open?.id}
           empty="Belum ada retur. Catat retur dari pesanan yang sudah difaktur." />
       )}
       <Drawer open={!!open} onClose={() => setOpen(null)} title={open?.return_no ?? ""} subtitle={open ? `Pesanan #${open.so_id} · ${date(open.return_date)}` : undefined}
-        footer={open && <Link className="btn btn-primary" to={`/sales/orders/${open.so_id}`}>Buka pesanan</Link>}>
+        footer={open && <KeyLink tone="primary" glyph="buka-lengkap" to={`/sales/orders/${open.so_id}`}>Buka pesanan</KeyLink>}>
         {open && (<>
           <dl className="grid grid-cols-[auto_1fr] gap-x-6 gap-y-1 text-table">
             <dt className="text-muted">Kredit ke pelanggan</dt><dd className="num">{rupiah(open.total_amount)}</dd>
@@ -77,7 +79,7 @@ export function NewReturn() {
 
   if (so.isError) return <ErrorNote error={so.error} retry={() => so.refetch()} />;
   const d = so.data;
-  if (!d) return <div className="h-48 animate-pulse bg-sunken" />;
+  if (!d) return <DetailSkeleton />;
 
   if (done) {
     return (
@@ -89,7 +91,7 @@ export function NewReturn() {
           <dt className="text-muted">Item</dt><dd className="text-right">{done.items.map((i: Row) => `${i.sku} × ${qty(i.quantity)}`).join(", ")}</dd>
         </dl>
         <p className="mt-4 max-w-prose text-table text-muted">Faktur berkurang sebesar kredit, stok kembali dengan biaya saat keluar dari gudang, dan jurnalnya sudah diposting.</p>
-        <div className="mt-6 flex gap-2"><Link className="btn btn-primary" to="/sales/returns">Lihat daftar retur</Link><Link className="btn" to={`/sales/orders/${id}`}>Kembali ke pesanan</Link></div>
+        <div className="mt-6 flex gap-2"><KeyLink tone="primary" glyph="retur" to="/sales/returns">Lihat daftar retur</KeyLink><Link className="btn" to={`/sales/orders/${id}`}>Kembali ke pesanan</Link></div>
       </>
     );
   }
@@ -116,15 +118,14 @@ export function NewReturn() {
               const n = num(amounts[l.product_id]);
               const over = n > l.left;
               return (
-                <li key={l.id} className="grid grid-cols-2 items-center gap-x-4 gap-y-1 border-b border-line py-3 md:grid-cols-[minmax(0,1fr)_72px_96px_128px_112px]">
+                <li key={l.id} className="grid grid-cols-2 items-center gap-x-4 gap-y-1 border-b border-line py-3 md:grid-cols-[minmax(0,1fr)_72px_96px_184px_112px]">
                   <div className="col-span-2 min-w-0 md:col-span-1">
                     <span className="font-medium">{l.sku}</span> · {l.name}
                     <div className="text-table text-muted">{rupiah(l.unit_price)} per unit</div>
                   </div>
                   <div className="text-table text-muted md:text-right">Terjual <span className="font-num text-ink">{qty(l.quantity)}</span></div>
                   <div className="text-table text-muted md:text-right">Bisa diretur <span className="font-num text-ink">{qty(l.left)}</span></div>
-                  <input className={`field num col-span-2 md:col-span-1 ${over ? "field-error" : ""}`} name={`return-qty-${l.product_id}`} inputMode="decimal" type="number" min="0" max={l.left} step="any" disabled={l.left <= 0} placeholder="Jumlah retur" aria-label={`Jumlah retur untuk ${l.sku}`}
-                    value={amounts[l.product_id] ?? ""} onChange={(e) => setAmounts({ ...amounts, [l.product_id]: e.target.value })} />
+                  <span className="col-span-2 md:col-span-1"><Stepper label={`jumlah retur ${l.sku}`} name={`return-qty-${l.product_id}`} value={amounts[l.product_id] ?? ""} max={l.left} disabled={l.left <= 0} invalid={over} onChange={(v) => setAmounts({ ...amounts, [l.product_id]: v })} /></span>
                   <div className="num col-span-2 text-table md:col-span-1">{n > 0 ? rupiah(n * num(l.unit_price)) : "–"}</div>
                 </li>
               );
@@ -141,10 +142,10 @@ export function NewReturn() {
         <ActionBar summary={<>
           <Impact label="Kredit ke pelanggan" value={rupiah(credit, true)} />
           {invoice && <Impact label="Sisa tagihan setelah retur" value={rupiah(num(invoice.outstanding) - credit, true)} />}
-          <Impact small label="Biaya stok kembali" value="dihitung saat dicatat" />
+          <Impact small label="Biaya stok kembali (FIFO)" value="dihitung sistem saat dicatat" />
         </>}>
           <Link className="btn btn-text" to="/sales/orders">Batal</Link>
-          <button className="btn btn-primary" disabled={picked.length === 0 || tooMany || save.isPending}>Catat retur</button>
+          <Key type="submit" tone="primary" glyph="retur" m={save} disabled={picked.length === 0 || tooMany}>Catat retur</Key>
         </ActionBar>
       </form>
       <ConfirmDialog open={confirm} onClose={() => setConfirm(false)} title={`Catat retur untuk ${d.so_no}?`} confirmLabel="Ya, catat retur" pending={save.isPending}

@@ -9,6 +9,7 @@ import { ErrorNote, PageHeader } from "../components/ui";
 import { api } from "../lib/api";
 import { qty, rupiah } from "../lib/format";
 import { useSession } from "../lib/session";
+import { Key, KeyLink } from "../components/Key";
 
 type Row = Record<string, any>;
 const col = (header: string, accessorKey: string, extra: Partial<ColumnDef<Row, any>> = {}) => ({ header, accessorKey, ...extra }) as ColumnDef<Row, any>;
@@ -19,11 +20,11 @@ const m = (x: string) => ({ meta: { m: x } });
 function MasterList({ title, sub, path, queryKey, columns, newTo, newLabel, empty }: { title: string; sub: string; path: string; queryKey: string; columns: ColumnDef<Row, any>[]; newTo: string; newLabel: string; empty: string }) {
   const { can } = useSession();
   const q = useQuery({ queryKey: [queryKey], queryFn: () => api<Row[]>(path) });
-  const add = can("master.write") ? <Link className="btn btn-primary" to={newTo}>{newLabel}</Link> : undefined;
+  const add = can("master.write") ? <KeyLink tone="primary" glyph="buat" to={newTo}>{newLabel}</KeyLink> : undefined;
   return (
     <>
-      <PageHeader title={title} sub={q.data ? `${q.data.length} data. ${sub}` : sub} actions={add} />
-      {q.isError ? <ErrorNote error={q.error} retry={() => q.refetch()} /> : <DataTable<Row> label={title} data={q.data ?? []} columns={columns} loading={q.isLoading} empty={empty} emptyAction={add && <Link className="btn btn-sm" to={newTo}>{newLabel}</Link>} />}
+      <PageHeader title={title} sub={q.data ? `${q.data.length} data. ${sub}` : sub} actions={add} cta />
+      {q.isError ? <ErrorNote error={q.error} retry={() => q.refetch()} /> : <DataTable<Row> selectable label={title} data={q.data ?? []} columns={columns} loading={q.isLoading} empty={empty} emptyAction={add && <Link className="btn btn-sm" to={newTo}>{newLabel}</Link>} />}
     </>
   );
 }
@@ -94,7 +95,7 @@ function MasterForm({ title, sub, path, back, keys, groups, initial }: { title: 
         ))}
         <ActionBar>
           <Link className="btn btn-text" to={back}>Batal</Link>
-          <button className="btn btn-primary" disabled={save.isPending}>{save.isPending ? "Menyimpan…" : "Simpan"}</button>
+          <Key type="submit" tone="primary" glyph="simpan" m={save}>{`Simpan ${title.replace(/ baru$/, "").toLowerCase()}`}</Key>
         </ActionBar>
       </form>
     </>

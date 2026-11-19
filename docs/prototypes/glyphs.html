@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Glyph AetherERP</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,500;8..60,600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="tactile-kit.css">
+<style>
+  main { max-width: 1120px; margin: 0 auto; padding: 32px 20px 64px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; margin-top: 12px; }
+  .cell { padding: 16px 12px 12px; display: grid; justify-items: center; gap: 10px; text-align: center; }
+  .cell code { font: 11.5px ui-monospace, monospace; color: var(--muted); }
+  .sizes { display: flex; align-items: end; gap: 18px; }
+  .on-grid { background-image: linear-gradient(var(--line) 1px, transparent 1px), linear-gradient(90deg, var(--line) 1px, transparent 1px); background-size: 4px 4px; }
+  section { margin-top: 36px; }
+  .spec { display: grid; grid-template-columns: auto 1fr; gap: 4px 16px; font-size: 13px; margin-top: 12px; max-width: 640px; }
+</style>
+</head>
+<body>
+<main>
+  <h1 style="font-size:34px">Glyph AetherERP</h1>
+  <p class="muted" style="max-width:68ch">Set garis khusus: grid 24, garis 1,5 px, ujung dan sudut membulat, tanpa isi. Glyph selalu didampingi teks dan diberi <code>aria-hidden</code>. Satu-satunya pengecualian: mode rel sidebar, di mana nama muncul sebagai tooltip dan sebagai nama aksesibel tautan.</p>
+  <dl class="spec">
+    <dt class="muted">Grid</dt><dd style="margin:0">24 × 24, bidang aktif 2–22</dd>
+    <dt class="muted">Garis</dt><dd style="margin:0">1,5 px pada 24; ikut skala pada 16 dan 20</dd>
+    <dt class="muted">Warna</dt><dd style="margin:0"><code>currentColor</code>: mengikuti teks di sampingnya</dd>
+    <dt class="muted">Kontras</dt><dd style="margin:0">teks #1E1B18 atau redup #6B645A di atas kertas, minimal 3:1</dd>
+  </dl>
+
+  <section>
+    <h2 style="font-size:22px">Modul</h2>
+    <p class="muted small">Satu glyph per rute. "Pengiriman", "Buku besar", dan "Pengaturan" belum punya rute sendiri di aplikasi; glyph disiapkan agar set lengkap.</p>
+    <div class="grid" id="mods"></div>
+  </section>
+  <section>
+    <h2 style="font-size:22px">Aksi dan keadaan</h2>
+    <div class="grid" id="acts"></div>
+  </section>
+  <section>
+    <h2 style="font-size:22px">Ukuran</h2>
+    <div class="sheet" style="padding:20px;margin-top:12px">
+      <div class="sizes" id="sizes"></div>
+      <p class="muted small" style="margin:12px 0 0">16 px untuk lencana dan baris tabel rapat, 20 px untuk tombol dan menu, 24 px untuk sidebar mode rel dan bilah tab mobile. Grid 4 px di belakang menunjukkan kotak 24.</p>
+    </div>
+  </section>
+</main>
+<script src="glyphs.js"></script>
+<script>
+  const cell = (k, g, group) => `<div class="cell sheet">${glyph(k, 24, group)}<span>${g.label}</span><code>${k}</code></div>`;
+  document.getElementById("mods").innerHTML = Object.entries(GLYPHS.modules).map(([k, g]) => cell(k, g, "modules")).join("");
+  document.getElementById("acts").innerHTML = Object.entries(GLYPHS.actions).map(([k, g]) => cell(k, g, "actions")).join("");
+  document.getElementById("sizes").innerHTML = [16, 20, 24, 48].map((s) => `<div style="display:grid;justify-items:center;gap:6px"><div class="on-grid" style="padding:4px">${glyph("faktur", s)}</div><span class="small muted">${s}</span></div>`).join("");
+</script>
+</body>
+</html>
