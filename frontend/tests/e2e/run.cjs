@@ -10,6 +10,7 @@ const { chromium } = require(process.env.PW_PATH || "playwright");
 const BASE = process.env.BASE || "http://127.0.0.1:5180";
 const API = `${BASE}/api/v1`;
 const PASS = process.env.DEMO_PASSWORD || "Aether#Demo2026";
+const PASS_IN_PAGE = PASS;
 const ONLY = process.argv.slice(2);
 
 const PERMS = {
@@ -199,6 +200,59 @@ const TESTS = {
     await page.keyboard.press("Escape");
     await page.waitForTimeout(400);
     check("Escape menutup laci", !(await page.$("dialog.drawer[open]")));
+    await ctx.close();
+  },
+
+  /** M10 Tutup Buku di database uji: dialog berdampak, cap DITUTUP, lalu dibuka kembali agar data uji kembali seperti semula. */
+  async tutupbuku(browser) {
+    const ctx = await browser.newContext({ viewport: { width: 1440, height: 900 } });
+    await ctx.addInitScript(() => localStorage.setItem("aether.prefs", JSON.stringify({ motion: "full" })));
+    const page = await ctx.newPage();
+    await login(page, "finance");
+    await page.goto(`${BASE}/accounting/periods`);
+    await page.waitForLoadState("networkidle");
+    const open = page.locator(".books li", { has: page.locator(".book[data-state=open]") }).first();
+    const month = (await open.locator(".month").innerText()).trim();
+    await open.getByRole("button", { name: "Tutup buku" }).click();
+    const dlg = page.locator("dialog.dialog-sheet[open]");
+    await dlg.waitFor();
+    await page.waitForFunction(() => /Jurnal di periode ini/.test(document.querySelector("dialog.dialog-sheet[open]")?.textContent ?? ""));
+    check(`M10: dialog menyebut jumlah jurnal dan laba (${month})`, /Laba bersih periode/.test(await dlg.innerText()));
+    await dlg.getByRole("button", { name: "Ya, tutup buku" }).click();
+    const closed = page.locator(".books li", { hasText: month }).locator(".book[data-state=closed]");
+    await closed.waitFor({ timeout: 5000 });
+    check(`M10: buku ${month} tertutup dengan cap`, await closed.locator(".cap").isVisible());
+    check("M10: struk periode ditutup", (await page.locator(".struk").first().innerText()).includes("Periode ditutup"));
+    await page.locator(".books li", { hasText: month }).getByRole("button", { name: "Buka kembali" }).click();
+    await page.locator(".books li", { hasText: month }).locator(".book[data-state=open]").waitFor({ timeout: 5000 });
+    check(`M10: ${month} dibuka kembali (data uji dipulihkan)`, true);
+    await ctx.close();
+  },
+
+  /** M11 Membuka Buku: sekali per sesi browser, memakai View Transition, data dasbor dimuat bersamaan. */
+  async bukabuku(browser) {
+    const ctx = await browser.newContext({ viewport: { width: 1440, height: 900 } });
+    await ctx.addInitScript(() => {
+      localStorage.setItem("aether.prefs", JSON.stringify({ motion: "full" }));
+      const orig = Document.prototype.startViewTransition;
+      window.__vt = 0;
+      if (orig) Document.prototype.startViewTransition = function (cb) { window.__vt++; window.__book = document.documentElement.hasAttribute("data-book"); return orig.call(this, cb); };
+    });
+    const page = await ctx.newPage();
+    await login(page, "admin");
+    await page.waitForTimeout(800);
+    check("M11: transisi membuka buku berjalan setelah masuk", (await page.evaluate(() => window.__vt)) >= 1 && (await page.evaluate(() => window.__book)) === true);
+    check("M11: tanda sekali per sesi tersimpan", (await page.evaluate(() => sessionStorage.getItem("aether.book-opened"))) === "1");
+    await page.getByRole("button", { name: /Menu pengguna/ }).click();
+    await page.getByRole("menuitem", { name: "Keluar" }).click();
+    await page.waitForURL(`${BASE}/login`);
+    await page.evaluate(() => { window.__vt = 0; });
+    await page.fill("input[name=email]", "admin@aether.local");
+    await page.fill("input[name=password]", PASS_IN_PAGE);
+    await page.click("button[type=submit]");
+    await page.waitForURL((u) => !u.pathname.startsWith("/login"));
+    await page.waitForTimeout(500);
+    check("M11: masuk kedua di sesi yang sama tanpa upacara", (await page.evaluate(() => window.__vt)) === 0);
     await ctx.close();
   },
 

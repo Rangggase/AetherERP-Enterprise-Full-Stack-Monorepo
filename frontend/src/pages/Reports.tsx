@@ -120,6 +120,9 @@ export function Reports() {
 
         {q.isError ? <ErrorNote error={q.error} retry={() => q.refetch()} /> : q.isLoading || !d ? <Skeleton /> : (
           <div ref={paper} className="doc-paper ledger-paper">
+            <p className="mb-3 hidden font-serif text-lg font-medium print:block">
+              {TABS.find(([k]) => k === tab)?.[1]}{tab === "gl" ? ` ${acct}` : ""} · {ranged ? `${date(from)} sampai ${date(to)}` : `per ${date(to)}`}{branchId ? " · satu cabang" : " · semua cabang"}
+            </p>
             {tab === "tb" && (<>
               <Balanced ok={d.balanced} label={d.balanced ? "Debit sama dengan kredit" : "Debit dan kredit berbeda"} />
               <ScrollX>

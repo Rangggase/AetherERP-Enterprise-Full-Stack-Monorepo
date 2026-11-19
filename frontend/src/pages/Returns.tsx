@@ -7,6 +7,7 @@ import { ActionBar, Field, FormGroup, Impact } from "../components/Form";
 import { Key } from "../components/Key";
 import { ConfirmDialog, Drawer } from "../components/Layers";
 import { RoomLink } from "../components/RoomLink";
+import { ScrollX } from "../components/ScrollX";
 import { useCrumb } from "../components/Shell";
 import { DocChain, type ChainStep } from "../components/signature/DocChain";
 import { Stepper } from "../components/Stepper";
@@ -100,13 +101,15 @@ export function ReturnDetail() {
         chain={<DocChain steps={chain} />}
         facts={[["Tanggal retur", date(r.return_date)], ["Alasan", r.reason || "–"], ["Kredit ke pelanggan", <span key="k" className="font-num">{rupiah(r.total_amount, true)}</span>], ["Biaya kembali ke stok", <span key="b" className="font-num">{rupiah(r.cogs_reversed, true)}</span>]]}>
         <SectionTitle>Item yang diretur</SectionTitle>
-        <table className="tbl ledger">
-          <thead><tr><th>SKU</th><th className="text-right">Jumlah</th><th className="text-right">Harga satuan</th><th className="text-right">Kredit</th></tr></thead>
-          <tbody>
-            {r.items.map((i: Row) => <tr key={i.product_id}><td className="code">{i.sku}</td><td className="num">{qty(i.quantity)}</td><td className="num">{rupiah(i.unit_price)}</td><td className="num">{rupiah(num(i.quantity) * num(i.unit_price))}</td></tr>)}
-            <tr className="total"><td colSpan={3} className="num font-medium">Total kredit</td><td className="num font-semibold">{rupiah(r.total_amount, true)}</td></tr>
-          </tbody>
-        </table>
+        <ScrollX>
+          <table className="tbl ledger min-w-[420px]">
+            <thead><tr><th>SKU</th><th className="text-right">Jumlah</th><th className="text-right">Harga satuan</th><th className="text-right">Kredit</th></tr></thead>
+            <tbody>
+              {r.items.map((i: Row) => <tr key={i.product_id}><td className="code">{i.sku}</td><td className="num">{qty(i.quantity)}</td><td className="num">{rupiah(i.unit_price)}</td><td className="num">{rupiah(num(i.quantity) * num(i.unit_price))}</td></tr>)}
+              <tr className="total"><td colSpan={3} className="num font-medium">Total kredit</td><td className="num font-semibold">{rupiah(r.total_amount, true)}</td></tr>
+            </tbody>
+          </table>
+        </ScrollX>
       </DocPaper>
       <div className="mx-auto max-w-read">
         <FolderTabs tabs={[{ key: "Jurnal", label: "Jurnal", glyph: "tinta", count: r.journal_entry_id ? 1 : 0 }, { key: "Riwayat", label: "Riwayat", glyph: "audit" }]} active={tab} onChange={setTab} label="Isi retur">

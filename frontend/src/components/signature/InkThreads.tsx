@@ -170,7 +170,7 @@ export function InkThreads({ journal, autoplay = true }: { journal: InkJournal; 
       <table className="tbl dense mt-3" aria-label={`Baris jurnal ${journal.entry_no}`}>
         <thead><tr><th>Akun</th><th className="text-right">Debit</th><th className="text-right">Kredit</th></tr></thead>
         <tbody>{journal.lines.map((l, i) => (
-          <tr key={i}><td><span className="code" translate="no">{l.account_code}</span> {l.account_name}{l.memo ? <span className="text-muted"> · {l.memo}</span> : null}</td>
+          <tr key={i}><td><span className="code" translate="no">{l.account_code}</span> {l.account_name}{l.memo ? <span className="text-muted max-sm:hidden"> · {l.memo}</span> : null}</td>
             <td className="num">{cents(l.debit) ? idr(cents(l.debit)) : ""}</td><td className="num">{cents(l.credit) ? idr(cents(l.credit)) : ""}</td></tr>
         ))}</tbody>
         <tfoot><tr className="total"><td>Total</td><td className="num">{idr(dSum)}</td><td className="num">{idr(cSum)}</td></tr></tfoot>

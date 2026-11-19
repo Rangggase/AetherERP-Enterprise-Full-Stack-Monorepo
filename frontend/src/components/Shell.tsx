@@ -224,7 +224,7 @@ export function Shell() {
 
   return (
     <CrumbContext.Provider value={setCrumbOverride}>
-      <div className={clsx("min-h-dvh md:grid", rail ? "md:grid-cols-[56px_minmax(0,1fr)]" : "md:grid-cols-[232px_minmax(0,1fr)]")}>
+      <div className={clsx("min-h-dvh md:grid print:block", rail ? "md:grid-cols-[56px_minmax(0,1fr)]" : "md:grid-cols-[232px_minmax(0,1fr)]")}>
         <a href="#main" className="sr-only focus:not-sr-only focus:fixed focus:left-2 focus:top-2 focus:z-receipt focus:rounded focus:bg-paper focus:px-3 focus:py-2 focus:shadow-elev-3">Lewati ke konten</a>
 
         {/* Sidebar: mode lebar (glyph dan kata) atau rel (glyph; kata sebagai tooltip dan nama aksesibel). */}

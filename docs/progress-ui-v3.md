@@ -13,9 +13,18 @@ Sumber kebenaran untuk melanjutkan pekerjaan. Brief: `docs/brief-ui-v3.md`.
 | 4. Gerak dan ruang (M2, M3, M4) | Selesai, diuji skrip e2e |
 | 5. Logika akuntansi (M1, M5, M7) | Selesai (M1 dan M5 terbatas: relasi id) |
 | 6. Persediaan dan aliran (M6, M8, M9) | M8 selesai; M6 dan M9 ditunda (tidak ada data API) |
-| 7. Penyapuan halaman | Berjalan |
+| 7. Penyapuan halaman | Sebagian besar selesai: ponsel 390, tablet 768, zoom 200%, cetak faktur/laporan diperbaiki dan diperiksa; uji e2e M10, M11 lulus |
 | 8. Opsional | O2 dan O3 dikerjakan (bawaan mati); O1 tidak |
-| 9. Pengerasan | Belum |
+| 9. Pengerasan | **Belum**: audit skill (web-design-guidelines, design-motion-principles, react-best-practices, composition, writing), ukur performa build produksi (LCP/CLS/INP), screenshot akhir `v3-*`, README storyboard, perbarui `docs/design-system.md`, laporan akhir |
+
+### Lanjutkan dari sini (sesi berikutnya)
+
+1. Jalankan lingkungan uji (bagian "Lingkungan uji"), buktikan binding lagi.
+2. `node tests/e2e/run.cjs` (semua uji terakhir lulus: 45 + 7) dan `npm run contrast` (301/301).
+3. Kerjakan Fase 9 di atas, lalu laporan akhir sesuai brief 19.
+4. Storyboard ada di `docs/storyboard/` (bingkai + rekaman `.webm`, dibuat `tests/e2e/storyboard.cjs`); README-nya belum ditulis.
+5. Ukuran terakhir (build produksi): CSS awal 12,36 kB gzip (anggaran ≤13,55), JS awal Dasbor ±101 kB gzip (vendor 65,8 + index 35,4; baseline 128,75). Total CSS semua potongan ±18,7 kB gzip (dipecah per rute).
+6. Temuan terbuka: `view-transition-name` tujuan menunggu `React.lazy` lewat `waitForRoom` (maks --dur-room); faktur tidak bisa diprime dari daftar (bentuk data beda), jadi morph faktur pada kunjungan pertama hanya crossfade.
 
 ## Keputusan pengguna
 

@@ -244,6 +244,11 @@ dialog[open]::backdrop { animation: fade-in var(--dur-base) var(--ease-out) 1; }
 :root[data-motion="minimal"] *:not([data-loading-indicator])::after { animation: none !important; transition: none !important; }
 :root[data-motion="minimal"] ::view-transition-group(*), :root[data-motion="minimal"] ::view-transition-old(*), :root[data-motion="minimal"] ::view-transition-new(*) { animation: none !important; }
 
+/* Layar sentuh: target sentuh minimal 44 px (brief 12). */
+@media (pointer: coarse) {
+  .seg button, summary, .index-card [role="option"] { min-height: 44px; }
+}
+
 /* Ponsel: satu tombol utama halaman menempel di atas bilah tab. */
 @media (max-width: 767px) {
   .page-cta { position: fixed; left: 16px; right: 16px; bottom: calc(68px + env(safe-area-inset-bottom)); z-index: var(--z-topbar); }
@@ -270,6 +275,7 @@ dialog[open]::backdrop { animation: fade-in var(--dur-base) var(--ease-out) 1; }
   * { box-shadow: none !important; animation: none !important; transition: none !important; }
   .sheet, .doc-paper, .lift::before { background: none !important; border-color: rgb(var(--ink)) !important; }
   .stack-back, .lift::after, .struk, .ink-line, .tip { display: none !important; }
+  .scroll-x { background: none !important; overflow: visible !important; }
   .cap { -webkit-mask-image: none !important; mask-image: none !important; color: rgb(var(--ink)) !important; }
   .badge { background: none !important; color: rgb(var(--ink)) !important; padding-left: 0; }
   a { color: rgb(var(--ink)) !important; text-decoration: none !important; }

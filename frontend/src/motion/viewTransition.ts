@@ -1,6 +1,6 @@
 import { flushSync } from "react-dom";
 import { FEATURES } from "../config/features";
-import { motionLevel } from "./tokens";
+import { motionLevel, ms } from "./tokens";
 
 /**
  * M4 Transisi Ruang dengan View Transition API bawaan browser (tanpa fitur React eksperimental).
@@ -51,13 +51,16 @@ export function transitionTo(go: () => void, opts: { source?: Element | null; na
   if (src) src.style.viewTransitionName = opts.name;
   pending = { name: opts.name, dir: opts.dir ?? "forward" };
   document.documentElement.dataset.room = pending.dir;
-  const vt = (document as Doc).startViewTransition!(() => {
+  const name = opts.name;
+  const vt = (document as Doc).startViewTransition!(async () => {
     if (src) src.style.viewTransitionName = "";
     if (opts.wait) {
       go();
-      return opts.wait();
-    }
-    flushSync(go);
+      await opts.wait();
+    } else flushSync(go);
+    // Halaman tujuan yang dimuat lewat React.lazy baru dirender sesudah microtask: tunggu elemen tujuan bernama
+    // (paling lama --dur-room) agar snapshot baru memuatnya. Tanpa itu transisi tetap berjalan sebagai crossfade.
+    await waitForRoom(name, ms("dur-room"));
   });
   running = vt;
   const clear = () => {
@@ -67,6 +70,19 @@ export function transitionTo(go: () => void, opts: { source?: Element | null; na
     document.querySelectorAll<HTMLElement>("[data-room-target]").forEach((el) => { el.style.viewTransitionName = ""; });
   };
   vt.finished.then(clear, clear);
+}
+
+function roomPresent(name: string): boolean {
+  return [...document.querySelectorAll<HTMLElement>("[data-room-target]")].some((el) => el.style.viewTransitionName === name && el.getClientRects().length > 0);
+}
+function waitForRoom(name: string, limit: number): Promise<void> {
+  if (roomPresent(name)) return Promise.resolve();
+  return new Promise((resolve) => {
+    const mo = new MutationObserver(() => { if (roomPresent(name)) done(); });
+    const t = window.setTimeout(done, limit);
+    function done() { window.clearTimeout(t); mo.disconnect(); resolve(); }
+    mo.observe(document.body, { subtree: true, childList: true, attributes: true, attributeFilter: ["style", "data-room-target"] });
+  });
 }
 
 /** Menunggu rute baru selesai dirender (Shell mengirim aether:route-rendered), maksimal `limit` ms. */
