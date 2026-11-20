@@ -61,8 +61,8 @@ Folder kerja (di luar repo): `C:\Users\Rangga\AppData\Local\Temp\claude\8f3c383b
 | `baseline.cjs`, `perf.cjs`, `perf2.cjs` | Screenshot baseline, performa sebelum, performa sesudah (LCP, CLS, INP, tugas panjang selama M4 dan M1) |
 | `final-shots.cjs` | Screenshot semua halaman (`PREFIX=v3-`, `NO_WAIT=1` bila batas login dinaikkan) |
 | `modes.cjs` | Screenshot tablet 768, zoom 200%, forced-colors, prefers-contrast more, gerak dikurangi, cetak |
-| `verify18.cjs` | Uji tambahan brief 18: alur hanya keyboard, stok dan total faktur sesudah retur, FIFO = akun 1300, debit = kredit |
-| `modes-check.cjs`, `m1-probe.cjs` | Mode gerak (sistem, Dikurangi, Penuh, Minimal) pada laci dan M1 |
+| `verify18.cjs` (salinannya di repo: `frontend/tests/e2e/verify18.cjs`) | Uji tambahan brief 18: alur hanya keyboard, angka sesudah retur, akun persediaan = lapisan FIFO + barang dalam perjalanan, debit = kredit |
+| `modes-check.cjs` (salinannya di repo: `frontend/tests/e2e/modes-check.cjs`), `m1-probe.cjs` | Mode gerak (sistem, Dikurangi, Penuh, Minimal) pada laci dan M1 |
 | `reshoot-finance.cjs`, `reshoot-roles.cjs` | Ambil ulang screenshot dasbor per peran |
 | `cls.cjs`, `cls-orders.cjs`, `chips-check.cjs`, `hint-check.cjs`, `css-clash.cjs` | Pelacak pergeseran tata letak, pemeriksaan kerangka chip dan petunjuk geser, analisis bentrok CSS tanpa `@layer` dengan utilitas Tailwind |
 
@@ -80,6 +80,9 @@ cd ../frontend && npm run build && VITE_API_TARGET=http://127.0.0.1:8010 node no
 VITE_API_TARGET=http://127.0.0.1:8010 node node_modules/vite/bin/vite.js --port 5180 --strictPort --host 127.0.0.1
 # uji e2e (dari frontend/)
 PW_PATH=C:/Users/Rangga/AppData/Local/npm-cache/_npx/e41f203b7505f1fb/node_modules/playwright BASE=http://127.0.0.1:5180 node tests/e2e/run.cjs
+# uji tambahan brief 18 (membuat data di database uji; BASE tetap 127.0.0.1:5180)
+PW_PATH=<sama> node tests/e2e/verify18.cjs
+PW_PATH=<sama> node tests/e2e/modes-check.cjs
 ```
 
 - `vite.config.ts` sudah mendukung `VITE_API_TARGET` sejak v2 (bawaan `127.0.0.1:8000`). `vite preview` mewarisi `server.proxy`. Tidak ada perubahan konfigurasi.
