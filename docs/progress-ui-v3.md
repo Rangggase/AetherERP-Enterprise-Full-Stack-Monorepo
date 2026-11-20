@@ -17,11 +17,11 @@ Sumber kebenaran untuk melanjutkan pekerjaan. Brief: `docs/brief-ui-v3.md`. Sist
 | 8. Opsional | O2 dan O3 selesai, bawaan mati (commit `9add081`); O1 tidak dikerjakan |
 | 9. Pengerasan | Selesai (commit `f4e48b0`; skrip verifikasi akhir di `4c74626`) |
 
-**Selesai.** Semua fase dan gerbang selesai. Setelah meninjau di aplikasi, pengguna memutuskan merge di Gerbang 5 (20 Nov 2026): `ui-v3` digabung ke `main` lokal secara fast-forward. Belum di-push.
+**Selesai.** Semua fase dan gerbang selesai. Setelah meninjau di aplikasi, pengguna memutuskan merge di Gerbang 5 (20 Nov 2026): `ui-v3` digabung ke `main` lokal secara fast-forward. Setelah itu pengguna mengizinkan push `main` ke `origin`.
 
 ### Lanjutkan dari sini
 
-1. Tidak ada pekerjaan brief yang tersisa. `main` lokal berisi v2 dan v3 dan berada di depan `origin/main`; push menunggu izin pengguna (brief 20).
+1. Tidak ada pekerjaan brief yang tersisa. `main` berisi v2 dan v3; push ke `origin` diizinkan pengguna pada 20 Nov 2026.
 2. Untuk mengulang verifikasi: jalankan lingkungan uji (bagian "Lingkungan uji"), buktikan binding, lalu `npm run typecheck`, `npm run build`, `npm run contrast`, `pytest` di backend, dan `node tests/e2e/run.cjs`.
 3. Pekerjaan lanjutan yang mungkin: peluang dari audit gerak (bagian Fase 9), M6 dan M9 bila backend kelak menyediakan lapisan FIFO dan laporan aliran.
 
@@ -30,28 +30,29 @@ Sumber kebenaran untuk melanjutkan pekerjaan. Brief: `docs/brief-ui-v3.md`. Sist
 | Tanggal | Keputusan |
 |---|---|
 | 20 Nov 2026 | D1: relasi dokumen hanya dari id eksplisit API. Nomor dokumen di deskripsi jurnal **tidak** dipakai sebagai relasi. Akibat: M1 hanya untuk retur (`journal_entry_id` di daftar retur) dan laci dari struk M2 (`journal_entry_id` di respons POST); M5 tanpa langkah pengiriman. |
-| 20 Nov 2026 | Pengguna: "kerjakan sesuai yang tertera, tidak usah bertanya, semua izin diperbolehkan". Gerbang 1–4 tidak lagi menunggu jawaban; keputusan di bawah diambil Claude atas izin itu dan bisa dibatalkan pengguna. |
-| 20 Nov 2026 | D2 (Claude): M6 dan M9 ditunda, saklar `fifoStack` dan `goodsFlow` mati. Laci produk dan dasbor menyebut alasannya. |
-| 20 Nov 2026 | D3 (Claude): tebakan faktur dari pesanan (v2 `Details.tsx` dan form retur) dihapus. Detail pesanan menampilkan "Faktur pelanggan" (relasi `customer_id`) dengan Bayar penuh; form retur hanya menyebut faktur bila retur sebelumnya menautkannya lewat `invoice_id`. |
-| 20 Nov 2026 | D4 (Claude): arketipe dasbor dari izin: pimpinan (`users.manage`), keuangan, pengadaan, gudang, penjualan, auditor. |
-| 20 Nov 2026 | D5 (Claude): commit lokal per fase di `ui-v3`, author Rangggase, tanpa atribusi AI. Tidak push, tidak merge ke `main`. |
-| 20 Nov 2026 | Dependensi (Claude): `motion` tidak dipakai (WAAPI + CSS, pegas lewat easing `linear()` di `motion/spring.ts`); `three`/`@react-three/fiber` tidak dipakai (O1 tidak dikerjakan); `recharts` dan `lucide-react` yang tidak terpakai dihapus. `@playwright/test` gagal dipasang (ditolak pengaman mode otomatis lingkungan), jadi uji e2e memakai skrip Playwright dari cache npx (`frontend/tests/e2e/run.cjs`). |
-| 20 Nov 2026 | Gerbang 4 (Claude): O2 Cahaya meja dan O3 Suara dikerjakan, bawaan mati di Akun saya. O1 Gudang 3D tidak dikerjakan: data hanya 6 produk, tidak lolos uji akal sehat no. 2 (tidak membuat lebih cepat paham dibanding SVG M8) dan menambah ±150 kB gzip. |
+| 20 Nov 2026 | Pengguna: "kerjakan sesuai yang tertera, tidak usah bertanya, semua izin diperbolehkan". Gerbang 1–4 tidak lagi menunggu jawaban; keputusan di bawah diambil pelaksana atas izin itu dan bisa dibatalkan pengguna. |
+| 20 Nov 2026 | D2 (pelaksana): M6 dan M9 ditunda, saklar `fifoStack` dan `goodsFlow` mati. Laci produk dan dasbor menyebut alasannya. |
+| 20 Nov 2026 | D3 (pelaksana): tebakan faktur dari pesanan (v2 `Details.tsx` dan form retur) dihapus. Detail pesanan menampilkan "Faktur pelanggan" (relasi `customer_id`) dengan Bayar penuh; form retur hanya menyebut faktur bila retur sebelumnya menautkannya lewat `invoice_id`. |
+| 20 Nov 2026 | D4 (pelaksana): arketipe dasbor dari izin: pimpinan (`users.manage`), keuangan, pengadaan, gudang, penjualan, auditor. |
+| 20 Nov 2026 | D5 (pelaksana): commit lokal per fase di `ui-v3`, author Rangggase, tanpa atribusi AI. Tidak push, tidak merge ke `main`. |
+| 20 Nov 2026 | Dependensi (pelaksana): `motion` tidak dipakai (WAAPI + CSS, pegas lewat easing `linear()` di `motion/spring.ts`); `three`/`@react-three/fiber` tidak dipakai (O1 tidak dikerjakan); `recharts` dan `lucide-react` yang tidak terpakai dihapus. `@playwright/test` gagal dipasang (ditolak pengaman lingkungan kerja), jadi uji e2e memakai skrip Playwright dari cache npx (`frontend/tests/e2e/run.cjs`). |
+| 20 Nov 2026 | Gerbang 4 (pelaksana): O2 Cahaya meja dan O3 Suara dikerjakan, bawaan mati di Akun saya. O1 Gudang 3D tidak dikerjakan: data hanya 6 produk, tidak lolos uji akal sehat no. 2 (tidak membuat lebih cepat paham dibanding SVG M8) dan menambah ±150 kB gzip. |
 | 20 Nov 2026 | Pengguna: "okey kita mulai langkah selanjutnya". Fase 9 dikerjakan sampai laporan akhir. |
-| 20 Nov 2026 | Gerbang 5 (Claude): **tidak** diputuskan Claude. Merge ke `main` mengubah cabang utama dan brief 20 melarang merge tanpa izin, jadi keputusannya dikembalikan ke pengguna. |
+| 20 Nov 2026 | Gerbang 5 (pelaksana): **tidak** diputuskan pelaksana. Merge ke `main` mengubah cabang utama dan brief 20 melarang merge tanpa izin, jadi keputusannya dikembalikan ke pengguna. |
 | 20 Nov 2026 | Gerbang 5, pengguna: "Tinjau dulu". Lingkungan tinjauan dijalankan dari salinan bersih data demo (`ui-v3-tinjau.db`, dari `ui-v3.base.db`). Merge belum diputuskan. |
 | 20 Nov 2026 | Gerbang 5, pengguna: "Merge ke main". Server tinjauan dimatikan, lalu `ui-v3` digabung ke `main` lokal secara fast-forward (tanpa commit merge, mengikuti riwayat `main` yang linear). Posisi `main` sebelumnya `fde5da8`, masih ditunjuk cabang `ui-polish`. Tidak di-push. |
+| 20 Nov 2026 | Pengguna: push `main` ke `origin`. Atas pilihan pengguna, sebelum push label keputusan di catatan ini dibuat netral dan path folder lokal dihapus. Brief tidak diubah, dan versi lama catatan tetap ada di riwayat commit. |
 
 ## Git
 
 - Sebelum mulai: cabang `tactile-ui` di `2854dc9`, bersih kecuali `docs/brief-ui-v3.md` (untracked). Pekerjaan v2 sudah di-commit di `tactile-ui`, belum di-merge ke `main`, belum di-push.
 - Titik pemulihan: tag `pre-ui-v3` → `2854dc9`. Cabang kerja `ui-v3` dibuat dari `2854dc9`.
 - Commit di `ui-v3`: `c1fbc27` (fase 0), `9add081` (fase 2–6 dan 8), `64a63f9` (fase 1 dan 7), `f4e48b0` (fase 9), `4c74626` (skrip verifikasi akhir). Author Rangggase, tanpa atribusi AI.
-- Tidak ada push. Pada 20 Nov 2026 `ui-v3` di-merge ke `main` (fast-forward) atas keputusan pengguna di Gerbang 5. Cabang `tactile-ui` dan `ui-v3` dibiarkan apa adanya.
+- Pada 20 Nov 2026 `ui-v3` di-merge ke `main` (fast-forward) atas keputusan pengguna di Gerbang 5, lalu pengguna mengizinkan push `main` ke `origin`. Cabang `tactile-ui` dan `ui-v3` serta tag `pre-ui-v3` dibiarkan apa adanya; yang diizinkan untuk di-push hanya `main`.
 
 ## Lingkungan uji
 
-Folder kerja (di luar repo): `C:\Users\Rangga\AppData\Local\Temp\claude\8f3c383bac6030e1\50ba53db-a021-4207-8211-38005af2626f\scratchpad\uiv3\`
+Folder kerja uji ada di luar repo, di folder sementara lokal (di bawah disebut `<uiv3>`). Isinya tidak di-commit.
 
 | File | Isi |
 |---|---|
@@ -71,7 +72,7 @@ Folder kerja (di luar repo): `C:\Users\Rangga\AppData\Local\Temp\claude\8f3c383b
 Variabel dan perintah (bash, dari `backend/`):
 
 ```
-DB=sqlite:///C:/Users/Rangga/AppData/Local/Temp/claude/8f3c383bac6030e1/50ba53db-a021-4207-8211-38005af2626f/scratchpad/uiv3/ui-v3.db
+DB=sqlite:///<uiv3>/ui-v3.db
 # isi ulang database uji (hanya jika file dihapus dulu)
 DATABASE_URL=$DB .venv/Scripts/python.exe -m app.cli seed
 # backend uji 8010 (batas login dinaikkan hanya untuk proses uji ini)
@@ -81,7 +82,7 @@ cd ../frontend && npm run build && VITE_API_TARGET=http://127.0.0.1:8010 node no
 # frontend uji 5180 (dev, perlu untuk rute Katalog dan storyboard)
 VITE_API_TARGET=http://127.0.0.1:8010 node node_modules/vite/bin/vite.js --port 5180 --strictPort --host 127.0.0.1
 # uji e2e (dari frontend/)
-PW_PATH=C:/Users/Rangga/AppData/Local/npm-cache/_npx/e41f203b7505f1fb/node_modules/playwright BASE=http://127.0.0.1:5180 node tests/e2e/run.cjs
+PW_PATH=<folder paket playwright> BASE=http://127.0.0.1:5180 node tests/e2e/run.cjs
 # uji tambahan brief 18 (membuat data di database uji; BASE tetap 127.0.0.1:5180)
 PW_PATH=<sama> node tests/e2e/verify18.cjs
 PW_PATH=<sama> node tests/e2e/modes-check.cjs
@@ -101,7 +102,7 @@ Sesi 1 (20 Nov 2026):
 |---|---|---|
 | Sebelum seed | 79 baris (max id 79) | belum ada |
 | Setelah `app.cli seed` | 79 | 66 |
-| Proses server 8010 mencetak `DATABASE_URL=sqlite:///C:/Users/.../uiv3/ui-v3.db`, PID 13952 | | |
+| Proses server 8010 mencetak `DATABASE_URL=sqlite:///<uiv3>/ui-v3.db`, PID 13952 | | |
 | Login percobaan langsung ke 8010 (HTTP 200) | 79 | 67 |
 | Tambahan data demo lewat API | 79 | 85 |
 | Login percobaan lewat proxy `vite preview` 5180 (HTTP 200) | 79 | 86 |
@@ -124,13 +125,13 @@ Dijalankan 20 Nov 2026 setelah pengguna memilih "Tinjau dulu".
 
 - Database: `ui-v3-tinjau.db` di folder kerja uji, disalin dari `ui-v3.base.db` (data demo bersih: 2 retur, 1 faktur dibayar sebagian, periode Januari–Juni 2026 ditutup, 1 PO menunggu persetujuan, 1 transfer dalam perjalanan; tanpa data buatan uji e2e). `ui-v3.db` hasil verifikasi akhir tidak diubah.
 - Peluncur di folder kerja uji: `tinjau_backend.py` (memasang `DATABASE_URL` dan variabel lain di dalam prosesnya sendiri, lalu menolak jalan bila engine tidak terikat ke `ui-v3-tinjau.db`) dan `tinjau_frontend.mjs` (`vite preview` build produksi di 127.0.0.1:5180, proxy `/api` dipasang di dalam proses ke 8010, berhenti bila proxy mengarah ke tempat lain).
-- Dijalankan lewat panel browser aplikasi desktop dengan konfigurasi `D:\new another projectd\.claude\launch.json` (di luar repo): `tinjau-backend-8010`, `tinjau-frontend-5180`.
+- Dijalankan dengan konfigurasi peluncur lokal di luar repo: `tinjau-backend-8010` dan `tinjau-frontend-5180`.
 - Build produksi dibuat ulang dari HEAD `4c74626` sebelum dijalankan. Rute Katalog tidak ada di build ini.
 
 | Langkah | LIVE `aether_erp.db` (ro) | COPY `ui-v3-tinjau.db` (ro) |
 |---|---|---|
 | Sebelum server dijalankan | 79 (max id 79) | 102 |
-| Backend mencetak `PID=9004 DATABASE_URL=sqlite:///C:/Users/.../uiv3/ui-v3-tinjau.db` | | |
+| Backend mencetak `PID=9004 DATABASE_URL=sqlite:///<uiv3>/ui-v3-tinjau.db` | | |
 | Login lewat proxy `vite preview` 5180 (HTTP 200) | 79 (max id 79) | 103 |
 | Setelah tinjauan pengguna, server dimatikan | 79 (max id 79) | 107 |
 
@@ -346,7 +347,7 @@ Dasbor (bagian 11):
 4. M6 dan M9 butuh endpoint backend baru (lapisan FIFO, laporan aliran per tahap), di luar lingkup brief UI.
 5. Aturan izin backend: kirim dan retur hanya bisa dilakukan peran yang punya `sales.write` dan `inventory.write`; di data demo hanya Admin. Bila Sales atau Gudang memang harus bisa, itu perubahan peran atau backend, bukan UI.
 6. "Nilai persediaan FIFO" di dasbor (lapisan di gudang) berbeda dari saldo akun persediaan di Neraca selama ada transfer dalam perjalanan. Angka keduanya benar menurut API; bila membingungkan pengguna, bisa ditambah keterangan "tidak termasuk barang dalam perjalanan" (perubahan teks UI) atau akun barang dalam perjalanan (perubahan backend).
-7. Push `main` ke `origin`? Belum diizinkan (brief 20), jadi belum dilakukan.
+7. Push `main` ke `origin`? Diizinkan pengguna pada 20 Nov 2026, hanya untuk `main`. Cabang lain dan tag `pre-ui-v3` tetap lokal.
 
 ## PID proses
 
@@ -359,7 +360,7 @@ Dasbor (bagian 11):
 | Backend tinjauan 8010 (`tinjau_backend.py`) | 9004 | Dimatikan |
 | `vite preview` tinjauan 5180 (`tinjau_frontend.mjs`) | 14936 | Dimatikan |
 
-Tidak ada proses sesi ini yang masih berjalan. Server tinjauan dimatikan lewat panel browser setelah pengguna memutuskan merge; port 8010 dan 5180 kosong dan kedua PID sudah tidak ada. Server milik pengguna di 8000 dan 5173 tidak berjalan dan tidak disentuh.
+Tidak ada proses sesi ini yang masih berjalan. Server tinjauan dimatikan setelah pengguna memutuskan merge; port 8010 dan 5180 kosong dan kedua PID sudah tidak ada. Server milik pengguna di 8000 dan 5173 tidak berjalan dan tidak disentuh.
 
 ## Catatan teknis untuk sesi berikutnya
 
