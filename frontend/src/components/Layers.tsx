@@ -13,6 +13,7 @@ import { Key } from "./Key";
 function useModal(open: boolean, onClose: () => void, exit: Keyframe[]) {
   const ref = useRef<HTMLDialogElement>(null);
   const opener = useRef<Element | null>(null);
+  const byKey = useRef(false);
   const [shown, setShown] = useState(open);
   useEffect(() => {
     const d = ref.current;
@@ -23,14 +24,16 @@ function useModal(open: boolean, onClose: () => void, exit: Keyframe[]) {
       d.showModal();
     } else if (!open && d.open) {
       const done = () => { d.close(); setShown(false); (opener.current as HTMLElement | null)?.focus?.({ preventScroll: true }); };
-      const a = play(d, exit, { duration: exitMs("dur-base"), easing: "in", reduced: [{ opacity: 1 }, { opacity: 0 }] });
+      // Ditutup dengan Escape: langsung, tanpa animasi keluar.
+      const a = byKey.current ? null : play(d, exit, { duration: exitMs("dur-base"), easing: "in", reduced: [{ opacity: 1 }, { opacity: 0 }] });
+      byKey.current = false;
       if (a) a.onfinish = done; else done();
     }
   }, [open]); // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => {
     const d = ref.current;
     if (!d) return;
-    const cancel = (e: Event) => { e.preventDefault(); onClose(); };
+    const cancel = (e: Event) => { e.preventDefault(); byKey.current = true; onClose(); };
     d.addEventListener("cancel", cancel);
     return () => d.removeEventListener("cancel", cancel);
   }, [onClose]);
@@ -50,7 +53,8 @@ export function Drawer({ open, onClose, title, subtitle, children, footer, chain
   const id = useId();
   const nav = useNavigate();
   const titleRef = useRef<HTMLHeadingElement>(null);
-  const { ref, shown } = useModal(open, onClose, [{ opacity: 1, transform: "none" }, { opacity: 0, transform: "translateX(24px)" }]);
+  // Keluar lebih halus dari masuk: geser 12 px (masuk 24 px), sekitar 70% durasi.
+  const { ref, shown } = useModal(open, onClose, [{ opacity: 1, transform: "none" }, { opacity: 0, transform: "translateX(12px)" }]);
   const openFull = () => {
     if (!full) return;
     const go = () => { ref.current?.close(); nav(full.to); };

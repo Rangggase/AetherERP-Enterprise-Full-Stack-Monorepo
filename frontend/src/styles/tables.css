@@ -27,13 +27,16 @@
   opacity: 0; transform: translateY(100%); pointer-events: none; transition: transform var(--dur-base) var(--ease-out), opacity var(--dur-base) var(--ease-out); }
 .bulk.on { opacity: 1; transform: none; pointer-events: auto; }
 .bulk .btn:focus-visible { outline-color: rgb(var(--paper)); }
-.swipe-hint { display: flex; align-items: center; gap: 6px; padding: 0 2px 6px; font-size: 0.78rem; color: rgb(var(--ink-muted)); }
+/* Berkas ini tidak berada di @layer Tailwind, jadi utilitas md:hidden kalah; tampilan per lebar layar diatur di sini. */
+.swipe-hint { display: none; align-items: center; gap: 6px; padding: 0 2px 6px; font-size: 0.78rem; color: rgb(var(--ink-muted)); }
+@media (max-width: 767.98px) { .swipe-hint { display: flex; } }
 
 .chip { display: inline-flex; height: 28px; align-items: center; gap: 4px; padding: 0 4px 0 10px; border: 1px solid rgb(var(--rule-strong)); border-radius: 9999px; background: rgb(var(--paper)); font-size: 0.8125rem; }
 .chip button { display: grid; place-items: center; width: 22px; height: 22px; border-radius: 9999px; color: rgb(var(--ink-muted)); }
 .chip button:hover { background: rgb(var(--highlight)); color: rgb(var(--ink)); }
 .chip-toggle { display: inline-flex; min-height: 32px; align-items: center; gap: 6px; padding: 0 12px; border: 1px solid rgb(var(--rule-strong)); border-radius: 9999px; background: rgb(var(--paper)); font-size: 0.8125rem; font-weight: 500; color: rgb(var(--ink)); }
 .chip-toggle[aria-pressed="true"] { background: rgb(var(--ink)); border-color: rgb(var(--ink)); color: rgb(var(--paper)); }
+.chip-toggle.is-wait { width: 96px; border-color: rgb(var(--pencil)); background: transparent; }
 @media (pointer: coarse) { .chip-toggle { min-height: 44px; } .chip { height: 44px; } .chip button { width: 36px; height: 36px; } }
 
 .ledger-paper { position: relative; padding-left: 24px; }

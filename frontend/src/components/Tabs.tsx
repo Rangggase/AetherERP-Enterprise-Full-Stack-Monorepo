@@ -21,9 +21,9 @@ export function FolderTabs<K extends string>({ tabs, active, onChange, label, ch
     if (prev.current === active) return;
     const dir = keys.indexOf(active) > keys.indexOf(prev.current) ? 1 : -1;
     prev.current = active;
-    const quick = byKey.current;
-    byKey.current = false;
-    play(panel.current, quick ? [{ opacity: 0.4 }, { opacity: 1 }] : [{ opacity: 0, transform: `translateX(${8 * dir}px)` }, { opacity: 1, transform: "none" }], { duration: quick ? "dur-fade" : "dur-base" });
+    // Perpindahan dengan papan ketik tidak dianimasikan (aksi yang dipicu keyboard tidak boleh menunggu gerak).
+    if (byKey.current) { byKey.current = false; return; }
+    play(panel.current, [{ opacity: 0, transform: `translateX(${8 * dir}px)` }, { opacity: 1, transform: "none" }], { duration: "dur-base" });
   }, [active]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const go = (i: number) => { byKey.current = true; const k = keys[(i + keys.length) % keys.length]!; onChange(k); btns.current[(i + keys.length) % keys.length]?.focus(); };

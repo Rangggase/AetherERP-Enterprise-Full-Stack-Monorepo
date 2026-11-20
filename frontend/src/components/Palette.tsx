@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { api } from "../lib/api";
 import { compactRupiah, date } from "../lib/format";
-import { FLAT_NAV } from "../lib/nav";
+import { FLAT_NAV, RETURN_PERMS } from "../lib/nav";
 import { useSession } from "../lib/session";
 import type { Page } from "../lib/types";
 import { play } from "../motion/animate";
@@ -26,15 +26,15 @@ const SOURCES: { perm: string; path: string; paged: boolean; map: (r: Row) => Hi
   { perm: "master.read", path: "/master/suppliers", paged: false, map: (r) => ({ key: `s${r.id}`, kind: "Pihak", label: r.name, hint: r.code, to: "/master/suppliers", glyph: "pemasok" }) },
 ];
 
-/** Aksi adalah pintasan ke halaman yang sudah ada; palet tidak pernah menjalankan mutasi. */
-const ACTIONS: (Hit & { perm: string })[] = [
-  { key: "a-so", kind: "Aksi", label: "Buat pesanan penjualan", to: "/sales/orders/new", glyph: "buat", perm: "sales.write" },
-  { key: "a-ret", kind: "Aksi", label: "Buat retur", hint: "pilih pesanan yang sudah difaktur", to: "/sales/orders?status=INVOICED", glyph: "retur", perm: "sales.write" },
-  { key: "a-po", kind: "Aksi", label: "Buat pesanan pembelian", to: "/procurement/orders/new", glyph: "buat", perm: "procurement.write" },
-  { key: "a-je", kind: "Aksi", label: "Buat jurnal", to: "/accounting/journals/new", glyph: "jurnal", perm: "accounting.post" },
-  { key: "a-pr", kind: "Aksi", label: "Tambah produk", to: "/master/products/new", glyph: "produk", perm: "master.write" },
-  { key: "a-cu", kind: "Aksi", label: "Tambah pelanggan", to: "/sales/customers/new", glyph: "pelanggan", perm: "master.write" },
-  { key: "a-us", kind: "Aksi", label: "Tambah pengguna", to: "/system/users/new", glyph: "pengguna", perm: "users.manage" },
+/** Aksi adalah pintasan ke halaman yang sudah ada; palet tidak pernah menjalankan mutasi. Aksi tampil bila pengguna punya semua izinnya. */
+const ACTIONS: (Hit & { perm: string[] })[] = [
+  { key: "a-so", kind: "Aksi", label: "Buat pesanan penjualan", to: "/sales/orders/new", glyph: "buat", perm: ["sales.write"] },
+  { key: "a-ret", kind: "Aksi", label: "Buat retur", hint: "pilih pesanan yang sudah difaktur", to: "/sales/orders?status=INVOICED", glyph: "retur", perm: RETURN_PERMS },
+  { key: "a-po", kind: "Aksi", label: "Buat pesanan pembelian", to: "/procurement/orders/new", glyph: "buat", perm: ["procurement.write"] },
+  { key: "a-je", kind: "Aksi", label: "Buat jurnal", to: "/accounting/journals/new", glyph: "jurnal", perm: ["accounting.post"] },
+  { key: "a-pr", kind: "Aksi", label: "Tambah produk", to: "/master/products/new", glyph: "produk", perm: ["master.write"] },
+  { key: "a-cu", kind: "Aksi", label: "Tambah pelanggan", to: "/sales/customers/new", glyph: "pelanggan", perm: ["master.write"] },
+  { key: "a-us", kind: "Aksi", label: "Tambah pengguna", to: "/system/users/new", glyph: "pengguna", perm: ["users.manage"] },
 ];
 const ORDER: Kind[] = ["Terakhir dibuka", "Halaman", "Dokumen", "Aksi", "Produk", "Pihak"];
 const RECENT_KEY = "aether.palette.recent";
@@ -62,6 +62,7 @@ export function Palette({ open, scope = "all", instant, onClose }: { open: boole
   const [active, setActive] = useState(0);
   const [recent, setRecent] = useState<Hit[]>([]);
   const opener = useRef<Element | null>(null);
+  const closedByKey = useRef(false);
 
   const lists = useQuery({
     queryKey: ["palette"],
@@ -92,7 +93,9 @@ export function Palette({ open, scope = "all", instant, onClose }: { open: boole
     }
     if (!open && d.open) {
       const done = () => { d.close(); (opener.current as HTMLElement | null)?.focus?.(); };
-      const a = play(d, [{ opacity: 1, transform: "none" }, { opacity: 0, transform: "scale(.98)" }], { duration: exitMs("dur-base"), easing: "in", reduced: [{ opacity: 1 }, { opacity: 0 }] });
+      // Ditutup dengan Escape atau dengan memilih hasil lewat Enter: langsung, tanpa animasi keluar.
+      const a = closedByKey.current ? null : play(d, [{ opacity: 1, transform: "none" }, { opacity: 0, transform: "scale(.98)" }], { duration: exitMs("dur-base"), easing: "in", reduced: [{ opacity: 1 }, { opacity: 0 }] });
+      closedByKey.current = false;
       if (a) a.onfinish = done; else done();
     }
   }, [open]);
@@ -100,7 +103,7 @@ export function Palette({ open, scope = "all", instant, onClose }: { open: boole
   const results = useMemo<Hit[]>(() => {
     const term = q.trim().toLowerCase();
     const pages: Hit[] = FLAT_NAV.filter((i) => can(i.perm)).map((i) => ({ key: i.to, kind: "Halaman", label: i.label, to: i.to, glyph: i.glyph }));
-    const actions = scope === "all" ? ACTIONS.filter((a) => can(a.perm)) : [];
+    const actions = scope === "all" ? ACTIONS.filter((a) => a.perm.every((p) => can(p))) : [];
     const match = (h: Hit) => `${h.label} ${h.hint ?? ""}`.toLowerCase().includes(term);
     const pool = term
       ? [...pages, ...actions, ...(scope === "all" ? lists.data ?? [] : [])].filter(match)
@@ -120,18 +123,19 @@ export function Palette({ open, scope = "all", instant, onClose }: { open: boole
   function onKey(e: React.KeyboardEvent) {
     if (e.key === "ArrowDown") { e.preventDefault(); setActive((a) => Math.min(a + 1, results.length - 1)); }
     else if (e.key === "ArrowUp") { e.preventDefault(); setActive((a) => Math.max(a - 1, 0)); }
-    else if (e.key === "Enter") { e.preventDefault(); go(results[active]); }
+    else if (e.key === "Enter") { e.preventDefault(); closedByKey.current = true; go(results[active]); }
   }
   const cur = results[active];
 
   return (
-    <dialog ref={ref} onClose={onClose} onCancel={(e) => { e.preventDefault(); onClose(); }} aria-label={scope === "pages" ? "Pindah halaman" : "Pencarian dan perintah"}
+    <dialog ref={ref} onClose={onClose} onCancel={(e) => { e.preventDefault(); closedByKey.current = true; onClose(); }} aria-label={scope === "pages" ? "Pindah halaman" : "Pencarian dan perintah"}
       onClick={(e) => { if (e.target === ref.current) onClose(); }}
       className={clsx("index-card m-0 mx-auto mt-[12vh] w-[min(820px,calc(100vw-2rem))]", instant && "instant")}>
-      <div className="flex items-center gap-2.5 border-b border-line bg-paper px-4 py-2.5">
+      {/* Penanda fokus isian: garis aksen di bawah baris pencarian (pengganti cincin fokus bawaan). */}
+      <div className="flex items-center gap-2.5 border-b border-line bg-paper px-4 py-2.5 focus-within:shadow-[inset_0_-2px_0_rgb(var(--accent))]">
         <Glyph name="cari" size={20} className="text-muted" />
         <input ref={input} className="h-10 min-w-0 flex-1 bg-transparent text-base outline-none placeholder:text-muted" name="palette"
-          placeholder={scope === "pages" ? "Cari halaman" : "Cari halaman, dokumen, aksi, produk"} autoComplete="off" spellCheck={false}
+          placeholder={scope === "pages" ? "Cari halaman…" : "Cari halaman, dokumen, aksi, produk…"} autoComplete="off" spellCheck={false}
           role="combobox" aria-expanded="true" aria-controls="palette-list" aria-activedescendant={cur ? `pal-${cur.key}` : undefined}
           value={q} onChange={(e) => setQ(e.target.value)} onKeyDown={onKey} />
         <button type="button" className="rounded-sm border border-b-2 border-line bg-paper px-1.5 font-sans text-[11px] text-ink md:pointer-events-none" onClick={onClose}>Esc</button>

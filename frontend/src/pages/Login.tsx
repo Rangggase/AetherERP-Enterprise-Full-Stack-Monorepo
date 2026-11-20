@@ -34,8 +34,13 @@ export function Login() {
 
   async function submit(e: FormEvent) {
     e.preventDefault();
-    setBusy(true);
     setError(null);
+    if (!email.trim() || !password) {
+      setError(!email.trim() ? "Isi email akun perusahaan Anda." : "Isi kata sandi Anda.");
+      (sheet.current?.querySelector<HTMLInputElement>(!email.trim() ? "input[name=email]" : "input[name=password]"))?.focus();
+      return;
+    }
+    setBusy(true);
     try {
       leaving.current = true;
       await s.signIn(email.trim(), password);
@@ -73,7 +78,7 @@ export function Login() {
           <Field label="Kata sandi" error={caps ? "Caps Lock aktif. Huruf kapital mungkin tidak sengaja." : null}>
             <input className="field" type="password" name="password" autoComplete="current-password" required value={password} onChange={(e) => setPassword(e.target.value)} onKeyUp={capsCheck} onKeyDown={capsCheck} onBlur={() => setCaps(false)} />
           </Field>
-          <Key type="submit" tone="primary" glyph="kirim" className="w-full" pending={busy} disabled={!email || !password}>Masuk ke buku besar</Key>
+          <Key type="submit" tone="primary" glyph="kirim" className="w-full" pending={busy}>Masuk ke buku besar</Key>
         </form>
       </div>
       <Parallax />

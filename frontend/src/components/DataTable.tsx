@@ -157,7 +157,7 @@ export function DataTable<T>({ data, columns, loading, empty = "Belum ada data."
         <label htmlFor={searchId} className="sr-only">Cari di {label}</label>
         <span className="relative w-full max-w-[280px] max-md:max-w-none">
           <Glyph name="cari" size={16} className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-muted" />
-          <input id={searchId} data-page-search="" className="field pl-8" name="search" type="search" placeholder="Cari di daftar ini (/)" autoComplete="off" spellCheck={false} value={global} onChange={(e) => setGlobal(e.target.value)} />
+          <input id={searchId} data-page-search="" aria-keyshortcuts="/" className="field pl-8" name="search" type="search" placeholder="Cari di daftar ini…" autoComplete="off" spellCheck={false} value={global} onChange={(e) => setGlobal(e.target.value)} />
         </span>
         {filters.map((f) => (
           <span key={f.id} className="chip pop-in">
@@ -172,7 +172,7 @@ export function DataTable<T>({ data, columns, loading, empty = "Belum ada data."
               {filterable.map((c) => <option key={c.id} value={c.id}>{String(c.columnDef.header)}</option>)}
             </select>
             <input className="field w-40" name="filter-value" aria-label="Nilai filter" placeholder="mengandung…" autoComplete="off" autoFocus value={newVal} onChange={(e) => setNewVal(e.target.value)} />
-            <button type="submit" className="btn btn-sm" disabled={!newVal.trim()}>Terapkan</button>
+            <button type="submit" className="btn btn-sm">Terapkan filter</button>
             <button type="button" className="btn btn-text btn-sm" onClick={() => setAdding(false)}>Batal</button>
           </form>
         )}
@@ -232,7 +232,7 @@ export function DataTable<T>({ data, columns, loading, empty = "Belum ada data."
                       onKeyDown={(e) => { if (open && e.key === "Enter" && e.target === e.currentTarget) { e.preventDefault(); open(); } }}>
                       {selectable && <td className="ck"><Check label={`Pilih baris ${String(r.getVisibleCells()[0]?.getValue() ?? r.id)}`} checked={on} onChange={(v) => toggle(r.id, v)} /></td>}
                       {r.getVisibleCells().map((c) => (
-                        <td key={c.id} className={clsx(metaOf(c.column).right && "num", metaOf(c.column).code && "code")}>{flexRender(c.column.columnDef.cell, c.getContext())}</td>
+                        <td key={c.id} className={clsx(metaOf(c.column).right && "num", metaOf(c.column).code && "code")} translate={metaOf(c.column).code ? "no" : undefined}>{flexRender(c.column.columnDef.cell, c.getContext())}</td>
                       ))}
                     </tr>
                   );

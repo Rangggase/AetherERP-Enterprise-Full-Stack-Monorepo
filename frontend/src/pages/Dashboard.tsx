@@ -14,6 +14,7 @@ import { api } from "../lib/api";
 import { compactRupiah, date, monthLabel, num, qty, today } from "../lib/format";
 import { openJournal } from "../lib/journals";
 import { activityPhrase } from "../lib/labels";
+import { DELIVER_PERMS } from "../lib/nav";
 import { useSession } from "../lib/session";
 import type { Overview, Page } from "../lib/types";
 import { roomName } from "../motion/viewTransition";
@@ -93,12 +94,12 @@ function AgingStrips({ data }: { data: Row }) {
       {buckets.map(([k, label], i) => {
         const v = num(data.totals[k]);
         return (
-          <li key={k} className="grid grid-cols-[120px_minmax(0,1fr)_auto] items-center gap-3 text-table">
+          <li key={k} className="grid grid-cols-[120px_minmax(0,1fr)_88px] items-center gap-3 text-table">
             <span className="text-muted">{label}</span>
             <span className="relative h-5 rounded-sm bg-highlight shadow-inset" aria-hidden="true">
               <span className={clsx("absolute inset-y-0 left-0 rounded-sm border", i === 0 ? "border-rule-strong bg-paper" : i < 2 ? "border-warn-mark/70 bg-warn-mark/25" : "border-bad/70 bg-bad/25")} style={{ width: `${Math.max(v > 0 ? 2 : 0, (v / total) * 100)}%` }} />
             </span>
-            <span className="font-num">{compactRupiah(v)}</span>
+            <span className="text-right font-num">{compactRupiah(v)}</span>
           </li>
         );
       })}
@@ -148,9 +149,12 @@ export function Dashboard() {
     const qt = st(sos.data, "QUOTATION");
     if (qt.length) actions.push({ n: qt.length, text: "penawaran menunggu konfirmasi", sub: `${compactRupiah(sum(qt))}`, to: "/sales/orders?status=QUOTATION", cta: "Tinjau", glyph: "pesanan-penjualan" });
   }
-  if (can("inventory.write")) {
+  // "Perlu tindakan" hanya untuk aksi yang bisa dijalankan: pengiriman butuh sales.write dan inventory.write (diperiksa backend).
+  if (DELIVER_PERMS.every((p) => can(p))) {
     const cf = st(sos.data, "CONFIRMED_SO");
     if (cf.length) actions.push({ n: cf.length, text: "pesanan terkonfirmasi menunggu pengiriman", sub: `${cf[0]!.so_no} · stok sudah dicadangkan`, to: "/sales/orders?status=CONFIRMED_SO", cta: "Kirim", glyph: "pengiriman" });
+  }
+  if (can("inventory.write")) {
     const tr = st(transfers.data, "REQUESTED", "IN_TRANSIT");
     if (tr.length) actions.push({ n: tr.length, text: "transfer antar gudang belum selesai", sub: `${st(tr, "REQUESTED").length} belum dikirim · ${st(tr, "IN_TRANSIT").length} dalam perjalanan`, to: "/inventory/transfers", cta: "Lihat", glyph: "transfer" });
   }
@@ -260,15 +264,17 @@ export function Dashboard() {
         {loading ? <TaskSkeleton /> : shown.length === 0 ? <EmptyState art="map-kosong">Tidak ada yang perlu ditindaklanjuti sekarang.</EmptyState> : (
           <ul className="stagger grid gap-4 sm:grid-cols-2 xl:grid-cols-4">{shown.map((a) => <li key={a.text}><TaskCard a={a} /></li>)}</ul>
         )}
-        {actions.length > 4 && <p className="mt-2 text-table text-muted">Dan {actions.length - 4} hal lain di menu dengan titik tugas.</p>}
+        {/* Ruang baris ini selalu disediakan agar konten di bawahnya tidak bergeser saat jumlah tugas datang (CLS). */}
+        <p className="mt-2 min-h-5 text-table text-muted">{actions.length > 4 ? `Dan ${actions.length - 4} hal lain di menu dengan titik tugas.` : ""}</p>
       </section>
 
-      <div className="mt-8 grid gap-8 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
-        <div className="min-w-0">{loading && !main ? <div className="sheet h-72 p-6"><Pencil w={40} /></div> : main}</div>
-        <aside className="min-w-0">{side ? <div className="sheet px-5 py-4">{side}</div> : loading ? <div className="sheet h-48 p-6"><Pencil w={50} /></div> : null}</aside>
+      <div className="mt-6 grid gap-8 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
+        <div className="min-w-0">{loading && !main ? <div className="sheet h-[500px] p-6"><Pencil w={40} /></div> : main}</div>
+        <aside className="min-w-0">{side ? <div className="sheet px-5 py-4">{side}</div> : loading ? <div className="sheet h-[330px] p-6"><Pencil w={50} /></div> : null}</aside>
       </div>
 
-      <div className="mt-8 grid gap-8 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
+      {/* Baris aktivitas dan pintasan muncul setelah data utama siap, jadi tidak terdorong ke bawah oleh konten yang datang belakangan. */}
+      {!loading && <div className="mt-8 grid gap-8 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
         {(overview.data?.recent_activity.length ?? 0) > 0 && (
           <section className="sheet px-5 py-4" aria-label="Aktivitas terbaru">
             <SectionTitle>Aktivitas terbaru</SectionTitle>
@@ -287,8 +293,8 @@ export function Dashboard() {
           </ul>
           {can("users.manage") && users.data && <p className="mt-3 border-t border-line pt-3 text-table text-muted">{users.data.filter((u) => u.is_active).length} pengguna aktif dari {users.data.length}</p>}
         </section>
-      </div>
-      <p className="mt-6 text-xs text-muted">Jumlah tugas dihitung dari 200 dokumen terbaru per daftar. Angka resmi ada di laporan keuangan.</p>
+      </div>}
+      {!loading && <p className="mt-6 text-xs text-muted">Jumlah tugas dihitung dari 200 dokumen terbaru per daftar. Angka resmi ada di laporan keuangan.</p>}
     </>
   );
 }
@@ -333,7 +339,7 @@ function CategoryBars({ rows }: { rows: { category: string; amount: string }[] }
 const TaskSkeleton = () => (
   <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4" aria-hidden="true">
     {Array.from({ length: 4 }, (_, i) => (
-      <div key={i} className="sheet flex h-[92px] items-center gap-4 px-4"><span className="pencil h-7 w-6" /><div className="grid flex-1 gap-2"><Pencil i={i} /><Pencil i={i + 3} /></div></div>
+      <div key={i} className="sheet flex h-[132px] items-center gap-4 px-4"><span className="pencil h-7 w-6" /><div className="grid flex-1 gap-2"><Pencil i={i} /><Pencil i={i + 3} /></div></div>
     ))}
   </div>
 );

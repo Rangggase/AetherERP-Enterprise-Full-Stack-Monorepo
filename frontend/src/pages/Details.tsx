@@ -10,7 +10,7 @@ import { DocChain, type ChainStep } from "../components/signature/DocChain";
 import { InkThreads } from "../components/signature/InkThreads";
 import { FolderTabs } from "../components/Tabs";
 import { Cap, Code, DetailSkeleton, ErrorNote, Pencil, SectionTitle } from "../components/ui";
-import { PO_STEPS, ReturnLink, returnable, RowActions, SO_STEPS, usePayInvoice, useTransition, type Row } from "../lib/actions";
+import { canReturn, PO_STEPS, ReturnLink, returnable, RowActions, SO_STEPS, usePayInvoice, useTransition, type Row } from "../lib/actions";
 import { api } from "../lib/api";
 import { date, dateTime, num, qty, rupiah } from "../lib/format";
 import { useJournal } from "../lib/journals";
@@ -110,7 +110,7 @@ export function Timeline({ items }: { items: { id: number | string; title: React
   return (
     <ol className="relative ml-2 border-l border-accent/25 pl-5">
       {items.map((t) => (
-        <li key={t.id} className="relative pb-4 last:pb-0">
+        <li key={t.id} className="relative pb-4 last:pb-0 [contain-intrinsic-size:auto_52px] [content-visibility:auto]">
           <span aria-hidden="true" className="absolute -left-[25px] top-1.5 h-2 w-2 rounded-full bg-ink" />
           <p className="text-table font-medium">{t.title}</p>
           <p className="text-xs text-muted">{t.who ? `${t.who} · ` : ""}<time dateTime={t.at} title={dateTime(t.at)}>{dateTime(t.at)}</time></p>
@@ -146,7 +146,7 @@ export function SalesOrderDetail() {
     { key: "inv", label: "Faktur", glyph: "faktur", docs: linkedInv.map((i) => ({ id: i.id, number: i.invoice_no, date: i.invoice_date, status: i.status, to: `/accounting/invoices/${i.id}`, room: roomName("inv", i.id) })),
       state: linkedInv.length ? "done" : after(["INVOICED", "PARTIALLY_PAID", "PAID"]) ? "unlinked" : "missing" },
     { key: "ret", label: "Retur", glyph: "retur", docs: mine.map((r) => ({ id: r.id, number: r.return_no, date: r.return_date, to: `/sales/returns/${r.id}`, room: roomName("ret", r.id) })),
-      state: mine.length ? "done" : "missing", action: !mine.length && returnable(d.status) && can("sales.write") ? { label: "Buat retur", to: `/sales/orders/${d.id}/return` } : undefined },
+      state: mine.length ? "done" : "missing", action: !mine.length && returnable(d.status) && canReturn(can) ? { label: "Buat retur", to: `/sales/orders/${d.id}/return` } : undefined },
   ];
   const branch = branches.find((b) => b.id === d.branch_id)?.name;
 

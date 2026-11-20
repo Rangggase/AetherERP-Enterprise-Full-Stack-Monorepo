@@ -10,7 +10,9 @@
    ada di src/styles/*.css dan berkas CSS momen, yang ikut potongan kode rutenya. */
 
 @layer base {
-  html { font-size: 16px; scrollbar-gutter: stable; -webkit-text-size-adjust: 100%; }
+  html { font-size: 16px; scrollbar-gutter: stable; -webkit-text-size-adjust: 100%; -webkit-tap-highlight-color: rgb(var(--accent) / 0.12); }
+  @media (pointer: fine) { html { overscroll-behavior: none; } }
+  dialog, .drawer, .index-card ul { overscroll-behavior: contain; }
   body {
     font-family: var(--font-sans); font-size: 0.875rem; line-height: 1.25rem; color: rgb(var(--ink));
     background-color: rgb(var(--canvas)); background-image: var(--grain-canvas); background-blend-mode: multiply;
@@ -38,15 +40,15 @@
   /* ---- 5.2 Lembar ---- */
   .sheet { position: relative; background-color: rgb(var(--paper)); background-image: var(--grain-paper); background-blend-mode: multiply; border: 1px solid rgb(var(--rule)); border-radius: var(--radius-panel); box-shadow: var(--elev-1); }
   .lift { isolation: isolate; background: transparent; border-color: transparent; box-shadow: none; transition: transform var(--dur-fast) var(--ease-out); }
-  .lift::before { content: ""; position: absolute; inset: -1px; z-index: -1; border-radius: inherit; background-color: rgb(var(--paper)); background-image: var(--grain-paper); background-blend-mode: multiply; border: 1px solid rgb(var(--rule)); box-shadow: var(--elev-1); pointer-events: none; }
+  .lift::before { content: ""; position: absolute; inset: -1px; z-index: var(--z-local-sheet); border-radius: inherit; background-color: rgb(var(--paper)); background-image: var(--grain-paper); background-blend-mode: multiply; border: 1px solid rgb(var(--rule)); box-shadow: var(--elev-1); pointer-events: none; }
   /* Terangkat: opasitas pseudo-elemen pembawa bayangan --elev-2 yang dianimasikan, bukan bayangannya. */
-  .lift::after { content: ""; position: absolute; inset: -1px; z-index: -2; border-radius: inherit; box-shadow: var(--elev-2); opacity: 0; transition: opacity var(--dur-fast) var(--ease-out); pointer-events: none; }
+  .lift::after { content: ""; position: absolute; inset: -1px; z-index: var(--z-local-shadow); border-radius: inherit; box-shadow: var(--elev-2); opacity: 0; transition: opacity var(--dur-fast) var(--ease-out); pointer-events: none; }
   .lift:hover::after, .lift:focus-visible::after, .lift:focus-within::after { opacity: 1; }
-  .stack-back { position: absolute; inset: -1px; z-index: -3; border-radius: inherit; background: rgb(var(--paper)); border: 1px solid rgb(var(--rule)); pointer-events: none; transition: transform var(--dur-fast) var(--ease-out); }
+  .stack-back { position: absolute; inset: -1px; z-index: var(--z-local-stack); border-radius: inherit; background: rgb(var(--paper)); border: 1px solid rgb(var(--rule)); pointer-events: none; transition: transform var(--dur-fast) var(--ease-out); }
   .stack-back.b1 { transform: var(--stack-1); }
   .stack-back.b2 { transform: var(--stack-2); }
 
-  .task { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 2px 14px; align-items: center; height: 100%; padding: 14px 16px; color: rgb(var(--ink)); text-decoration: none; }
+  .task { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 2px 14px; align-items: center; height: 100%; min-height: 132px; padding: 14px 16px; color: rgb(var(--ink)); text-decoration: none; }
   .task .n { grid-row: span 2; font-family: var(--font-serif); font-size: 1.875rem; font-weight: 500; line-height: 1; color: rgb(var(--accent)); min-width: 1.4ch; font-variant-numeric: tabular-nums lining-nums; }
   .task .t { font-weight: 500; }
   .task .d { grid-column: 2; font-size: 0.8125rem; color: rgb(var(--ink-muted)); }
@@ -86,7 +88,7 @@
   .btn[data-state="loading"] .bar { display: block; opacity: 1; background: rgb(var(--paper) / 0.3); }
   .btn:not(.btn-primary)[data-state="loading"] .bar { background: rgb(var(--ink) / 0.15); }
   .btn .tick path { stroke-dasharray: 1; stroke-dashoffset: 1; }
-  .btn[data-state="success"] .tick path { stroke-dashoffset: 0; transition: stroke-dashoffset var(--dur-slow) var(--ease-out); }
+  .btn[data-state="success"] .tick path { stroke-dashoffset: 0; transition: stroke-dashoffset var(--dur-base) var(--ease-out); }
 
   /* ---- Isian: tertekan; saat fokus terangkat ke permukaan. Batas memakai --rule-strong. ---- */
   .field {

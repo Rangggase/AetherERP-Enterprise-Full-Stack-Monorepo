@@ -197,7 +197,7 @@ export function Shell() {
   });
 
   const crumbs = crumbsFor(loc.pathname).map((c, i, a) => (i === a.length - 1 && crumbOverride ? { ...c, label: crumbOverride, code: true } : c));
-  const need = permFor(loc.pathname);
+  const missing = permFor(loc.pathname).filter((p) => !s.can(p));
   const tabs = mobileTabs(s.can);
   const more = FLAT_NAV.filter((i) => s.can(i.perm) && !tabs.includes(i));
   const tabActive = (to: string) => (to === "/" ? loc.pathname === "/" : loc.pathname === to || loc.pathname.startsWith(to + "/"));
@@ -312,7 +312,7 @@ export function Shell() {
               </Link>
             )}
             <button type="button" className="hidden h-8 w-[240px] items-center gap-2 overflow-hidden whitespace-nowrap rounded border border-control bg-highlight px-2.5 text-table text-muted shadow-inset md:flex lg:w-[260px]" onClick={openPalette} aria-label="Cari dokumen, halaman, aksi (Ctrl K)">
-              <Glyph name="cari" size={16} /><span className="truncate">Cari dokumen, halaman</span><kbd className="ml-auto rounded-sm border border-b-2 border-line bg-paper px-1.5 font-sans text-[11px] text-ink">Ctrl K</kbd>
+              <Glyph name="cari" size={16} /><span className="truncate">Cari dokumen, halaman</span><kbd className="ml-auto rounded-sm border border-b-2 border-line bg-paper px-1.5 font-sans text-[11px] text-ink">Ctrl&nbsp;K</kbd>
             </button>
             <button type="button" className="btn btn-text h-11 w-11 justify-center px-0 md:hidden" onClick={openPalette} aria-label="Cari"><Glyph name="cari" size={20} /></button>
             <Menu label={`Menu pengguna: ${s.me?.full_name ?? ""}`} className="avatar" button={initials(s.me?.full_name)} items={userItems} />
@@ -328,7 +328,7 @@ export function Shell() {
               </select>
             </div>
             <div ref={routeRef}>
-              {need && !s.can(need) ? <NoAccess perm={need} /> : <Suspense fallback={<RouteLoading />}><Outlet /></Suspense>}
+              {missing.length > 0 ? <NoAccess perm={missing.join(", ")} /> : <Suspense fallback={<RouteLoading />}><Outlet /></Suspense>}
             </div>
           </main>
         </div>

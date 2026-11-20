@@ -69,6 +69,40 @@ const TESTS = {
     const t2 = await token("sales");
     const denied2 = await api("POST", "/accounting/periods/7/close", null, t2);
     check("backend menolak penjualan menutup periode", denied2.status === 403, `HTTP ${denied2.status}`);
+
+    // Kirim barang dan retur: backend meminta sales.write DAN inventory.write. UI hanya menawarkannya bila keduanya ada.
+    const ta = await token("admin");
+    const mk = async () => (await api("POST", "/sales/orders", { customer_id: 1, branch_id: 2, items: [{ product_id: 5, quantity: 1 }] }, t2)).body;
+    const confirmed = await mk();
+    await api("POST", `/sales/orders/${confirmed.id}/confirm`, null, t2);
+    const invoiced = await mk();
+    await api("POST", `/sales/orders/${invoiced.id}/confirm`, null, t2);
+    await api("POST", `/sales/orders/${invoiced.id}/deliver`, {}, ta);
+    await api("POST", `/sales/orders/${invoiced.id}/invoice`, {}, ta);
+    const offered = async (who) => {
+      const ctx = await browser.newContext({ viewport: { width: 1440, height: 900 } });
+      const page = await ctx.newPage();
+      await login(page, who);
+      const has = async (url, name) => {
+        await page.goto(BASE + url);
+        await page.waitForLoadState("networkidle");
+        return (await page.getByRole("link", { name }).or(page.getByRole("button", { name })).count()) > 0;
+      };
+      const out = { kirim: await has(`/sales/orders/${confirmed.id}`, "Kirim barang"), retur: await has(`/sales/orders/${invoiced.id}`, "Buat retur") };
+      await page.goto(`${BASE}/sales/orders/${invoiced.id}/return`);
+      await page.waitForLoadState("networkidle");
+      out.formRetur = (await page.getByText("Halaman ini di luar peran Anda").count()) === 0;
+      await ctx.close();
+      return out;
+    };
+    const a = await offered("admin"), s = await offered("sales"), w = await offered("warehouse");
+    check("admin: Kirim barang, Buat retur, dan form retur tersedia", a.kirim && a.retur && a.formRetur);
+    check("penjualan: tanpa Kirim barang dan Buat retur, form retur terkunci", !s.kirim && !s.retur && !s.formRetur);
+    check("gudang: tanpa Kirim barang", !w.kirim);
+    const denied3 = await api("POST", `/sales/orders/${invoiced.id}/return`, { return_date: new Date().toISOString().slice(0, 10), items: [{ product_id: 5, quantity: "1" }] }, t2);
+    check("backend menolak penjualan mencatat retur", denied3.status === 403, `HTTP ${denied3.status}`);
+    const denied4 = await api("POST", `/sales/orders/${confirmed.id}/deliver`, {}, await token("warehouse"));
+    check("backend menolak gudang mengirim pesanan", denied4.status === 403, `HTTP ${denied4.status}`);
   },
 
   /** 2–3. Alur retur lengkap lewat UI; angka sama dengan respons API; upacara posting tidak menahan navigasi. */

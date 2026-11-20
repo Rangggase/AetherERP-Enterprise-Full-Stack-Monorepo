@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
+import { useSearchParams } from "react-router-dom";
 import { Field } from "../components/Form";
 import { ScrollX } from "../components/ScrollX";
 import { TAccount, type GLData } from "../components/signature/TAccount";
@@ -57,11 +58,19 @@ const Balanced = ({ ok, label }: { ok: boolean; label: string }) => (
  */
 export function Reports() {
   const { branchId } = useSession();
-  const [tab, setTab] = useState<Tab>("tb");
-  const [from, setFrom] = useState(yearStart());
-  const [to, setTo] = useState(today());
-  const [acct, setAcct] = useState("1100");
-  const [glView, setGlView] = useState<"buku" | "t">("buku");
+  // Status laporan ada di URL (pedoman: URL mencerminkan status), jadi tampilan bisa dibagikan dan dibuka ulang.
+  const [sp, setSp] = useSearchParams();
+  const set = (patch: Record<string, string>) => setSp((p) => { const n = new URLSearchParams(p); for (const [k, v] of Object.entries(patch)) n.set(k, v); return n; }, { replace: true });
+  const tab = (TABS.find(([k]) => k === sp.get("laporan"))?.[0] ?? "tb") as Tab;
+  const from = sp.get("dari") ?? yearStart();
+  const to = sp.get("sampai") ?? today();
+  const acct = sp.get("akun") ?? "1100";
+  const glView: "buku" | "t" = sp.get("tampilan") === "t" ? "t" : "buku";
+  const setTab = (k: Tab) => set({ laporan: k });
+  const setFrom = (v: string) => set({ dari: v });
+  const setTo = (v: string) => set({ sampai: v });
+  const setAcct = (v: string) => set({ akun: v });
+  const setGlView = (v: "buku" | "t") => set({ tampilan: v });
   const paper = useRef<HTMLDivElement>(null);
   const params = { branch_id: branchId };
   const accounts = useQuery({ queryKey: ["accounts"], queryFn: () => api<Row[]>("/accounting/accounts"), enabled: tab === "gl" });
@@ -93,7 +102,7 @@ export function Reports() {
 
   const d = q.data;
   const ranged = tab === "is" || tab === "gl";
-  const openAccount = (code: string) => { setAcct(code); setTab("gl"); };
+  const openAccount = (code: string) => set({ akun: code, laporan: "gl" });
   const partyName = (id: number) => (parties.data ?? []).find((p) => p.id === id)?.name ?? `${tab === "ar" ? "Pelanggan" : "Pemasok"} #${id}`;
 
   return (

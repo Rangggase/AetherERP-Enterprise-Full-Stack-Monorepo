@@ -78,22 +78,29 @@ export function crumbsFor(pathname: string): { label: string; to?: string }[] {
 
 export { FLAT as FLAT_NAV };
 
-/** Pages that write need a write permission; everything else follows the read permission of its menu entry. */
-const WRITE_ROUTES: [RegExp, string][] = [
-  [/^\/procurement\/orders\/new$/, "procurement.write"],
-  [/^\/sales\/orders\/new$/, "sales.write"],
-  [/^\/sales\/orders\/[^/]+\/return$/, "sales.write"],
-  [/^\/(sales\/customers|master\/products|master\/suppliers)\/new$/, "master.write"],
-  [/^\/accounting\/journals\/new$/, "accounting.post"],
-  [/^\/system\/users\/new$/, "users.manage"],
+/**
+ * Actions that touch both the sale and the stock: the backend requires every listed permission
+ * (POST /sales/orders/{id}/deliver and POST /sales/orders/{id}/return). The UI offers them only when all are held.
+ */
+export const DELIVER_PERMS = ["sales.write", "inventory.write"];
+export const RETURN_PERMS = ["sales.write", "inventory.write"];
+
+/** Pages that write need write permissions (all of them, as the backend checks); everything else follows the read permission of its menu entry. */
+const WRITE_ROUTES: [RegExp, string[]][] = [
+  [/^\/procurement\/orders\/new$/, ["procurement.write"]],
+  [/^\/sales\/orders\/new$/, ["sales.write"]],
+  [/^\/sales\/orders\/[^/]+\/return$/, RETURN_PERMS],
+  [/^\/(sales\/customers|master\/products|master\/suppliers)\/new$/, ["master.write"]],
+  [/^\/accounting\/journals\/new$/, ["accounting.post"]],
+  [/^\/system\/users\/new$/, ["users.manage"]],
 ];
 
-/** Permission a pathname requires, or null when any signed-in user may open it (account page, unknown paths). */
-export function permFor(pathname: string): string | null {
+/** Permissions a pathname requires (every one of them); empty when any signed-in user may open it (account page, unknown paths). */
+export function permFor(pathname: string): string[] {
   const w = WRITE_ROUTES.find(([re]) => re.test(pathname));
   if (w) return w[1];
   const hit = [...FLAT].sort((a, b) => b.to.length - a.to.length).find((i) => pathname === i.to || (i.to !== "/" && pathname.startsWith(i.to + "/")));
-  return hit?.perm ?? null;
+  return hit ? [hit.perm] : [];
 }
 
 /** Four bottom-tab modules for narrow screens, chosen from the role's permissions; everything else sits under "Lainnya". */

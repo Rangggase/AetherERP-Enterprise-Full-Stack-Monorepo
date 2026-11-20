@@ -3,9 +3,9 @@
 .ink-grid { position: relative; display: grid; grid-template-columns: minmax(0, 1fr) minmax(160px, 210px) minmax(0, 1fr); gap: 12px 64px; align-items: center; }
 .ink-col { display: grid; gap: 10px; align-content: center; }
 .ink-col h3 { font-size: 0.75rem; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: rgb(var(--ink-muted)); }
-.ink-card { position: relative; z-index: 1; padding: 8px 12px; border: 1px solid rgb(var(--rule)); border-radius: var(--radius-control); background-color: rgb(var(--paper)); box-shadow: var(--elev-1); }
+.ink-card { position: relative; z-index: var(--z-local-raise); padding: 8px 12px; border: 1px solid rgb(var(--rule)); border-radius: var(--radius-control); background-color: rgb(var(--paper)); box-shadow: var(--elev-1); }
 .ink-card .amt { font-family: var(--font-serif); font-size: 1.0625rem; font-weight: 500; font-variant-numeric: tabular-nums lining-nums; }
-.ink-doc { position: relative; z-index: 1; padding: 12px 14px 14px; border: 1px solid rgb(var(--rule)); border-top: 2px solid rgb(var(--accent)); border-radius: var(--radius-control); background-color: rgb(var(--paper)); background-image: var(--grain-paper); background-blend-mode: multiply; box-shadow: var(--elev-2); }
+.ink-doc { position: relative; z-index: var(--z-local-raise); padding: 12px 14px 14px; border: 1px solid rgb(var(--rule)); border-top: 2px solid rgb(var(--accent)); border-radius: var(--radius-control); background-color: rgb(var(--paper)); background-image: var(--grain-paper); background-blend-mode: multiply; box-shadow: var(--elev-2); }
 .ink-svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; pointer-events: none; }
 .ink-scale { display: inline-grid; place-items: center; transform-origin: 50% 30%; }
 @container (max-width: 639px) {

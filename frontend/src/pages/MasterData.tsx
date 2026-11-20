@@ -10,6 +10,7 @@ import { ErrorNote, PageHeader } from "../components/ui";
 import { api } from "../lib/api";
 import { code, col, money, quantity, type Row } from "../lib/columns";
 import { useSession } from "../lib/session";
+import { useUnsavedGuard } from "../lib/useUnsaved";
 import { ProductDrawer } from "./StockLevel";
 
 function MasterList({ title, sub, path, queryKey, columns, newTo, newLabel, empty, onOpen }: { title: string; sub: string; path: string; queryKey: string; columns: ColumnDef<Row, any>[]; newTo: string; newLabel: string; empty: string; onOpen?: (r: Row) => void }) {
@@ -59,11 +60,13 @@ function MasterForm({ title, sub, path, back, keys, groups, initial, saveLabel }
   const qc = useQueryClient();
   const [v, setV] = useState(initial);
   const [error, setError] = useState<string | null>(null);
+  const dirty = JSON.stringify(v) !== JSON.stringify(initial);
   const save = useMutation({
     mutationFn: (body: Row) => api(path, { method: "POST", body }),
     onSuccess: () => { keys.forEach((k) => void qc.invalidateQueries({ queryKey: [k] })); toast(`${title.replace(/ baru$/, "")} disimpan.`); nav(back); },
     onError: (e) => setError(e instanceof Error ? e.message : "Tidak bisa menyimpan. Periksa isian, lalu coba lagi."),
   });
+  useUnsavedGuard(dirty && !save.isSuccess);
   function submit(e: FormEvent) {
     e.preventDefault();
     setError(null);

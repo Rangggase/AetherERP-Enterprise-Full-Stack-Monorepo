@@ -60,6 +60,16 @@ function PermissionMatrix({ roles }: { roles: Row[] }) {
   );
 }
 
+/** Sakelar aktif (permintaan yang sama dengan tombol Nonaktifkan/Aktifkan v2). Komponen tingkat modul agar tidak dibuat ulang tiap render. */
+function ActiveSwitch({ u, self, busy, onToggle }: { u: Row; self: boolean; busy: boolean; onToggle: () => void }) {
+  return (
+    <button type="button" role="switch" aria-checked={!!u.is_active} className="sw" disabled={self || busy}
+      aria-label={`Akun ${u.full_name} aktif`} title={self ? "Anda tidak bisa menonaktifkan diri sendiri" : undefined} onClick={onToggle}>
+      <span className="rail"><span className="knob" /></span><span className="text-table text-muted">{u.is_active ? "Aktif" : "Nonaktif"}</span>
+    </button>
+  );
+}
+
 export function Users() {
   const { me, branches } = useSession();
   const qc = useQueryClient();
@@ -79,18 +89,10 @@ export function Users() {
     onError: (e) => toast(e instanceof Error ? e.message : "Kata sandi tidak bisa direset. Coba lagi.", "error"),
   });
   const branchName = (id: number | null) => (id ? branches.find((b) => b.id === id)?.name ?? `#${id}` : "Tanpa cabang");
-  const ActiveSwitch = ({ u }: { u: Row }) => {
-    const self = u.id === me?.id;
-    return (
-      <button type="button" role="switch" aria-checked={!!u.is_active} className="sw" disabled={self || toggle.isPending}
-        aria-label={`Akun ${u.full_name} aktif`} title={self ? "Anda tidak bisa menonaktifkan diri sendiri" : undefined} onClick={() => toggle.mutate(u)}>
-        <span className="rail"><span className="knob" /></span><span className="text-table text-muted">{u.is_active ? "Aktif" : "Nonaktif"}</span>
-      </button>
-    );
-  };
+  const sw = (u: Row) => <ActiveSwitch u={u} self={u.id === me?.id} busy={toggle.isPending} onToggle={() => toggle.mutate(u)} />;
   const columns: ColumnDef<Row, any>[] = [
     { header: "Nama", accessorKey: "full_name", meta: { m: "t" } }, { header: "Email", accessorKey: "email", meta: { m: "s" } }, { header: "Peran", accessorKey: "role", meta: { m: "d" } },
-    { header: "Status", accessorKey: "is_active", meta: { m: "x" }, cell: (c) => <ActiveSwitch u={c.row.original} /> },
+    { header: "Status", accessorKey: "is_active", meta: { m: "x" }, cell: (c) => sw(c.row.original) },
     { id: "aksi", header: "", enableSorting: false, enableColumnFilter: false, meta: { m: "x" }, cell: (c) => <div className="flex justify-end"><button className="btn btn-sm" onClick={() => { setResetFor(c.row.original); setPw(""); }}>Reset kata sandi</button></div> },
   ];
   const active = (q.data ?? []).filter((u) => u.is_active).length;
@@ -121,7 +123,7 @@ export function Users() {
                 <div className="min-w-0"><p className="truncate font-medium">{u.full_name}</p><p className="truncate text-table text-muted">{u.email}</p></div>
               </div>
               <p className="text-table"><span className="font-medium">{u.role}</span><span className="text-muted"> · {branchName(u.branch_id)}</span></p>
-              <div className="flex flex-wrap items-center justify-between gap-2"><ActiveSwitch u={u} /><button className="btn btn-sm" onClick={() => { setResetFor(u); setPw(""); }}>Reset kata sandi</button></div>
+              <div className="flex flex-wrap items-center justify-between gap-2">{sw(u)}<button className="btn btn-sm" onClick={() => { setResetFor(u); setPw(""); }}>Reset kata sandi</button></div>
             </li>
           ))}
         </ul>
@@ -215,7 +217,7 @@ function DisplayPrefs() {
         <div className="grid content-start gap-6">
           <Choice legend="Kepadatan" value={p.density} onChange={(v) => setPrefs({ density: v })} options={[["comfortable", "Nyaman"], ["compact", "Rapat", "Baris tabel lebih pendek."]]} />
           <Toggle label="Tekstur kertas" hint="Serat kertas halus di latar. Selalu mati saat cetak dan mode kontras tinggi." on={p.texture} onChange={(v) => setPrefs({ texture: v })} />
-          {FEATURES.deskLight && <Toggle label="Cahaya meja" hint="Nada kertas bergeser sangat halus mengikuti jam: pagi lebih dingin, sore dan malam lebih hangat." on={p.deskLight} onChange={(v) => setPrefs({ deskLight: v })} />}
+          {FEATURES.deskLight && <Toggle label="Cahaya meja" hint="Nada kertas bergeser halus mengikuti jam: pagi lebih dingin, sore dan malam lebih hangat." on={p.deskLight} onChange={(v) => setPrefs({ deskLight: v })} />}
           {FEATURES.sound && <Toggle label="Suara dan getar" hint="Bunyi pelan saat cap, struk, dan tutup buku. Getar singkat di ponsel yang mendukung." on={p.sound} onChange={(v) => setPrefs({ sound: v })} />}
         </div>
       </div>
@@ -244,18 +246,18 @@ export function Account() {
         <div><p className="font-serif text-lg font-medium">{me?.full_name}</p><p className="text-table text-muted">{me?.role} · {me?.permissions.length} izin</p></div>
       </div>
       <DisplayPrefs />
-      <form onSubmit={(e) => { e.preventDefault(); setError(null); if (!mismatch) save.mutate(); }}>
+      <form onSubmit={(e) => { e.preventDefault(); setError(null); if (mismatch) { document.querySelector<HTMLInputElement>("input[name=repeat-password]")?.focus(); return; } save.mutate(); }}>
         {error && <p role="alert" className="mb-2 border-y border-bad py-3 text-sm text-bad">{error}</p>}
         <FormGroup title="Ganti kata sandi" hint="Setelah diganti, Anda keluar dari semua sesi.">
           <div className="grid max-w-sm gap-3">
             <PasswordField label="Kata sandi saat ini" value={cur} onChange={setCur} autoComplete="current-password" />
             <PasswordField label="Kata sandi baru" value={next} onChange={setNext} autoComplete="new-password" hint={POLICY} />
             <Field label="Ulangi kata sandi baru" error={mismatch ? "Kata sandi tidak sama. Ketik ulang kata sandi baru." : null}>
-              <input className={`field ${mismatch ? "field-error" : ""}`} type="password" name="repeat-password" autoComplete="new-password" required minLength={10} value={again} onChange={(e) => setAgain(e.target.value)} />
+              <input className={`field ${mismatch ? "field-error" : ""}`} aria-invalid={mismatch || undefined} type="password" name="repeat-password" autoComplete="new-password" required minLength={10} value={again} onChange={(e) => setAgain(e.target.value)} />
             </Field>
           </div>
         </FormGroup>
-        <ActionBar><Key type="submit" tone="primary" glyph="simpan" m={save} disabled={mismatch}>Ganti kata sandi</Key></ActionBar>
+        <ActionBar><Key type="submit" tone="primary" glyph="simpan" m={save}>Ganti kata sandi</Key></ActionBar>
       </form>
     </>
   );

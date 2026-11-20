@@ -165,7 +165,8 @@ export function InkThreads({ journal, autoplay = true }: { journal: InkJournal; 
             ? <>Debit <span className="font-num">{idr(dSum)}</span> = Kredit <span className="font-num">{idr(cSum)}</span> · Seimbang</>
             : <>Tidak seimbang, selisih <span className="font-num">{idr(Math.abs(dSum - cSum))}</span></>}
         </p>
-        <button type="button" className="btn btn-text btn-sm" onClick={run} disabled={motionLevel() !== "full"}><Glyph name="putar-ulang" size={16} />Putar ulang</button>
+        {/* Mode Dikurangi dan Minimal langsung menampilkan keadaan akhir, jadi tidak ada yang bisa diputar ulang. */}
+        {motionLevel() === "full" && <button type="button" className="btn btn-text btn-sm" onClick={run}><Glyph name="putar-ulang" size={16} />Putar ulang</button>}
       </figcaption>
       <table className="tbl dense mt-3" aria-label={`Baris jurnal ${journal.entry_no}`}>
         <thead><tr><th>Akun</th><th className="text-right">Debit</th><th className="text-right">Kredit</th></tr></thead>

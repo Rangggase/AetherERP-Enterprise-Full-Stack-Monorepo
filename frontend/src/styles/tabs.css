@@ -1,5 +1,5 @@
 /* Tab map berkas (8): tab aktif menyatu dengan panelnya. */
-.tabs { position: relative; z-index: 1; display: flex; gap: 4px; padding-left: 8px; overflow-x: auto; }
+.tabs { position: relative; z-index: var(--z-local-raise); display: flex; gap: 4px; padding-left: 8px; overflow-x: auto; }
 .tab { position: relative; display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding: 0 14px; border: 1px solid rgb(var(--rule)); border-bottom: 0; border-radius: var(--radius-control) var(--radius-control) 0 0;
   background: rgb(var(--highlight)); color: rgb(var(--ink-muted)); font-size: 0.8125rem; font-weight: 500; white-space: nowrap; transform: translateY(3px); transition: transform var(--dur-fast) var(--ease-out), color var(--dur-fast); }
 @media (min-width: 768px) { .tab { min-height: 34px; } }

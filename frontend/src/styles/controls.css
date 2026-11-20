@@ -9,12 +9,13 @@
 .cb input:indeterminate + svg { display: none; }
 .cb:has(input:indeterminate)::after { content: ""; position: absolute; left: 4px; top: 50%; width: 10px; height: 2px; margin-top: -1px; border-radius: 1px; background: rgb(var(--paper)); pointer-events: none; }
 .rd input { border-radius: 50%; display: grid; place-items: center; }
-.rd input::after { content: ""; width: 8px; height: 8px; border-radius: 50%; background: rgb(var(--accent)); transform: scale(0); transition: transform var(--dur-fast) var(--ease-spring); }
+/* Titik radio: muncul dari skala 0,6 dengan ease-out (bukan dari 0, tanpa pantulan pada kontrol utilitas). */
+.rd input::after { content: ""; width: 8px; height: 8px; border-radius: 50%; background: rgb(var(--accent)); opacity: 0; transform: scale(0.6); transition: transform var(--dur-fast) var(--ease-out), opacity var(--dur-fast) var(--ease-out); }
 .rd input:checked { border-color: rgb(var(--accent)); background: rgb(var(--paper)); }
-.rd input:checked::after { transform: scale(1); }
+.rd input:checked::after { opacity: 1; transform: scale(1); }
 .sw { display: inline-flex; align-items: center; gap: 10px; min-height: 32px; border: 0; background: none; padding: 0; font: inherit; color: inherit; }
 .sw .rail { position: relative; width: 40px; height: 22px; flex: none; border-radius: 11px; background: rgb(var(--highlight)); border: 1px solid rgb(var(--rule-strong)); box-shadow: var(--inset); transition: background-color var(--dur-fast); }
-.sw .knob { position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; border-radius: 50%; background: rgb(var(--paper)); border: 1px solid rgb(var(--rule-strong)); box-shadow: 0 1px 0 rgb(var(--ink) / 0.12), 0 2px 4px -1px rgb(var(--ink) / 0.25); transition: transform var(--dur-fast) var(--ease-spring); }
+.sw .knob { position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; border-radius: 50%; background: rgb(var(--paper)); border: 1px solid rgb(var(--rule-strong)); box-shadow: 0 1px 0 rgb(var(--ink) / 0.12), 0 2px 4px -1px rgb(var(--ink) / 0.25); transition: transform var(--dur-fast) var(--ease-out); }
 .sw[aria-checked="true"] .rail { background: rgb(var(--accent)); border-color: rgb(var(--accent)); }
 .sw[aria-checked="true"] .knob { transform: translateX(18px); border-color: rgb(var(--accent-deep)); }
 @media (forced-colors: active) { .cb input, .rd input, .sw .rail { border: 1px solid FieldText; } }

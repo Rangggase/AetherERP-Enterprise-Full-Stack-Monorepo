@@ -211,7 +211,7 @@ export default function Katalog() {
         <div className="flex flex-wrap items-center gap-4">
           <Key tone="primary" glyph="retur" onClick={() => { setCapValue("PAID"); receipt({ title: "Retur dicatat (contoh)", number: "RET-CONTOH-01", lines: [{ label: "Kredit ke pelanggan", value: rupiah(1525000, true) }, { label: "Biaya kembali ke stok", value: rupiah(629961.54, true) }], stock: [{ sku: "FG-HUB-01", change: "+2" }, { sku: "FG-CAB-01", change: "+5" }], note: "Data contoh, bukan dari API." }); }}>Simpan retur contoh</Key>
           <Cap value={capValue} seed="SO-CONTOH-01" />
-          <p className="max-w-sm text-table text-muted">Struk keluar dari kanan atas, cap di halaman mendarat. "Lihat jejak tinta" hanya muncul untuk struk yang membawa id jurnal dari API.</p>
+          <p className="max-w-sm text-table text-muted">Struk keluar dari kanan atas, cap di halaman mendarat. “Lihat jejak tinta” hanya muncul untuk struk yang membawa id jurnal dari API.</p>
         </div>
       )}</Moment>
       <Moment id="m3" title="M3 Angka Mekanis" status="jalan" replay={false}>{() => (

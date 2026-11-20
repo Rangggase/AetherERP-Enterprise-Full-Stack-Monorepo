@@ -73,6 +73,8 @@ export function Periods() {
   const periods = q.data ?? [];
   const years = [...new Set(periods.map((p) => Number(p.code.slice(0, 4))))];
   const allowed = can("accounting.close");
+  // Tutup tahun juga membuat jurnal penutup, jadi backend meminta accounting.close dan accounting.post sekaligus.
+  const yearAllowed = allowed && can("accounting.post");
   const closedAll = periods.filter((p) => p.status === "CLOSED").length;
 
   return (
@@ -86,7 +88,7 @@ export function Periods() {
           <section key={y} className="mb-10" aria-label={`Tahun fiskal ${y}`}>
             <div className="mb-4 flex flex-wrap items-end justify-between gap-2 border-b border-ink pb-2">
               <div><h2 className="font-serif text-lg font-medium">{y}</h2><p className="text-table text-muted">{closed} dari {rows.length} buku ditutup</p></div>
-              {allowed && <button className="btn" disabled={!ready} title={ready ? undefined : "Tutup Januari sampai November dulu dan biarkan Desember terbuka"} onClick={() => setConfirmYear(y)}>Tutup tahun fiskal</button>}
+              {yearAllowed && <button className="btn" disabled={!ready} title={ready ? undefined : "Tutup Januari sampai November dulu dan biarkan Desember terbuka"} onClick={() => setConfirmYear(y)}>Tutup tahun fiskal</button>}
             </div>
             <ul className="books">
               {rows.map((p, i) => {

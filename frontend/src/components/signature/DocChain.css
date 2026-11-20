@@ -10,7 +10,7 @@ a.chain-sheet:hover { background-color: rgb(var(--highlight)); }
 .chain-sheet.now::before { content: ""; position: absolute; right: 10px; top: -1px; width: 12px; height: 16px; background: rgb(var(--accent)); clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 75%, 0 100%); }
 .chain-sheet.todo { border-style: dashed; border-color: rgb(var(--rule-strong)); background: transparent; box-shadow: none; color: rgb(var(--ink-muted)); }
 .chain-sheet .stackn { position: absolute; right: -6px; top: -6px; min-width: 18px; padding: 0 4px; border-radius: 9px; background: rgb(var(--ink)); color: rgb(var(--paper)); font-size: 0.6875rem; line-height: 18px; text-align: center; }
-.chain-sheet .back1, .chain-sheet .back2 { position: absolute; inset: -1px; z-index: -1; border: 1px solid rgb(var(--rule)); border-radius: inherit; background: rgb(var(--paper)); }
+.chain-sheet .back1, .chain-sheet .back2 { position: absolute; inset: -1px; z-index: var(--z-local-sheet); border: 1px solid rgb(var(--rule)); border-radius: inherit; background: rgb(var(--paper)); }
 .chain-sheet .back1 { transform: var(--stack-1); }
 .chain-sheet .back2 { transform: var(--stack-2); }
 .chain.mini .chain-sheet { min-width: 108px; padding: 5px 8px 6px; }

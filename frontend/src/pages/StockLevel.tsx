@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { DataTable } from "../components/DataTable";
 import { Glyph } from "../components/glyphs";
 import { Drawer } from "../components/Layers";
@@ -64,8 +64,13 @@ export function Stock() {
   const { branchId, branches, can } = useSession();
   const q = useList("stock", "/inventory/balances", { branch_id: branchId }, false);
   const products = useQuery({ queryKey: ["products"], enabled: can("master.read"), queryFn: () => api<Row[]>("/master/products") });
-  const [view, setView] = useState<"denah" | "daftar">("denah");
-  const [show, setShow] = useState<Level | "semua">("semua");
+  // Tampilan dan saringan ada di URL (?tampilan=daftar&status=menipis) agar bisa dibagikan dan dibuka ulang.
+  const [sp, setSp] = useSearchParams();
+  const view: "denah" | "daftar" = sp.get("tampilan") === "daftar" ? "daftar" : "denah";
+  const show: Level | "semua" = (["aman", "menipis", "habis"] as const).find((l) => l === sp.get("status")) ?? "semua";
+  const setParam = (k: string, v: string | null) => setSp((p) => { const n = new URLSearchParams(p); if (v) n.set(k, v); else n.delete(k); return n; }, { replace: true });
+  const setView = (v: "denah" | "daftar") => setParam("tampilan", v === "denah" ? null : v);
+  const setShow = (v: Level | "semua") => setParam("status", v === "semua" ? null : v);
   const [open, setOpen] = useState<number | null>(null);
   const cat = useMemo(() => {
     const m = new Map((products.data ?? []).map((p) => [p.id as number, (p.category?.name as string | undefined) ?? "Tanpa kategori"]));

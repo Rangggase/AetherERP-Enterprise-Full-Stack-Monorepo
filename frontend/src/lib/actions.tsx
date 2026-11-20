@@ -6,11 +6,14 @@ import { receipt, toast, type ReceiptData } from "../components/Toaster";
 import { statusText } from "../components/ui";
 import { api } from "./api";
 import { date, qty, rupiah } from "./format";
+import { DELIVER_PERMS, RETURN_PERMS } from "./nav";
 import { useSession } from "./session";
 
 export type Row = Record<string, any>;
 
-export interface Step { from: string; action: string; next: string; label: string; perm: string; danger?: boolean; consequence?: string }
+/** `perm` berisi satu izin atau daftar izin yang semuanya harus dimiliki (sama dengan pemeriksaan backend). */
+export interface Step { from: string; action: string; next: string; label: string; perm: string | string[]; danger?: boolean; consequence?: string }
+export const hasAll = (can: (perm: string) => boolean, perm: string | string[]): boolean => (Array.isArray(perm) ? perm : [perm]).every((p) => can(p));
 
 /**
  * Struk Upacara Posting (M2) dari respons API sebuah aksi status. Isi struk hanya dari data yang dikembalikan API;
@@ -72,7 +75,7 @@ export function useTransition(listKeys: string[], base: string, skuOf?: (product
 export function RowActions({ row, steps, run, extra, size = "sm" }: { row: Row; steps: Step[]; run: ReturnType<typeof useTransition>; extra?: React.ReactNode; size?: "sm" | "md" }) {
   const { can } = useSession();
   const [confirm, setConfirm] = useState<Step | null>(null);
-  const avail = steps.filter((s) => s.from === row.status && can(s.perm));
+  const avail = steps.filter((s) => s.from === row.status && hasAll(can, s.perm));
   const cls = size === "sm" ? "btn btn-sm" : "btn";
   return (
     <>
@@ -100,7 +103,7 @@ export function RowActions({ row, steps, run, extra, size = "sm" }: { row: Row; 
 
 export const SO_STEPS: Step[] = [
   { from: "QUOTATION", action: "confirm", next: "CONFIRMED_SO", label: "Konfirmasi pesanan", perm: "sales.write" },
-  { from: "CONFIRMED_SO", action: "deliver", next: "DELIVERED", label: "Kirim barang", perm: "inventory.write" },
+  { from: "CONFIRMED_SO", action: "deliver", next: "DELIVERED", label: "Kirim barang", perm: DELIVER_PERMS },
   { from: "DELIVERED", action: "invoice", next: "INVOICED", label: "Buat faktur", perm: "sales.write" },
   { from: "QUOTATION", action: "cancel", next: "CANCELLED", label: "Batalkan penawaran", perm: "sales.write", danger: true, consequence: "Penawaran dibatalkan dan tidak bisa diaktifkan lagi." },
   { from: "CONFIRMED_SO", action: "cancel", next: "CANCELLED", label: "Batalkan pesanan", perm: "sales.write", danger: true, consequence: "Pesanan dibatalkan dan stok yang dicadangkan dilepas kembali. Ini tidak bisa dibatalkan." },
@@ -111,9 +114,11 @@ export const PO_STEPS: Step[] = [
 ];
 
 export const returnable = (status: string): boolean => status === "INVOICED" || status === "PARTIALLY_PAID";
+/** Retur mengembalikan stok, jadi backend meminta sales.write dan inventory.write sekaligus; aksi hanya tampil bila keduanya ada. */
+export const canReturn = (can: (perm: string) => boolean): boolean => hasAll(can, RETURN_PERMS);
 export const ReturnLink = ({ id, size = "sm" }: { id: number; size?: "sm" | "md" }) => {
   const { can } = useSession();
-  return can("sales.write") ? <Link className={size === "sm" ? "btn btn-sm" : "btn"} to={`/sales/orders/${id}/return`}>Buat retur</Link> : null;
+  return canReturn(can) ? <Link className={size === "sm" ? "btn btn-sm" : "btn"} to={`/sales/orders/${id}/return`}>Buat retur</Link> : null;
 };
 
 /** Pembayaran penuh faktur (aksi yang sudah ada) dengan struk M2 dari respons API. */

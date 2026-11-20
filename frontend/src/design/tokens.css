@@ -72,6 +72,11 @@
   --z-dialog: 50;
   --z-palette: 60;
   --z-receipt: 70;
+  /* Urutan lokal di dalam satu komponen yang punya konteks tumpuk sendiri; bukan lapisan global */
+  --z-local-raise: 1;
+  --z-local-sheet: -1;
+  --z-local-shadow: -2;
+  --z-local-stack: -3;
 
   /* ---- 6.1 Gerak ---- */
   --dur-press: 90ms;

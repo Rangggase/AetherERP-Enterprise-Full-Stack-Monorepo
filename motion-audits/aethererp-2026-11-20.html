@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AetherERP motion audit — 2026-11-20</title>
+<style>
+:root{--ink:oklch(0.19 0.006 255);--paper:oklch(0.95 0.004 255);--paper-dim:oklch(0.72 0.008 255);--line:oklch(0.32 0.008 255);--card:oklch(0.23 0.007 255);--crit:oklch(0.655 0.185 25);--imp:oklch(0.805 0.125 78);--opp:oklch(0.745 0.135 152);--t-good:oklch(0.745 0.135 152);--t-mid:oklch(0.805 0.125 78);--t-slow:oklch(0.655 0.185 25);--accent:var(--paper);--sans:"Public Sans",system-ui,sans-serif;--display:"Familjen Grotesk",system-ui,sans-serif;--mono:"Geist Mono",ui-monospace,Consolas,monospace;--bg:var(--card);--fg:var(--paper);--border:var(--line);--loop-dim:var(--paper-dim)}
+:root:has(#theme-light:checked){--ink:oklch(0.98 0.003 255);--paper:oklch(0.22 0.008 255);--paper-dim:oklch(0.45 0.01 255);--line:oklch(0.86 0.006 255);--card:oklch(1 0 0);--crit:oklch(0.55 0.19 25);--imp:oklch(0.6 0.13 70);--opp:oklch(0.55 0.13 152)}
+*{box-sizing:border-box}body{margin:0;background:var(--ink);color:var(--paper);font:15px/1.55 var(--sans)}
+.wrap{max-width:1040px;margin:0 auto;padding:32px 20px 64px}.theme-switch{display:flex;justify-content:flex-end;gap:4px}.theme-switch input{position:absolute;opacity:0}.theme-switch label{font:12px var(--mono);padding:4px 10px;border:1px solid var(--line);border-radius:999px;cursor:pointer}
+.theme-switch input:checked+label{background:var(--paper);color:var(--ink)}
+.eyebrow,.mono-label{font:11px/1.2 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--paper-dim)}
+h1{font:600 34px/1.15 var(--display);margin:10px 0}h2{font:600 22px/1.2 var(--display);margin:40px 0 12px}h3{font:600 18px var(--display);margin:0}
+.lede{color:var(--paper-dim);max-width:70ch}.meta-row{font:12px var(--mono);color:var(--paper-dim);margin:8px 0 16px}
+.stats{display:flex;gap:16px;flex-wrap:wrap}.stats a{color:inherit;text-decoration:none;border:1px solid var(--line);border-radius:8px;padding:8px 12px;font:13px var(--mono)}
+.dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:6px;vertical-align:middle}.c{background:var(--crit)}.i{background:var(--imp)}.o{background:var(--opp)}
+.assessment p{font:500 19px/1.5 var(--display);max-width:75ch}
+table{width:100%;border-collapse:collapse;font-size:14px}th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top}th{font:11px var(--mono);text-transform:uppercase;color:var(--paper-dim)}
+.chip{font:11px var(--mono);border:1px solid var(--line);border-radius:999px;padding:1px 8px;margin-left:6px}
+.lens-sec{border:1px solid var(--line);border-radius:12px;padding:20px;margin:16px 0;background:var(--card)}
+.lens-list{list-style:none;padding:0;margin:8px 0}.lens-list li{margin:6px 0}.lens-list.good li::before{content:"✓ ";color:var(--opp)}.lens-list.opp li::before{content:"💡 "}
+code{font:12.5px var(--mono)}.lens-take{border-left:3px solid var(--line);padding-left:12px;color:var(--paper-dim)}
+.finding-row{border:1px solid var(--line);border-radius:10px;padding:14px;margin:12px 0;display:grid;gap:12px;grid-template-columns:minmax(0,1fr) 260px;transition:border-color .2s ease}
+.finding-row:hover{border-color:var(--paper-dim)}@media(max-width:760px){.finding-row{grid-template-columns:1fr}}
+.sev{font:11px var(--mono);text-transform:uppercase}.sev.c{color:var(--crit);background:none}.sev.i{color:var(--imp);background:none}
+.demo{border:1px solid var(--border);border-radius:8px;background:var(--bg);padding:10px}.demo__stage{height:120px;display:grid;place-items:center;border-radius:6px;background:color-mix(in oklch,var(--fg) 6%,transparent);overflow:hidden}
+.demo__cap{font:11px var(--mono);color:var(--loop-dim);margin-top:6px}.box{width:120px;height:56px;border-radius:6px;background:var(--fg);opacity:.9}
+.knob-rail{width:44px;height:24px;border-radius:12px;border:1px solid var(--fg);position:relative}.knob{position:absolute;top:3px;left:3px;width:16px;height:16px;border-radius:50%;background:var(--fg)}
+.radio{width:22px;height:22px;border-radius:50%;border:1.5px solid var(--fg);display:grid;place-items:center}.radio i{width:10px;height:10px;border-radius:50%;background:var(--fg)}
+.drawer-demo{width:140px;height:90px;border-radius:6px;background:var(--fg)}
+.tick svg{width:44px;height:44px;stroke:var(--fg);fill:none;stroke-width:3;stroke-linecap:round}
+/* Demo 1: Tab via panah — sesudah: tanpa animasi (keadaan langsung berganti) */
+@keyframes m1{0%,49%{opacity:1}50%,100%{opacity:.35}}.demo-1__mt{animation:m1 3s steps(1) infinite}
+/* Demo 2: Escape menutup laci — sesudah: hilang seketika */
+@keyframes m2{0%,45%{opacity:1}46%,100%{opacity:0}}.demo-2__mt{animation:m2 3s steps(1) infinite}
+/* Demo 3: knob sakelar — sesudah: ease-out tanpa pantulan */
+@keyframes m3{0%{transform:translateX(0)}22%,66%{transform:translateX(20px)}88%,100%{transform:translateX(0)}}.demo-3__mt{animation:m3 3s cubic-bezier(.2,.8,.2,1) infinite}
+/* Demo 4: titik radio — sesudah: skala .6 + opasitas */
+@keyframes m4{0%{transform:scale(.6);opacity:0}15%,66%{transform:scale(1);opacity:1}80%,100%{transform:scale(.6);opacity:0}}.demo-4__mt{animation:m4 3s cubic-bezier(.2,.8,.2,1) infinite}
+/* Demo 5: laci keluar 12 px (masuk 24 px) */
+@keyframes m5{0%{transform:translateX(24px);opacity:0}12%,62%{transform:none;opacity:1}70%,100%{transform:translateX(12px);opacity:0}}.demo-5__mt{animation:m5 3s cubic-bezier(.2,.8,.2,1) infinite}
+/* Demo 6: centang 220 ms */
+@keyframes m6{0%{stroke-dashoffset:1}7%,100%{stroke-dashoffset:0}}.demo-6__mt path{stroke-dasharray:1;animation:m6 3s cubic-bezier(.2,.8,.2,1) infinite}
+@media (prefers-reduced-motion:reduce){[class*="__mt"],[class*="__mt"] path{animation:none!important}}
+.timing text{font:11px var(--mono);fill:var(--paper)}.timing .zg{fill:var(--t-good);opacity:.14}.timing .zm{fill:var(--t-mid);opacity:.16}.timing .zs{fill:var(--t-slow);opacity:.16}.timing .d{fill:var(--paper)}
+footer{margin-top:40px;font:12px var(--mono);color:var(--paper-dim)}
+</style>
+</head>
+<body>
+<div class="wrap">
+<div class="theme-switch"><input type="radio" name="t" id="theme-dark" checked><label for="theme-dark">Gelap</label><input type="radio" name="t" id="theme-light"><label for="theme-light">Terang</label></div>
+<p class="eyebrow">Motion audit · design-motion-principles</p>
+<h1>AetherERP — gerak Buku Besar Hidup untuk kerja 8 jam sehari</h1>
+<p class="lede">ERP akuntansi dan gudang (React 18 + Vite, Web Animations API dan CSS, tanpa pustaka gerak). Momen khas M1–M11 dari brief UI v3; sistem gerak bertoken dengan mode Penuh, Dikurangi, dan Minimal.</p>
+<p class="meta-row">Diaudit: frontend/src/motion, components/signature, components/*, index.css, design/tokens.css, styles/*.css · Bobot: Emil primer, Jakub sekunder, Jhey selektif</p>
+<div class="stats"><a href="#rec-crit"><span class="dot c"></span>2 Kritis</a><a href="#rec-imp"><span class="dot i"></span>4 Penting</a><a href="#rec-opp"><span class="dot o"></span>4 Peluang</a><span style="font:13px var(--mono);padding:8px 0">Semua temuan Kritis dan Penting sudah diperbaiki di cabang ui-v3.</span></div>
+
+<section class="assessment"><p class="mono-label">Keseluruhan</p>
+<p>Gerak sudah tertahan dan bertujuan: tidak ada animasi saat diam, tidak ada gerak masuk untuk konten statis, dan momen besar hanya pada peristiwa bisnis yang jarang. Kelemahannya ada pada detail kontrol utilitas: aksi papan ketik masih dianimasikan dan beberapa kontrol memakai pegas memantul. Semua sudah dirapikan.</p></section>
+
+<h2>01 · Ringkasan lensa</h2>
+<table><thead><tr><th>Lensa</th><th>Putusan</th><th>Satu kalimat</th></tr></thead><tbody>
+<tr><td>Emil Kowalski <span class="chip">Primer</span></td><td><span class="dot i"></span>Mixed → Strong</td><td>Restraint kuat; animasi aksi keyboard dan pantulan pada kontrol utilitas sudah dihapus.</td></tr>
+<tr><td>Jakub Krehel <span class="chip">Sekunder</span></td><td><span class="dot o"></span>Strong</td><td>Token konsisten, keluar lebih halus dari masuk (sesudah perbaikan laci), hover 140 ms di semua kontrol.</td></tr>
+<tr><td>Jhey Tompkins <span class="chip">Selektif</span></td><td><span class="dot o"></span>Strong</td><td>Karakter dipusatkan pada momen jarang: tutup buku, membuka buku, cap mendarat.</td></tr></tbody></table>
+
+<h2>02 · Di mana durasinya jatuh</h2>
+<svg class="timing" viewBox="0 0 660 300" role="img" aria-label="Diagram durasi animasi">
+<rect class="zg" x="40" y="20" width="200" height="250"/><rect class="zm" x="240" y="20" width="133" height="250"/><rect class="zs" x="373" y="20" width="267" height="250"/>
+<text x="44" y="16">0</text><text x="105" y="16">responsif ≤300</text><text x="250" y="16">300–500</text><text x="440" y="16">≥500 ms (momen jarang)</text>
+<circle class="d" cx="100" cy="45" r="5"/><text x="110" y="49">tekan tombol 90</text>
+<circle class="d" cx="133" cy="70" r="5"/><text x="143" y="74">hover, chip, tooltip 140</text>
+<circle class="d" cx="187" cy="95" r="5"/><text x="197" y="99">laci, dialog, tab, centang 220</text>
+<circle class="d" cx="213" cy="120" r="5"/><text x="223" y="124">M3 angka, struk 260</text>
+<circle class="d" cx="240" cy="145" r="5"/><text x="250" y="149">M4 ruang, M7 garis T 300</text>
+<circle class="d" cx="307" cy="170" r="5"/><text x="317" y="174">cap mendarat (pegas) ±400</text>
+<circle class="d" cx="440" cy="195" r="5"/><text x="450" y="199">M10 tutup buku, grafik 600</text>
+<circle class="d" cx="507" cy="220" r="5"/><text x="517" y="224">M11 membuka buku 700 (sekali per sesi)</text>
+<circle class="d" cx="600" cy="245" r="5"/><text x="470" y="262">M1 jejak tinta ≤1.200 total</text>
+</svg>
+<p class="lede">Yang lewat 300 ms hanya peristiwa bisnis jarang yang diatur brief (6.2), bisa dilewati, dan tidak menahan input. Aksi yang sering (tekan, hover, laci, tab) semuanya ≤220 ms.</p>
+
+<h2>03 · Emil Kowalski — Restraint dan kecepatan <span class="chip">Primer</span></h2>
+<div class="lens-sec">
+<p class="mono-label">Yang sudah baik</p>
+<ul class="lens-list good"><li>Diam saat bekerja: <code>document.getAnimations()</code> kosong di 5 halaman utama setelah 2 detik.</li><li>Palet perintah yang dibuka dengan Ctrl+K tampil tanpa animasi masuk (<code>Palette.tsx</code>, kelas <code>instant</code>).</li><li>M3 hanya bergulir saat nilai berubah, dengan debounce 120 ms dan pembatalan gulir sebelumnya.</li><li>Hanya transform, opacity, stroke-dashoffset, dan clip-path elemen kecil yang dianimasikan.</li><li>Interaksi baru menyelesaikan animasi berjalan (<code>finishAll</code> di <code>motion/animate.ts</code>).</li></ul>
+<p class="mono-label">Masalah</p>
+<div class="finding-row" id="f1"><div><p class="sev c">Kritis · diperbaiki</p><h3>Pindah tab dengan panah masih crossfade 120 ms</h3><p><code>components/Tabs.tsx</code> — aksi keyboard tidak boleh dianimasikan. Sekarang panel berganti seketika bila dipicu panah, Home, atau End.</p></div><div class="demo"><div class="demo__stage"><div class="box demo-1__mt"></div></div><p class="demo__cap">Sesudah: berganti seketika</p></div></div>
+<div class="finding-row" id="f2"><div><p class="sev c">Kritis · diperbaiki</p><h3>Escape menutup laci, dialog, dan palet dengan animasi keluar</h3><p><code>components/Layers.tsx</code>, <code>Palette.tsx</code> — penutupan lewat Escape (dan Enter di palet) sekarang langsung.</p></div><div class="demo"><div class="demo__stage"><div class="drawer-demo demo-2__mt"></div></div><p class="demo__cap">Sesudah: hilang seketika</p></div></div>
+<div class="finding-row" id="f3"><div><p class="sev i">Penting · diperbaiki</p><h3>Knob sakelar memakai pegas memantul</h3><p><code>styles/controls.css</code> <code>.sw .knob</code> — <code>--ease-spring</code> (overshoot) diganti <code>--ease-out</code>.</p></div><div class="demo"><div class="demo__stage"><div class="knob-rail"><span class="knob demo-3__mt"></span></div></div><p class="demo__cap">Sesudah: ease-out 140 ms</p></div></div>
+<div class="finding-row" id="f4"><div><p class="sev i">Penting · diperbaiki</p><h3>Titik radio muncul dari scale(0) dengan pantulan</h3><p><code>styles/controls.css</code> <code>.rd input::after</code> — sekarang dari skala 0,6 dengan opasitas, ease-out.</p></div><div class="demo"><div class="demo__stage"><span class="radio"><i class="demo-4__mt"></i></span></div><p class="demo__cap">Sesudah: 0,6 → 1, ease-out</p></div></div>
+<div class="finding-row" id="f6"><div><p class="sev i">Penting · diperbaiki</p><h3>Centang sukses tombol 360 ms</h3><p><code>index.css</code> <code>.btn[data-state=success] .tick</code> — diturunkan ke <code>--dur-base</code> (220 ms).</p></div><div class="demo"><div class="demo__stage tick"><svg viewBox="0 0 24 24" class="demo-6__mt"><path pathLength="1" d="M5 12.5 9.5 17 19 7.5"/></svg></div><p class="demo__cap">Sesudah: 220 ms</p></div></div>
+<p class="mono-label">Peluang</p>
+<ul class="lens-list opp"><li>Baris yang dibuka dengan Enter bisa membuka laci tanpa animasi masuk (<code>DataTable.tsx</code>).</li><li>Pita sidebar bisa pindah tanpa tarikan bila navigasi dipicu papan ketik (<code>Shell.tsx</code>).</li><li>Angkat baris 1 px saat hover di tabel adalah interaksi sangat sering; pertimbangkan mati pada kepadatan Rapat (dipertahankan karena diminta brief 8).</li></ul>
+<p class="lens-take">Through Emil's lens: kerangka sudah cepat dan diam; sisa gerak pada aksi keyboard dan kontrol utilitas sudah dihapus.</p>
+</div>
+
+<h2>04 · Jakub Krehel — Kehalusan produksi <span class="chip">Sekunder</span></h2>
+<div class="lens-sec">
+<p class="mono-label">Yang sudah baik</p>
+<ul class="lens-list good"><li>Satu sumber token durasi dan easing (<code>design/tokens.css</code>), dibaca JS lewat <code>motion/tokens.ts</code>.</li><li>Keluar sekitar 70% durasi masuk (<code>exitMs</code>).</li><li>Struk keluar dengan clip-path pada elemen kecil, cap mendarat dengan pegas hanya saat status berubah.</li></ul>
+<p class="mono-label">Masalah</p>
+<div class="finding-row" id="f5"><div><p class="sev i">Penting · diperbaiki</p><h3>Keluar laci sama menonjolnya dengan masuk</h3><p><code>components/Layers.tsx</code> — geser keluar diturunkan dari 24 px ke 12 px.</p></div><div class="demo"><div class="demo__stage"><div class="drawer-demo demo-5__mt"></div></div><p class="demo__cap">Sesudah: masuk 24 px, keluar 12 px</p></div></div>
+<p class="mono-label">Peluang</p>
+<ul class="lens-list opp"><li>Pergantian kerangka pensil ke konten bisa diberi crossfade 120 ms bila terasa tersentak pada jaringan lambat.</li></ul>
+<p class="lens-take">Through Jakub's lens: polesnya konsisten dan tidak mencolok; satu ketidakseimbangan masuk/keluar sudah diperbaiki.</p>
+</div>
+
+<h2>05 · Jhey Tompkins — Eksperimen terarah <span class="chip">Selektif</span></h2>
+<div class="lens-sec">
+<ul class="lens-list good"><li>M10 (sampul buku menutup) dan M11 (buku terbuka menjadi aplikasi) memberi karakter pada peristiwa yang jarang.</li><li>Ilustrasi keadaan kosong isometrik satu warna.</li></ul>
+<p class="lens-take">Through Jhey's lens: kesenangan ditempatkan di momen yang tepat, bukan di setiap klik.</p>
+</div>
+
+<h2>06 · Rekomendasi gabungan</h2>
+<table id="rec-crit"><thead><tr><th>Kritis</th><th>Berkas</th><th>Status</th></tr></thead><tbody><tr><td>Aksi keyboard tab tanpa animasi</td><td><code>Tabs.tsx</code></td><td>Diperbaiki</td></tr><tr><td>Escape menutup lapisan tanpa animasi</td><td><code>Layers.tsx</code>, <code>Palette.tsx</code></td><td>Diperbaiki</td></tr></tbody></table>
+<table id="rec-imp"><thead><tr><th>Penting</th><th>Berkas</th><th>Status</th></tr></thead><tbody><tr><td>Knob sakelar ease-out</td><td><code>controls.css</code></td><td>Diperbaiki</td></tr><tr><td>Radio dari 0,6, bukan 0</td><td><code>controls.css</code></td><td>Diperbaiki</td></tr><tr><td>Keluar laci 12 px</td><td><code>Layers.tsx</code></td><td>Diperbaiki</td></tr><tr><td>Centang 220 ms</td><td><code>index.css</code></td><td>Diperbaiki</td></tr></tbody></table>
+<table id="rec-opp"><thead><tr><th>Peluang</th><th>Berkas</th><th>Status</th></tr></thead><tbody><tr><td>Laci dari Enter tanpa animasi</td><td><code>DataTable.tsx</code></td><td>Terbuka</td></tr><tr><td>Pita sidebar tanpa tarikan untuk navigasi keyboard</td><td><code>Shell.tsx</code></td><td>Terbuka</td></tr><tr><td>Angkat baris hover pada kepadatan Rapat</td><td><code>tables.css</code></td><td>Dipertahankan (brief)</td></tr><tr><td>Crossfade kerangka ke konten</td><td><code>ui.tsx</code></td><td>Terbuka</td></tr></tbody></table>
+
+<h2>07 · Ringkasan lensa</h2>
+<p class="lede">Emil: apakah ini perlu bergerak? Jakub: apakah halus untuk produksi? Jhey: bisa menjadi apa? Untuk ERP yang dipakai seharian, jawaban Emil menentukan, Jakub merapikan, Jhey hanya di momen jarang.</p>
+<footer>Laporan audit gerak · AetherERP UI v3 · 2026-11-20 · Lensa adalah tafsiran prinsip publik para desainer, bukan pernyataan mereka.</footer>
+</div>
+</body>
+</html>

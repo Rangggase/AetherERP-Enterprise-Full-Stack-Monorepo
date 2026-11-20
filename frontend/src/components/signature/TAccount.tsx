@@ -12,6 +12,23 @@ export interface GLData {
 
 const idr = (c: number) => rupiah(c / 100, c % 100 !== 0);
 
+/** Satu entri sisi T; membuka laci jurnal (M1) untuk nomor jurnal itu. */
+function Entry({ l, side }: { l: GLData["lines"][number]; side: "debit" | "credit" }) {
+  return (
+    <li>
+      <button type="button" onClick={() => openJournal({ entryNo: l.entry_no, date: l.date })}
+        className="grid w-full grid-cols-[auto_minmax(0,1fr)_auto] items-baseline gap-x-2 rounded px-1 py-1 text-left text-table hover:bg-highlight">
+        <span className="text-xs text-muted">{date(l.date)}</span>
+        <span className="truncate"><span className="code" translate="no">{l.entry_no}</span> <span className="text-muted">{l.description}</span></span>
+        <span className="font-num">{idr(cents(side === "debit" ? l.debit : l.credit))}</span>
+      </button>
+    </li>
+  );
+}
+const Opening = ({ amount }: { amount: number }) => (
+  <li className="grid grid-cols-[minmax(0,1fr)_auto] gap-x-2 px-1 py-1 text-table"><span className="font-medium">Saldo awal</span><span className="font-num font-medium">{idr(Math.abs(amount))}</span></li>
+);
+
 /**
  * M7 Akun T: huruf T besar dari garis tinta. Debit di kiri, kredit di kanan, saldo awal di atas sisi saldo normalnya,
  * saldo akhir di bawah dengan garis ganda. Saldo akhir yang tampil adalah nilai dari API (closing_balance), jadi selalu
@@ -38,20 +55,6 @@ export function TAccount({ gl }: { gl: GLData }) {
   const computed = (dTotal - cTotal) * (debitNormal ? 1 : -1);
   const closeSide: "debit" | "credit" = (closing >= 0) === debitNormal ? "debit" : "credit";
 
-  const Entry = ({ l, side }: { l: GLData["lines"][number]; side: "debit" | "credit" }) => (
-    <li>
-      <button type="button" onClick={() => openJournal({ entryNo: l.entry_no, date: l.date })}
-        className="grid w-full grid-cols-[auto_minmax(0,1fr)_auto] items-baseline gap-x-2 rounded px-1 py-1 text-left text-table hover:bg-highlight">
-        <span className="text-xs text-muted">{date(l.date)}</span>
-        <span className="truncate"><span className="code" translate="no">{l.entry_no}</span> <span className="text-muted">{l.description}</span></span>
-        <span className="font-num">{idr(cents(side === "debit" ? l.debit : l.credit))}</span>
-      </button>
-    </li>
-  );
-  const Opening = () => (
-    <li className="grid grid-cols-[minmax(0,1fr)_auto] gap-x-2 px-1 py-1 text-table"><span className="font-medium">Saldo awal</span><span className="font-num font-medium">{idr(Math.abs(opening))}</span></li>
-  );
-
   return (
     <figure aria-label={`Akun T ${gl.account.code} ${gl.account.name}`}>
       <figcaption className="mb-2 text-center">
@@ -66,11 +69,11 @@ export function TAccount({ gl }: { gl: GLData }) {
         <div className="grid grid-cols-2 gap-x-6 pt-3">
           <div className="pr-2">
             <h3 className="mb-1 text-xs font-semibold uppercase tracking-[0.06em] text-muted">Debit</h3>
-            <ul>{openSide === "debit" && opening !== 0 && <Opening />}{debits.map((l, i) => <Entry key={i} l={l} side="debit" />)}</ul>
+            <ul>{openSide === "debit" && opening !== 0 && <Opening amount={opening} />}{debits.map((l, i) => <Entry key={i} l={l} side="debit" />)}</ul>
           </div>
           <div className="pl-2">
             <h3 className="mb-1 text-xs font-semibold uppercase tracking-[0.06em] text-muted">Kredit</h3>
-            <ul>{openSide === "credit" && opening !== 0 && <Opening />}{credits.map((l, i) => <Entry key={i} l={l} side="credit" />)}</ul>
+            <ul>{openSide === "credit" && opening !== 0 && <Opening amount={opening} />}{credits.map((l, i) => <Entry key={i} l={l} side="credit" />)}</ul>
           </div>
         </div>
       </div>

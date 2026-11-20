@@ -9,6 +9,7 @@ import { PageHeader } from "../components/ui";
 import { api } from "../lib/api";
 import { num, rupiah, today } from "../lib/format";
 import { useSession } from "../lib/session";
+import { focusFirstError, useUnsavedGuard } from "../lib/useUnsaved";
 
 type Row = Record<string, any>;
 interface Line { product_id: string; quantity: string; unit_price: string }
@@ -71,12 +72,13 @@ function OrderForm({ kind }: { kind: "po" | "so" }) {
   const eligible = (products.data ?? []).filter((p) => (kind === "po" ? p.product_type !== "SERVICE" : true));
   const total = lines.reduce((s, l) => s + num(l.quantity) * num(l.unit_price), 0);
   const valid = !!party && !!branch && lines.every((l) => l.product_id && num(l.quantity) > 0 && l.unit_price !== "");
+  useUnsavedGuard(!save.isSuccess && (!!party || lines.some((l) => l.product_id)));
 
   function submit(e: FormEvent) {
     e.preventDefault();
     setTried(true);
     setError(null);
-    if (!valid) return;
+    if (!valid) { focusFirstError(); return; }
     save.mutate({
       [kind === "po" ? "supplier_id" : "customer_id"]: Number(party), branch_id: Number(branch), order_date: when,
       items: lines.map((l) => ({ product_id: Number(l.product_id), quantity: l.quantity, unit_price: l.unit_price })),
@@ -87,7 +89,7 @@ function OrderForm({ kind }: { kind: "po" | "so" }) {
       <PageHeader title={kind === "po" ? "Pesanan pembelian baru" : "Pesanan penjualan baru"}
         sub={kind === "po" ? "Disimpan sebagai draf. Ajukan dari dokumennya untuk memulai persetujuan." : "Disimpan sebagai penawaran. Saat dikonfirmasi, batas kredit diperiksa dan stok dicadangkan."} />
       <form onSubmit={submit} noValidate>
-        {error && <p role="alert" className="mb-4 border-y border-bad py-3 text-sm text-bad">{error}</p>}
+        {error && <p role="alert" data-form-error="" tabIndex={-1} className="mb-4 border-y border-bad py-3 text-sm text-bad">{error}</p>}
         <FormGroup first title={kind === "po" ? "Pemasok dan tujuan" : "Pelanggan dan asal"} hint={kind === "po" ? "Termin pembayaran pemasok menentukan jatuh tempo tagihan." : "Stok dicadangkan dari gudang yang dipilih."}>
           <div className="grid gap-3 sm:grid-cols-3">
             <Field label={kind === "po" ? "Pemasok" : "Pelanggan"} error={tried && !party ? `Pilih ${kind === "po" ? "pemasok" : "pelanggan"}.` : null}>
@@ -133,10 +135,16 @@ export function NewJournal() {
   const c = lines.reduce((s, l) => s + Math.round(num(l.credit) * 100), 0);
   const ok = d === c && d > 0;
   const set = (i: number, p: Partial<JLine>) => setLines(lines.map((l, j) => (j === i ? { ...l, ...p } : l)));
+  useUnsavedGuard(!save.isSuccess && (desc !== "" || lines.some((l) => l.account_code || l.debit || l.credit)));
 
   function submit(e: FormEvent) {
     e.preventDefault();
     setError(null);
+    if (!ok) {
+      setError(d === 0 ? "Isi jumlah debit dan kredit pada baris jurnal." : `Total debit dan kredit berbeda ${rupiah(Math.abs(d - c) / 100, true)}. Samakan keduanya, lalu posting lagi.`);
+      focusFirstError();
+      return;
+    }
     save.mutate({ entry_date: when, branch_id: Number(branch), description: desc, lines: lines.filter((l) => l.account_code).map((l) => ({ account_code: l.account_code, debit: l.debit || "0", credit: l.credit || "0" })) },
       { onError: (err) => setError(err instanceof Error ? err.message : "Jurnal tidak bisa diposting. Periksa periode dan baris, lalu coba lagi.") });
   }
@@ -144,7 +152,7 @@ export function NewJournal() {
     <>
       <PageHeader title="Jurnal baru" sub="Total debit harus sama dengan total kredit. Setelah diposting, jurnal hanya bisa dibalik, tidak bisa diubah." />
       <form onSubmit={submit}>
-        {error && <p role="alert" className="mb-4 border-y border-bad py-3 text-sm text-bad">{error}</p>}
+        {error && <p role="alert" data-form-error="" tabIndex={-1} className="mb-4 border-y border-bad py-3 text-sm text-bad">{error}</p>}
         <FormGroup first title="Dokumen" hint="Tanggal harus jatuh pada periode yang masih terbuka.">
           <div className="grid gap-3 sm:grid-cols-3">
             <Field label="Tanggal"><input className="field" name="entry-date" type="date" required value={when} onChange={(e) => setWhen(e.target.value)} /></Field>
@@ -171,7 +179,7 @@ export function NewJournal() {
           <div className={ok ? "self-end font-medium text-good" : "self-end font-medium text-warn"} aria-live="polite">{ok ? "Seimbang" : `Selisih ${rupiah(Math.abs(d - c) / 100, true)}`}</div>
         </>}>
           <Link className="btn btn-text" to="/accounting/journals">Batal</Link>
-          <Key type="submit" tone="primary" glyph="tinta" m={save} disabled={!ok}>Posting jurnal</Key>
+          <Key type="submit" tone="primary" glyph="tinta" m={save}>Posting jurnal</Key>
         </ActionBar>
       </form>
     </>

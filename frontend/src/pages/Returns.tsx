@@ -18,6 +18,7 @@ import { api } from "../lib/api";
 import { compactRupiah, date, num, qty, rupiah, today } from "../lib/format";
 import { useInvoiceIndex, useReturns, useSalesOrder } from "../lib/relations";
 import { useSession } from "../lib/session";
+import { focusFirstError, useUnsavedGuard } from "../lib/useUnsaved";
 import { roomName } from "../motion/viewTransition";
 import { DocPaper, HistoryTab, JournalTab } from "./Details";
 import "../styles/tables.css";
@@ -136,6 +137,7 @@ export function NewReturn() {
   const [error, setError] = useState<string | null>(null);
   const [confirm, setConfirm] = useState(false);
   useCrumb(so.data?.so_no);
+  useUnsavedGuard(Object.values(amounts).some((v) => Number(v) > 0) || reason !== "");
 
   const save = useMutation({
     mutationFn: (items: { product_id: number; quantity: string }[]) => api<Row>(`/sales/orders/${id}/return`, { method: "POST", body: { return_date: when, reason: reason || null, items } }),
@@ -172,8 +174,14 @@ export function NewReturn() {
   return (
     <>
       <PageHeader title={<>Retur dari <span className="code">{d.so_no}</span></>} sub={`${d.customer_name}${invoice ? ` · faktur ${invoice.invoice_no} · sisa tagihan ${rupiah(invoice.outstanding)}` : ""}. Hanya pesanan yang sudah difaktur yang bisa diretur, dan kredit tidak boleh melebihi sisa tagihan.`} />
-      <form onSubmit={(e) => { e.preventDefault(); setError(null); setConfirm(true); }}>
-        {error && <p role="alert" className="mb-4 flex items-start gap-2 border-y border-bad py-3 text-sm text-bad">{error}</p>}
+      <form onSubmit={(e) => {
+        e.preventDefault();
+        setError(null);
+        if (picked.length === 0) { setError("Belum ada item yang diretur. Isi jumlah retur pada minimal satu item."); focusFirstError(); return; }
+        if (tooMany) { setError("Ada jumlah yang melebihi sisa yang bisa diretur. Kurangi jumlahnya."); focusFirstError(); return; }
+        setConfirm(true);
+      }}>
+        {error && <p role="alert" data-form-error="" tabIndex={-1} className="mb-4 flex items-start gap-2 border-y border-bad py-3 text-sm text-bad">{error}</p>}
         <FormGroup first title="Item yang diretur" hint="Hanya jumlah yang belum diretur yang bisa dipilih.">
           <ul className="border-t border-ink">
             {lines.map((l) => {
@@ -207,7 +215,7 @@ export function NewReturn() {
           <Impact small label="Biaya stok kembali (FIFO)" value="dihitung sistem saat dicatat" />
         </>}>
           <Link className="btn btn-text" to={`/sales/orders/${id}`}>Batal</Link>
-          <Key type="submit" tone="primary" glyph="retur" m={save} disabled={picked.length === 0 || tooMany}>Simpan retur</Key>
+          <Key type="submit" tone="primary" glyph="retur" m={save}>Simpan retur</Key>
         </ActionBar>
       </form>
       <ConfirmDialog open={confirm} onClose={() => setConfirm(false)} title={`Simpan retur untuk ${d.so_no}?`} confirmLabel="Ya, simpan retur" pending={save.isPending}

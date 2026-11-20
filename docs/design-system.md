@@ -1,157 +1,175 @@
-# Design system v3: "meja kerja akuntan" (the accountant's desk)
+# Sistem desain UI v3: "Buku Besar Hidup"
 
-Scope: the visual and interaction layer of `frontend/` only. Backend, API contracts, business logic (returns, FIFO, journals, account classification), the 16 permissions, validation rules, data and what every button does stay as they are. The previous system is kept as `design-system-v2.md` ("kertas dan tinta"), and v1 as `design-system-v1.md`.
+Dokumen ini adalah aturan tampilan dan interaksi `frontend/` setelah UI v3. Sistem ini melanjutkan "meja kerja akuntan" (`design-system-meja-kerja.md`) dan menambahkan bahasa visual yang memperlihatkan aturan aplikasi sendiri: pencatatan berpasangan, rantai dokumen, stok per gudang, dan siklus periode. Brief lengkapnya ada di `docs/brief-ui-v3.md`; keputusan dan kemajuan ada di `docs/progress-ui-v3.md`.
 
-Reference implementation of every token and component in every state: `docs/prototypes/tactile-kit.html` (with `tactile-kit.css`, `tactile-kit.js`). Glyph catalogue: `docs/prototypes/glyphs.html`. Recordings: `docs/recordings/tactile-*.webm`.
+Ruang lingkup: hanya lapisan tampilan. Backend, kontrak API, logika bisnis, 16 izin, dan aturan validasi tidak berubah.
 
-## Direction
+## Sumber kebenaran
 
-Every element is an object on a desk: a sheet of paper, a cash-register key, a folder tab, an ink stamp, a receipt slip. Objects have depth from one light source above, and they answer to touch and to time. The result stays calm and professional: depth is shallow, motion is short, colour is the same paper and ink as v2.
+Setiap nilai punya satu tempat:
 
-1. **Objects, not decoration.** Depth says what is a sheet, what is lifted, what is pressed in. Nothing glows, nothing is a gradient, nothing is neon.
-2. **One accent.** Oxblood `#7A2E2A` marks the primary action, the active item and the main data series.
-3. **Glyph and word together.** Custom line glyphs sit beside words, never instead of them (one exception: the sidebar rail, where the word is the tooltip and the accessible name).
-4. **Motion confirms.** A key goes down, a stamp lands, a line draws once. Motion never loops except a loading indicator.
-5. **Status is never colour alone.** Badges and stamps carry a word; racks carry a SKU and a word.
+- **Token**: `frontend/src/design/tokens.css` untuk warna, kedalaman, gerak, lapisan, dan tipografi
+- **Font**: `frontend/src/design/fonts.css` dan berkas woff2 di `frontend/public/fonts/`
+- **Katalog**: rute `/__katalog` (hanya mode pengembangan) menampilkan semua token, glyph, komponen, dan momen khas dengan data contoh
+- **Kontras**: `npm run contrast` (`frontend/scripts/contrast-check.mjs`) membaca token dan gagal bila ada pasangan di bawah batas
 
-## B. Foundations
+Komponen tidak boleh memuat warna, durasi, atau z-index literal. JS membaca token gerak saat dipakai lewat `motion/tokens.ts`, jadi mode Dikurangi dan Minimal langsung berlaku.
 
-### B1. Depth model (one light source from above)
+## Prinsip
 
-Tokens in `frontend/src/index.css`:
+1. **Data adalah bahan visual.** Tidak ada visual tanpa data API. Ukuran, jumlah, dan warna selalu berarti sesuatu.
+2. **Gerak menjelaskan sebab dan akibat.** Gerak yang tidak menjawab "apa yang baru saja terjadi" dihapus.
+3. **Diam saat bekerja.** Saat pengguna tidak berinteraksi, `document.getAnimations()` kosong.
+4. **Satu momen dalam satu waktu** di satu layar.
+5. **Benda nyata, perilaku nyata.** Kertas tidak memantul, cap tidak berputar, tinta tidak bersinar.
+6. **Selalu bisa dilewati.** Animasi tidak menahan input atau navigasi; interaksi baru menyelesaikan animasi yang berjalan.
+7. **Setara tanpa gerak.** Dengan gerak dikurangi, informasinya tetap utuh.
+8. **Ketidaksempurnaan yang konsisten.** Kemiringan cap berasal dari hash nomor dokumen: berbeda antar-dokumen, tetap untuk dokumen yang sama.
 
-| Level | Token | Value | Use |
-| --- | --- | --- | --- |
-| 0 canvas | `--elev-0` | none, background `#F4F1EA` | Page |
-| 1 sheet | `--elev-1` | `0 1px 0 rgba(30,27,24,.06)`, background `#FBFAF6`, 1px `#DCD6CA` border | Panels, tables, forms |
-| 2 lifted | `--elev-2` | level 1 plus `0 6px 14px -6px rgba(30,27,24,.18)` | Hover, selected item, task card |
-| 3 layer | `--elev-3` | `0 16px 40px -12px rgba(30,27,24,.30)` | Drawer, dialog, menu, palette, toast |
-| pressed in | `--inset` | `inset 0 1px 2px rgba(30,27,24,.10)`, background `#EFEBE2` | Inputs, switch rail, segmented control |
-| paper stack | `--stack-1`, `--stack-2` | sheets behind, offset 3px and 6px | Cards that stand for a collection |
+Setiap visual lolos uji akal sehat: membawa data nyata, mempercepat pemahaman, nyaman dilihat seratus kali, punya versi teks atau tabel, dan lancar di laptop kantor biasa.
 
-A lifted sheet paints in three layers inside its own stacking context: paper behind (-3), shadow (-2), face (-1), then content. The elevation change animates the shadow layer's opacity, never `box-shadow` itself. Stack count follows the item count: 1 item one sheet, 2 items two sheets, 3 or more three sheets.
+## Warna
 
-### B2. Motion
+| Token | Nilai | Pemakaian |
+|---|---|---|
+| `--canvas` | #F4F1EA | Latar aplikasi |
+| `--paper` | #FBFAF6 | Lembar, panel |
+| `--ink` | #1E1B18 | Teks utama |
+| `--ink-muted` | #6B645A | Teks sekunder |
+| `--rule` | #DCD6CA | Garis pemisah (dekoratif) |
+| `--rule-strong` | #867E71 | Batas kontrol isian |
+| `--accent` | #7A2E2A | Aksi utama, penanda, cincin fokus |
+| `--accent-deep` | #5A201D | Tepi bawah tombol utama |
+| `--highlight` | #EFEBE2 | Sorot hover dan aktif, latar isian |
+| `--ok` | #3F6B4E | Sukses |
+| `--warn` | #B07A1E | Peringatan: hanya isian, garis, dan ikon |
+| `--warn-ink` | #8A5D12 | Teks peringatan |
+| `--bad` | #9E3B32 | Galat |
+| `--info` | #3D5A73 | Informasi |
+| `--pencil` | #CFC8BB | Kerangka garis pensil (dekoratif) |
 
-| Token | Value | Use |
-| --- | --- | --- |
-| `--t-press` | 90ms | Key press |
-| `--t-fast` | 140ms | Hover, focus, chip, menu, switch |
-| `--t-mid` | 220ms | Drawer, dialog, tab panel, stagger item, stamp |
-| `--t-slow` | 360ms | Large layout moves (not used yet) |
-| `--t-draw` | 600ms | A chart line drawing |
-| `--ease-out` | `cubic-bezier(.2,.8,.2,1)` | Entrances |
-| `--ease-in` | `cubic-bezier(.4,0,1,1)` | Exits |
-| `--ease-spring` | `cubic-bezier(.3,1.35,.5,1)` | Key press, stamp, switch knob, radio dot |
+Tinta data: marun, biru tinta, hijau lumut, oker, grafit (`--data-1` sampai `--data-5`), paling banyak empat dalam satu visual. Validator skill dataviz menandai palet ini terlalu redup untuk pita kecerahannya; karena itu setiap grafik wajib punya penanda kedua (garis putus untuk seri pembanding, label langsung, legenda, tabel).
 
-Rules:
+Skala umur (`--age-1` sampai `--age-5`) disiapkan untuk lapisan FIFO; label di atasnya memakai `pickInk()` (`design/contrast.ts`). Lencana status memakai tint 7–8% agar teks tetap ≥4,5:1 di atas latar bertekstur.
 
-- Only `transform`, `opacity`, colour and `stroke-dashoffset` animate. Never width, height, top or left.
-- Nothing loops except a loading indicator (key progress bar, skeleton sheen).
-- Choreography: items of one group enter 30ms apart, at most 6 staggered; the rest arrive with the sixth.
-- Numbers change with a crossfade and a 4px shift; there is no count-up.
-- `prefers-reduced-motion: reduce` removes every position, scale, shake and parallax movement. Colour, opacity and glyph changes stay, so a pressed key still loses its edge and darkens, and a success still shows its tick.
+## Material, kedalaman, tekstur
 
-### B3. Glyphs
+- **Lembar**: `--paper`, garis 1 px `--rule`, sudut 8 px (panel) atau 4 px (kontrol), serat kertas 2%
+- **Kedalaman**: `--elev-1` lembar, `--elev-2` terangkat, `--elev-3` laci, dialog, menu; bayangan tidak dianimasikan, efek terangkat memudarkan pseudo-elemen pembawa bayangan
+- **Cap**: garis ganda, huruf kapital 600 dengan jarak 0,08em, rotasi −5° sampai −2° dari hash, tekstur tinta lewat masker SVG statis (`--ink-mask`)
+- **Struk**: lebar 320 px, tepi bawah bergerigi, angka dalam Plex Mono, pemisah putus-putus
+- **Kartu indeks**: garis atas 2 px `--accent` dan garis samar tiap 24 px (palet perintah)
+- **Kertas buku besar**: garis margin 1 px `--accent` 25% (`.ledger-paper`), subtotal satu garis di atas, total garis ganda di bawah
+- **Tekstur**: SVG `feTurbulence` statis sebagai data-URI, 3,5% di kanvas dan 2% di lembar, campuran `multiply`; mati saat cetak, `forced-colors`, `prefers-contrast: more`, dan bila preferensi Tekstur dimatikan
 
-- Custom line set, not a general icon library: 24 grid, 1.5px stroke, round caps and joins, no fill, `currentColor`.
-- Module glyphs, one per route: Dasbor, Pesanan pembelian, Penerimaan barang, Pemasok, Produk, Level stok, Kartu stok, Transfer antar gudang, Perakitan, Saran pesan ulang, Pesanan penjualan, Pengiriman, Faktur, Retur, Pelanggan, Jurnal, Buku besar, Laporan, Periode, Log audit, Pengguna, Pengaturan, Akun. (Pengiriman, Buku besar and Pengaturan have no route of their own; the glyphs exist for completeness.)
-- Action glyphs: simpan (tick), buat (plus), kirim (arrow), retur (U-turn), cetak, ekspor, hapus, edit, filter, urutkan, tutup, peringatan, berhasil, gagal, gembok, cari, naik, turun, lainnya, cabang, rel, keluar, buka lengkap.
-- Always beside a word and `aria-hidden`. Sizes 16 (badges, dense rows), 20 (keys, menus), 24 (rail, mobile tab bar).
-- React components: `frontend/src/components/glyphs/`.
+## Tipografi
 
-### Colour
+- **Source Serif 4** (variabel, `opsz` dan `wght`): judul halaman, nomor dokumen di kepala, angka utama
+- **IBM Plex Sans** (variabel): antarmuka, label, tabel
+- **IBM Plex Mono** 400 dan 500: nomor dokumen, SKU, kode akun, angka di struk
 
-Fixed palette: canvas `#F4F1EA`, surface `#FBFAF6`, ink `#1E1B18`, muted `#6B645A`, line `#DCD6CA`, accent `#7A2E2A`, accent deep `#5A201D`, highlight `#EFEBE2`, good `#3F6B4E`, warn `#B07A1E`, bad `#9E3B32`, info `#3D5A73`.
+Font di-host sendiri (subset Latin), dua berkas terpenting di-`preload`, `font-display: swap`, dan font cadangan memakai `size-adjust` serta `ascent-override` dari metrik asli. Skala: 40 (angka utama), 30, 26 (KPI), 24, 18, 15, 14, 13, 12. Angka data memakai `tabular-nums lining-nums` dan rata kanan. Uang, tanggal, dan angka memakai `Intl` dengan lokal `id-ID`. Kode memakai `translate="no"`.
 
-Two helpers stay from v2 for contrast: warning text `#8A5F12` (`#B07A1E` is 3.3:1 as text) and control borders `#8C8478` (`#DCD6CA` is 1.3:1). The secondary key's bottom edge `#C9C2B4` is decorative; the key is identified by its word and its 1px border.
+## Lapisan
 
-Status colours (existing statuses only):
+Dasar 0, menempel 10, rel 20, bilah atas 30, laci 40, dialog 50, palet dan tooltip 60, struk 70. Tailwind hanya mengenal nama token ini (`z-topbar`, `z-receipt`, dan seterusnya).
 
-| Colour | Statuses |
-| --- | --- |
-| good | Lunas, Diterima, Selesai, Terposting, Aktif |
-| warn (text `#8A5F12`) | Perlu persetujuan, Diterima sebagian, Dibayar sebagian |
-| info | Disetujui, Terkonfirmasi, Terkirim, Ditagih, Terfaktur, Terbuka, Dalam perjalanan |
-| bad | Dibalik, Dibatalkan |
-| muted | Draf, Penawaran, Diminta, Ditutup |
+Urutan di dalam satu komponen yang punya konteks tumpuk sendiri juga memakai token: `--z-local-raise` (1), `--z-local-sheet` (−1), `--z-local-shadow` (−2), `--z-local-stack` (−3). Token lokal ini tidak pernah dipakai untuk menaikkan elemen di atas kerangka aplikasi.
 
-### Typography
+## Gerak
 
-Source Serif 4 (500, 600) for titles, document numbers, headline figures and counts. IBM Plex Sans (400, 500, 600) for everything else; numbers use `tabular-nums lining-nums`. Sizes as v2: figure 56/60 (44 mobile), title 30/36 (26 mobile), document number 22/28, section label 13/20 semibold, body 14/22, table 13/20, caption 12/16. Stamps are the only uppercase text.
+| Token | Nilai | Pemakaian |
+|---|---|---|
+| `--dur-press` | 90 ms | Tekan tombol |
+| `--dur-fast` | 140 ms | Hover, fokus, chip |
+| `--dur-base` | 220 ms | Laci, dialog, tab, centang sukses |
+| `--dur-roll` | 260 ms | Angka mekanis per digit |
+| `--dur-print` | 260 ms | Struk keluar |
+| `--dur-room` | 300 ms (ponsel 220 ms) | Transisi ruang |
+| `--dur-draw` | 600 ms | Grafik tergambar, tutup buku |
+| `--dur-open-book` | 700 ms | Membuka buku setelah masuk |
+| `--budget-ink` | 1.200 ms | Batas total jejak tinta |
 
-### Space and radius
+Easing: `--ease-out` untuk masuk, `--ease-in` untuk keluar, `--ease-inout` untuk garis yang tergambar. Pegas (`--spring-stamp`) hanya untuk cap yang mendarat; `motion/spring.ts` mengubahnya menjadi easing `linear()`. Kontrol utilitas (sakelar, radio) tidak memantul.
 
-8px grid (4, 8, 16, 24, 32, 40, 48). Radius 4px for sheets, keys, inputs and dialogs; 14px for chips; 50% for the avatar, switch and radio.
+Aturan:
 
-## C. Components
+- Keluar sekitar 70% durasi masuk dan lebih halus (laci masuk 24 px, keluar 12 px)
+- Aksi papan ketik tidak dianimasikan: tab dengan panah, palet dari Ctrl+K, menutup lapisan dengan Escape
+- Hanya `transform`, `opacity`, `stroke-dashoffset`, warna, dan `clip-path` elemen kecil yang dianimasikan
+- Keadaan akhir selalu gaya statis elemen; animasi tidak memakai `fill: forwards`, jadi tidak tertinggal di `getAnimations()`
+- Tidak ada animasi berulang selain indikator memuat (garis tinta, kerangka pensil, bilah di tombol)
 
-Each component has the states normal, hover, pressed, focus, disabled, loading, success and error where they apply.
+Preferensi Gerak di Akun saya: Ikuti sistem operasi (bawaan), Penuh, Dikurangi, Minimal. Atribut `data-motion` di `<html>` dipasang sebelum render pertama oleh skrip kecil di `index.html`.
 
-| Component | Rules |
-| --- | --- |
-| C1 Primary key | Body accent, 3px bottom edge `#5A201D`, text surface. Glyph in a darker cap on the left. Hover up 1px. Pressed down 3px with the edge gone (90ms, spring). Loading: label replaced by a progress bar inside the key, same width, no double submit. Success: the cap's glyph becomes a tick drawn in 300ms, back after 1.5s. Error: two horizontal shakes (4px max), glyph becomes "!". These states follow the real request (the mutation's pending, success and error), never a timer. |
-| C1 Secondary key | Body surface, 1px line border, 2px bottom edge `#C9C2B4`, cap in highlight. |
-| C1 Danger key | Like secondary, text and border bad. The action opens a dialog that states the consequence. |
-| C1 Text action | Glyph plus word, no relief, underline on hover. Used in table rows and toolbars. |
-| C2 Field | Pressed in (`--inset`, highlight background, `#8C8478` border). On focus it rises to the surface: inset gone, border accent, 2px focus ring. Label above, hint below; an error adds a bad border, a warning glyph and a sentence on how to fix it. Native select and date use the light colour scheme. |
-| C2 Number | Stepper: two small keys (− and +) around a right-aligned tabular figure; arrow keys step; the keys disable at the limits. |
-| C3 Checkbox | Pressed-in box; when checked the tick draws in 160ms. |
-| C3 Radio | The dot is pressed into the circle (scale with spring). |
-| C3 Switch | Raised knob that slides on a pressed-in rail; `role="switch"`, state word beside it. |
-| C4 Tabs | Folder tabs: the active tab joins the panel with no rule between; others sit 3px lower on highlight. Panel change: 8px shift with a 220ms crossfade. Arrow keys move. |
-| C5 Badge | In tables: glyph plus word on a 10% tint of the status colour. |
-| C5 Stamp | On a document: uppercase word in a double rule, status colour, rotated −4°, a light static SVG ink filter. It is stamped (scale 1.15 → 1, spring, 220ms) only when the status changes during this session; a page opened normally shows it still. |
-| C6 Sheet and task card | A panel is a level 1 sheet; no card inside a card. A task card is a paper stack (1–3 sheets by count); hover lifts it to level 2 and fans the stack. A task card opens the filtered list. |
-| C7 Table | Sticky header with a shadow that appears only once the table scrolls. Ledger rules. Numbers right-aligned. Row hover: highlight and a 2px accent left rule. Click or Enter opens the preview drawer; "Buka lengkap" inside. Row checkboxes show a bulk bar from below the table, for actions that already exist per row (print, export). Density nyaman/rapat in `localStorage`. Filter chips enter and leave with scale and fade. Mobile: first column sticky, edge shadow, swipe hint. |
-| C8 Drawer | From the right, 220ms, backdrop dims, Escape closes, focus stays inside and returns to the trigger. |
-| C8 Dialog | Level 3 sheet, scale 0.98 → 1. A risky dialog states the consequence in one sentence and uses the danger key. |
-| C8 Menu | Drops 4px with a fade; arrow keys, Escape returns focus. |
-| C8 Toast | A receipt slip from the top right with a torn bottom edge (`clip-path`), gone after 4s (paused on hover), closable, announced with `aria-live`. |
-| C9 Skeleton | Copies the layout with a very soft paper sheen; no spinners. |
-| C9 States | Empty: a small isometric line illustration in `#6B645A`, 1px (empty rack, empty folder, empty receipt), one sentence, one action. Error: torn paper, what happened, "Coba lagi". No access: line padlock and the permission the page needs. |
-| C10 Chart | Uses the dataviz method. The line draws once when it first becomes visible (600ms); range changes crossfade values without redrawing. Hover or arrow keys: vertical crosshair and a slip-shaped tooltip. Direct labels at line ends, minimal gridlines, accent main series and muted dashed comparison, a legend for two series, "Lihat sebagai tabel" always. No data: the empty state, never empty axes. |
-| C11 KPI | Large serif figure, a 6-month sparkline below, change with an arrow glyph and words ("naik 12% dari Oktober"). A changed value crossfades with a 4px shift. |
-| C12 Command palette | Ctrl+K (or ⌘K) opens a level 3 sheet at the top centre. Searches pages, documents (SO, PO, invoice numbers) and actions ("Buat retur"), grouped with glyphs. Arrows and Enter. "/" opens it for pages only. |
+## Momen khas
 
-## D. Application frame
+| Momen | Status | Tempat | Data |
+|---|---|---|---|
+| M1 Jejak Tinta | Jalan terbatas | Detail jurnal, detail retur, laci dari struk, tab Jurnal | Baris jurnal; tautan hanya lewat `journal_entry_id` |
+| M2 Upacara Posting | Jalan | Semua aksi posting yang sudah ada | Respons API aksi |
+| M3 Angka Mekanis | Jalan | Bilah ringkasan form, KPI, kartu tugas | Nilai yang sudah tampil |
+| M4 Transisi Ruang | Jalan | Daftar ke detail, kartu tugas, laci, rantai, kembali | View Transition API, cadangan crossfade |
+| M5 Rantai Dokumen | Jalan terbatas | Kepala detail, laci | Hanya relasi id (`so_id`, `invoice_id`, `po_id`) |
+| M6 Lapisan FIFO | Ditunda | Laci produk menjelaskan alasannya | API tidak mengekspos lapisan |
+| M7 Akun T | Jalan | Laporan, tab Buku besar | Buku besar per akun |
+| M8 Gudang Hidup | Jalan | Level stok, dasbor gudang | Saldo stok dan kategori produk |
+| M9 Peta Aliran | Ditunda | Dasbor menjelaskan alasannya | Tidak ada laporan aliran per tahap |
+| M10 Tutup Buku | Jalan | Periode fiskal | Periode, jumlah jurnal, laba periode |
+| M11 Membuka Buku | Jalan | Setelah masuk, sekali per sesi | Tanpa data |
+| O2 Cahaya meja | Tersedia, bawaan mati | Akun saya | Jam perangkat |
+| O3 Suara dan getar | Tersedia, bawaan mati | Akun saya | Tanpa data |
 
-- **D1 Sidebar.** Wide (224px: glyph and word, lowercase muted group labels) or rail (56px: glyph only, word as tooltip and accessible name); the choice is stored in `localStorage`. One bookmark ribbon marks the active item and slides to it (transform, 220ms). An item with pending work shows a count (wide) or a dot (rail) when the existing API provides the number. Arrow up/down move between items, Enter opens.
-- **D2 Top bar.** Breadcrumb; branch selector as a chip that opens a menu; accounting period as a small stamp ("Periode Nov 2026 · Terbuka" green, "Ditutup" muted with a padlock); a search field that opens the palette; the user's initials in a raised circle with a menu.
-- **D3 Mobile (below 800px).** The sidebar becomes a bottom tab bar with four main modules chosen from the role's permissions plus "Lainnya", which opens a sheet from the bottom. The page's primary key sticks above the tab bar. Touch targets at least 44px.
+Saklar per momen ada di `config/features.ts`. Relasi dokumen tidak pernah ditebak dari nomor, tanggal, jumlah, atau teks keterangan jurnal (keputusan D1).
 
-## E. Pages
+## Komponen
 
-- **Login:** two columns, the form on a sheet at the left; an isometric line illustration (open ledger and warehouse rack) at the right with a subtle cursor parallax (6px max, off with reduced motion). Mobile: a small illustration above the form.
-- **Dashboard:** by role from permissions. Order: stacked "Perlu tindakan" cards, one large KPI with smaller supporting figures, the chart, then a mini isometric warehouse plan when stock data exists. Returns have no status, so the returns card is informational.
-- **Lists:** one pattern. Serif title with the count, one primary key, filter chips, the C7 table, the preview drawer.
-- **Document detail:** the document as real paper (letterhead, number, date, parties), the status stamp, a stage rail built from existing statuses with a marker on the current stage, folder tabs Item, Jurnal, Riwayat, actions by status and permission.
-- **Forms (including returns):** sections as stacked sheets with small titles, steppers for quantities, a receipt-shaped summary bar stuck to the bottom showing the system-computed figures. The return's stock cost (FIFO) is only known after posting, because the API has no preview: the receipt says "dihitung sistem saat dicatat" and then shows the figure from the server's response. Receipt figures crossfade. The submit key goes loading → success.
-- **Level stok:** isometric warehouse plan (racks coloured by status with SKU and word, quantity on hover or focus). Mobile: the list.
-- **Kartu stok, Jurnal:** ledger view with thin rules.
-- **Laporan keuangan:** ledger paper; serif title, thin rules, a single rule above subtotals and a double rule under totals. Account column sticky on mobile.
-- **Pengguna, Akun saya:** forms with physical switches and a raised initials avatar.
-- **Print (invoice, reports):** a print stylesheet with no shadows or motion, black on white, like a paper invoice.
+- **Tombol** (`components/Key.tsx`): tuts mesin kasir; keadaan memuat, centang sukses, dan galat mengikuti status permintaan
+- **Isian** (`Field.tsx`, `Form.tsx`): batas `--rule-strong`, isian uang dengan awalan "Rp", stepper fisik, galat di tempat, bilah ringkasan berbentuk struk dengan M3
+- **Tabel** (`DataTable.tsx`, `styles/tables.css`): kepala menempel dengan bayangan saat digulir, kode dalam Plex Mono, hover lewat CSS, kepadatan dari preferensi, nomor dokumen dengan M4
+- **Laci dan dialog** (`Layers.tsx`): `<dialog>` modal, latar inert, rantai mini di kepala, "Buka lengkap" dengan M4; di ponsel menjadi lembar bawah
+- **Struk** (`Toaster.tsx`): paling banyak tiga, bertahan saat navigasi, hilang setelah 6 detik kecuali di-hover atau difokus
+- **Cap dan lencana** (`ui.tsx`): cap untuk dokumen, lencana glyph dan kata untuk tabel
+- **Palet perintah** (`Palette.tsx`): Ctrl+K, kelompok Halaman, Dokumen, Aksi, Produk, Pihak, pratinjau dokumen, riwayat terakhir
+- **Keadaan kosong, galat, tanpa izin, 404**: ilustrasi isometrik satu warna (`Illustration` di `ui.tsx`)
+- **Grafik tinta** (`TrendChart.tsx`): garis 2 px, ujung pena, garis bantu titik, label langsung, tabel alternatif
 
-## Accessibility and performance
+## Kerangka dan halaman
 
-- Text contrast at least 4.5:1 in every component state; glyphs and control borders at least 3:1 (measured table in `docs/progress-tactile.md` and the final report).
-- Focus is always visible and never covered by a shadow (rings use `outline`).
-- Touch targets at least 44px below 800px.
-- No layout shift from motion or loading (keys reserve their edge with a margin; skeletons copy the layout). CLS below 0.1 on dashboard and lists.
-- Animate only transform and opacity on the hot path; filters (the stamp's ink) are static.
-- CSS and JS each grow at most 25% over the v2 build (CSS 27,929 B; JS 790,633 B).
+Sidebar dengan pita penanda yang sedikit memanjang saat berpindah, grup bisa dilipat, dan titik tugas. Bilah atas memuat remah (nomor dokumen dalam Plex Mono), cabang, cap periode hari ini, pencarian, dan menu pengguna. Halaman daftar memakai satu pola: kepala dengan jumlah data, chip status, tabel, laci pratinjau. Detail dokumen tampil sebagai kertas dengan kop, cap, rantai, dan kolom fakta di kanan. Dasbor memilih arketipe dari izin: pimpinan, keuangan, pengadaan, gudang, penjualan, auditor.
 
-## Language
+Aksi hanya tampil bila pengguna punya semua izin yang diminta backend untuk aksi itu. Kirim pesanan dan retur penjualan butuh `sales.write` dan `inventory.write` (`DELIVER_PERMS`, `RETURN_PERMS` di `lib/nav.ts`); tutup tahun butuh `accounting.close` dan `accounting.post`. Daftar "Perlu tindakan" di dasbor mengikuti aturan yang sama.
 
-Indonesian UI, server messages as received. Sentence case, active voice, labels name the object. `id-ID` number formatting. Codes are never translated.
+Ponsel di bawah 640 px memakai bilah tab bawah, tombol utama menempel di bawah, laci sebagai lembar bawah, palet layar penuh, dan target sentuh minimal 44 px.
 
-## Changes that approach behaviour (to approve)
+## Aksesibilitas
 
-1. Preview drawer on list rows (kept from v2, now 220ms).
-2. Command palette with an "Aksi" group in addition to pages and documents.
-3. Mobile bottom tab bar replacing the slide-in menu.
-4. Mobile tables: sticky first column with horizontal scroll instead of stacked rows.
-5. Row checkboxes and a bulk bar for print and export only.
-6. Sidebar rail mode stored in `localStorage`.
-7. Login parallax illustration.
+- Kontras: 301 pasangan lolos di empat nada (siang, pagi, sore, malam) dan di atas latar bertekstur
+- Fokus pindah ke h1 halaman baru; posisi gulir kembali saat navigasi mundur
+- Setiap visual punya teks atau tabel setara; SVG momen memakai `aria-hidden` dengan ringkasan yang dibacakan
+- `forced-colors`: batas bayangan menjadi garis, masker cap mati; `prefers-contrast: more`: garis lebih tegas, tekstur mati
+- Cetak: tanpa bayangan, tekstur, dan animasi; faktur dan laporan terbaca hitam-putih
+
+## Performa
+
+| Ukuran | Batas | Hasil (build produksi) |
+|---|---|---|
+| JS awal rute Dasbor (gzip) | ≤148,06 kB (v2 + 15%) | 101,56 kB |
+| CSS awal (gzip) | ≤13,55 kB (v2 + 20%) | 12,59 kB |
+| LCP Dasbor / daftar | ≤2,0 s | 116 ms / 132 ms |
+| CLS Dasbor / daftar | ≤0,05 | 0,001 / 0,001 |
+| INP | ≤200 ms | 16 ms / 40 ms |
+| Tugas panjang selama M1 dan M4 | 0 di atas 50 ms | 0 |
+| Animasi saat diam | 0 | 0 |
+
+Halaman selain Dasbor dan Masuk dimuat per rute, dan dimuat lebih dulu saat tautannya disorot atau difokus (`lib/routes.ts`).
+
+## Pengujian
+
+- `npm run typecheck`, `npm run build`, `npm run contrast`
+- `node tests/e2e/run.cjs`: peran dan izin, alur retur dengan angka API, upacara posting, mode Minimal, transisi ruang dan cadangannya, papan ketik, diam, tutup buku, membuka buku
+- `node tests/e2e/storyboard.cjs`: bingkai dan rekaman momen khas (`docs/storyboard/`)
+
+## Bahasa
+
+Teks antarmuka dalam bahasa Indonesia. Tombol memakai kata kerja dan objek ("Simpan retur", "Posting jurnal"). Kepala halaman berisi fakta, bukan sapaan. Pesan galat menyebut apa yang terjadi dan apa yang bisa dilakukan. Pesan dari server tampil apa adanya.

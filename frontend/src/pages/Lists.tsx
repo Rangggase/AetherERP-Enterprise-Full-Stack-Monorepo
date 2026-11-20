@@ -9,7 +9,7 @@ import { KeyLink } from "../components/Key";
 import { Drawer } from "../components/Layers";
 import { RoomLink } from "../components/RoomLink";
 import { DocChain, type ChainStep } from "../components/signature/DocChain";
-import { Code, ErrorNote, PageHeader, SectionTitle, Status, statusText, type Art } from "../components/ui";
+import { Code, ErrorNote, PageHeader, Pencil, SectionTitle, Status, statusText, type Art } from "../components/ui";
 import { PO_STEPS, ReturnLink, returnable, RowActions, SO_STEPS, usePayInvoice, useTransition, type Row, type Step } from "../lib/actions";
 import { api } from "../lib/api";
 import { actionCol, code, col, day, docNo, money, quantity, status } from "../lib/columns";
@@ -43,13 +43,16 @@ export function useSkuOf() {
   }, [q.data]);
 }
 
-/** Bilah filter berbentuk chip: satu chip per status yang ada di data, dengan jumlahnya. */
+/**
+ * Bilah filter berbentuk chip: satu chip per status yang ada di data, dengan jumlahnya. Tetap tampil walau hanya ada
+ * satu status, supaya tinggi halaman sama dengan kerangkanya dan tabel tidak bergeser setelah data datang.
+ */
 function StatusChips({ rows }: { rows: Row[] }) {
   const [sp, setSp] = useSearchParams();
   const cur = sp.get("status");
   const counts = rows.reduce<Record<string, number>>((m, r) => ({ ...m, [r.status]: (m[r.status] ?? 0) + 1 }), {});
   const keys = Object.keys(counts);
-  if (keys.length < 2) return null;
+  if (keys.length === 0) return null;
   const set = (s: string | null) => setSp((p) => { const n = new URLSearchParams(p); if (s) n.set("status", s); else n.delete("status"); return n; }, { replace: true });
   return (
     <div role="group" aria-label="Saring menurut status" className="mb-3 flex flex-wrap gap-2">
@@ -58,6 +61,13 @@ function StatusChips({ rows }: { rows: Row[] }) {
     </div>
   );
 }
+
+/** Kerangka bilah chip selama daftar dimuat, setinggi chip asli. */
+const ChipsSkeleton = () => (
+  <div aria-hidden="true" className="mb-3 flex flex-wrap gap-2">
+    {[0, 1, 2].map((i) => <span key={i} className="chip-toggle is-wait"><Pencil i={i} /></span>)}
+  </div>
+);
 
 /**
  * Pola halaman daftar (10): kepala halaman dengan jumlah data dan satu aksi utama, bilah filter chip, tabel lembar buku besar,
@@ -73,7 +83,7 @@ function ListPage({ title, sub, q, columns, actions, label, onOpen, selectedId, 
     <>
       <PageHeader title={title} sub={sub} actions={actions} cta room={roomName("list", loc.pathname.replace(/\//g, "-"))} />
       {lead}
-      {chips && q.data && <StatusChips rows={q.data} />}
+      {chips && (q.data ? <StatusChips rows={q.data} /> : q.isLoading ? <ChipsSkeleton /> : null)}
       {q.isError ? <ErrorNote error={q.error} retry={() => q.refetch()} /> : (
         <DataTable<Row> key={statusParam ?? "semua"} selectable initialFilters={statusParam ? [{ id: "status", value: `=${statusParam}` }] : undefined} emptyArt={art} label={label}
           data={q.data ?? []} columns={columns} loading={q.isLoading} onOpen={onOpen} selectedId={selectedId} empty={empty} emptyAction={emptyAction} />
