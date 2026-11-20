@@ -17,11 +17,11 @@ Sumber kebenaran untuk melanjutkan pekerjaan. Brief: `docs/brief-ui-v3.md`. Sist
 | 8. Opsional | O2 dan O3 selesai, bawaan mati (commit `9add081`); O1 tidak dikerjakan |
 | 9. Pengerasan | Selesai (commit `f4e48b0`; skrip verifikasi akhir di `4c74626`) |
 
-**Fase aktif: Gerbang 5, tinjauan pengguna.** Semua pekerjaan brief selesai. Pengguna memilih "Tinjau dulu" (20 Nov 2026); lingkungan tinjauan berjalan (bagian "Lingkungan tinjauan Gerbang 5"). Keputusan merge masih menunggu pengguna.
+**Selesai.** Semua fase dan gerbang selesai. Setelah meninjau di aplikasi, pengguna memutuskan merge di Gerbang 5 (20 Nov 2026): `ui-v3` digabung ke `main` lokal secara fast-forward. Belum di-push.
 
 ### Lanjutkan dari sini
 
-1. Pengguna sedang meninjau di aplikasi. Setelah selesai: matikan server tinjauan (bagian "PID proses"), catat hasil tinjauan dan keputusan merge di "Keputusan pengguna".
+1. Tidak ada pekerjaan brief yang tersisa. `main` lokal berisi v2 dan v3 dan berada di depan `origin/main`; push menunggu izin pengguna (brief 20).
 2. Untuk mengulang verifikasi: jalankan lingkungan uji (bagian "Lingkungan uji"), buktikan binding, lalu `npm run typecheck`, `npm run build`, `npm run contrast`, `pytest` di backend, dan `node tests/e2e/run.cjs`.
 3. Pekerjaan lanjutan yang mungkin: peluang dari audit gerak (bagian Fase 9), M6 dan M9 bila backend kelak menyediakan lapisan FIFO dan laporan aliran.
 
@@ -40,13 +40,14 @@ Sumber kebenaran untuk melanjutkan pekerjaan. Brief: `docs/brief-ui-v3.md`. Sist
 | 20 Nov 2026 | Pengguna: "okey kita mulai langkah selanjutnya". Fase 9 dikerjakan sampai laporan akhir. |
 | 20 Nov 2026 | Gerbang 5 (Claude): **tidak** diputuskan Claude. Merge ke `main` mengubah cabang utama dan brief 20 melarang merge tanpa izin, jadi keputusannya dikembalikan ke pengguna. |
 | 20 Nov 2026 | Gerbang 5, pengguna: "Tinjau dulu". Lingkungan tinjauan dijalankan dari salinan bersih data demo (`ui-v3-tinjau.db`, dari `ui-v3.base.db`). Merge belum diputuskan. |
+| 20 Nov 2026 | Gerbang 5, pengguna: "Merge ke main". Server tinjauan dimatikan, lalu `ui-v3` digabung ke `main` lokal secara fast-forward (tanpa commit merge, mengikuti riwayat `main` yang linear). Posisi `main` sebelumnya `fde5da8`, masih ditunjuk cabang `ui-polish`. Tidak di-push. |
 
 ## Git
 
 - Sebelum mulai: cabang `tactile-ui` di `2854dc9`, bersih kecuali `docs/brief-ui-v3.md` (untracked). Pekerjaan v2 sudah di-commit di `tactile-ui`, belum di-merge ke `main`, belum di-push.
 - Titik pemulihan: tag `pre-ui-v3` → `2854dc9`. Cabang kerja `ui-v3` dibuat dari `2854dc9`.
 - Commit di `ui-v3`: `c1fbc27` (fase 0), `9add081` (fase 2–6 dan 8), `64a63f9` (fase 1 dan 7), `f4e48b0` (fase 9), `4c74626` (skrip verifikasi akhir). Author Rangggase, tanpa atribusi AI.
-- Tidak ada push. Tidak ada merge ke `main` atau `tactile-ui`.
+- Tidak ada push. Pada 20 Nov 2026 `ui-v3` di-merge ke `main` (fast-forward) atas keputusan pengguna di Gerbang 5. Cabang `tactile-ui` dan `ui-v3` dibiarkan apa adanya.
 
 ## Lingkungan uji
 
@@ -131,6 +132,7 @@ Dijalankan 20 Nov 2026 setelah pengguna memilih "Tinjau dulu".
 | Sebelum server dijalankan | 79 (max id 79) | 102 |
 | Backend mencetak `PID=9004 DATABASE_URL=sqlite:///C:/Users/.../uiv3/ui-v3-tinjau.db` | | |
 | Login lewat proxy `vite preview` 5180 (HTTP 200) | 79 (max id 79) | 103 |
+| Setelah tinjauan pengguna, server dimatikan | 79 (max id 79) | 107 |
 
 Waktu ubah `aether_erp.db` tetap 20 Nov 2026 01:18:19, ukuran 520.192 byte, `-wal` 0 byte.
 
@@ -338,12 +340,13 @@ Dasbor (bagian 11):
 
 ## Keputusan terbuka (Gerbang 5, untuk pengguna)
 
-1. Merge `ui-v3` ke `main`? `ui-v3` bercabang dari `tactile-ui` (v2) yang juga belum di-merge, jadi merge `ui-v3` sekaligus membawa v2. Pilihan: (a) merge `ui-v3` ke `main`; (b) tinjau dulu di aplikasi dari cabang `ui-v3`; (c) tetap terpisah. Pengguna memilih (b) pada 20 Nov 2026; keputusan merge menyusul setelah tinjauan.
+1. Merge `ui-v3` ke `main`? `ui-v3` bercabang dari `tactile-ui` (v2) yang juga belum di-merge, jadi merge `ui-v3` sekaligus membawa v2. Pilihan: (a) merge `ui-v3` ke `main`; (b) tinjau dulu di aplikasi dari cabang `ui-v3`; (c) tetap terpisah. Pengguna memilih (b) pada 20 Nov 2026, lalu setelah meninjau memilih (a): di-merge ke `main` lokal (fast-forward). **Selesai.**
 2. Izinkan devDependency `@playwright/test@1.65.0`? Jika ya, `tests/e2e/run.cjs` bisa dipindah ke runner resmi dengan laporan dan snapshot visual.
 3. Peluang audit gerak yang terbuka: kerjakan atau biarkan.
 4. M6 dan M9 butuh endpoint backend baru (lapisan FIFO, laporan aliran per tahap), di luar lingkup brief UI.
 5. Aturan izin backend: kirim dan retur hanya bisa dilakukan peran yang punya `sales.write` dan `inventory.write`; di data demo hanya Admin. Bila Sales atau Gudang memang harus bisa, itu perubahan peran atau backend, bukan UI.
 6. "Nilai persediaan FIFO" di dasbor (lapisan di gudang) berbeda dari saldo akun persediaan di Neraca selama ada transfer dalam perjalanan. Angka keduanya benar menurut API; bila membingungkan pengguna, bisa ditambah keterangan "tidak termasuk barang dalam perjalanan" (perubahan teks UI) atau akun barang dalam perjalanan (perubahan backend).
+7. Push `main` ke `origin`? Belum diizinkan (brief 20), jadi belum dilakukan.
 
 ## PID proses
 
@@ -353,10 +356,10 @@ Dasbor (bagian 11):
 | `vite preview` 5180 (sesi 1) | 6532 | Dimatikan |
 | Backend uji 8010 (sesi lanjutan) | 17328 | Dimatikan |
 | `vite preview` 5180 (sesi lanjutan) | 7220 | Dimatikan |
-| Backend tinjauan 8010 (`tinjau_backend.py`) | 9004 | **Berjalan** selama tinjauan Gerbang 5 |
-| `vite preview` tinjauan 5180 (`tinjau_frontend.mjs`) | 14936 | **Berjalan** selama tinjauan Gerbang 5 |
+| Backend tinjauan 8010 (`tinjau_backend.py`) | 9004 | Dimatikan |
+| `vite preview` tinjauan 5180 (`tinjau_frontend.mjs`) | 14936 | Dimatikan |
 
-Server tinjauan sengaja dibiarkan berjalan sampai pengguna selesai meninjau. Matikan lewat panel browser (`preview_stop`) atau dengan menghentikan kedua PID di atas, lalu pastikan port 8010 dan 5180 kosong. Server milik pengguna di 8000 dan 5173 tidak berjalan dan tidak disentuh.
+Tidak ada proses sesi ini yang masih berjalan. Server tinjauan dimatikan lewat panel browser setelah pengguna memutuskan merge; port 8010 dan 5180 kosong dan kedua PID sudah tidak ada. Server milik pengguna di 8000 dan 5173 tidak berjalan dan tidak disentuh.
 
 ## Catatan teknis untuk sesi berikutnya
 
