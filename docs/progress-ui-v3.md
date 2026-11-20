@@ -15,13 +15,13 @@ Sumber kebenaran untuk melanjutkan pekerjaan. Brief: `docs/brief-ui-v3.md`. Sist
 | 6. Persediaan dan aliran (M6, M8, M9) | M8 selesai; M6 dan M9 ditunda karena API tidak menyediakan datanya (commit `9add081`) |
 | 7. Penyapuan halaman | Selesai (commit `64a63f9`) |
 | 8. Opsional | O2 dan O3 selesai, bawaan mati (commit `9add081`); O1 tidak dikerjakan |
-| 9. Pengerasan | Selesai (commit fase 9, lihat `git log`) |
+| 9. Pengerasan | Selesai (commit `f4e48b0`; skrip verifikasi akhir di `4c74626`) |
 
-**Fase aktif: Gerbang 5.** Semua pekerjaan brief selesai; keputusan merge menunggu pengguna.
+**Fase aktif: Gerbang 5, tinjauan pengguna.** Semua pekerjaan brief selesai. Pengguna memilih "Tinjau dulu" (20 Nov 2026); lingkungan tinjauan berjalan (bagian "Lingkungan tinjauan Gerbang 5"). Keputusan merge masih menunggu pengguna.
 
 ### Lanjutkan dari sini
 
-1. Keputusan pengguna di Gerbang 5 (lihat "Keputusan terbuka").
+1. Pengguna sedang meninjau di aplikasi. Setelah selesai: matikan server tinjauan (bagian "PID proses"), catat hasil tinjauan dan keputusan merge di "Keputusan pengguna".
 2. Untuk mengulang verifikasi: jalankan lingkungan uji (bagian "Lingkungan uji"), buktikan binding, lalu `npm run typecheck`, `npm run build`, `npm run contrast`, `pytest` di backend, dan `node tests/e2e/run.cjs`.
 3. Pekerjaan lanjutan yang mungkin: peluang dari audit gerak (bagian Fase 9), M6 dan M9 bila backend kelak menyediakan lapisan FIFO dan laporan aliran.
 
@@ -39,12 +39,13 @@ Sumber kebenaran untuk melanjutkan pekerjaan. Brief: `docs/brief-ui-v3.md`. Sist
 | 20 Nov 2026 | Gerbang 4 (Claude): O2 Cahaya meja dan O3 Suara dikerjakan, bawaan mati di Akun saya. O1 Gudang 3D tidak dikerjakan: data hanya 6 produk, tidak lolos uji akal sehat no. 2 (tidak membuat lebih cepat paham dibanding SVG M8) dan menambah ±150 kB gzip. |
 | 20 Nov 2026 | Pengguna: "okey kita mulai langkah selanjutnya". Fase 9 dikerjakan sampai laporan akhir. |
 | 20 Nov 2026 | Gerbang 5 (Claude): **tidak** diputuskan Claude. Merge ke `main` mengubah cabang utama dan brief 20 melarang merge tanpa izin, jadi keputusannya dikembalikan ke pengguna. |
+| 20 Nov 2026 | Gerbang 5, pengguna: "Tinjau dulu". Lingkungan tinjauan dijalankan dari salinan bersih data demo (`ui-v3-tinjau.db`, dari `ui-v3.base.db`). Merge belum diputuskan. |
 
 ## Git
 
 - Sebelum mulai: cabang `tactile-ui` di `2854dc9`, bersih kecuali `docs/brief-ui-v3.md` (untracked). Pekerjaan v2 sudah di-commit di `tactile-ui`, belum di-merge ke `main`, belum di-push.
 - Titik pemulihan: tag `pre-ui-v3` → `2854dc9`. Cabang kerja `ui-v3` dibuat dari `2854dc9`.
-- Commit di `ui-v3`: `c1fbc27` (fase 0), `9add081` (fase 2–6 dan 8), `64a63f9` (fase 1 dan 7), lalu commit fase 9. Author Rangggase, tanpa atribusi AI.
+- Commit di `ui-v3`: `c1fbc27` (fase 0), `9add081` (fase 2–6 dan 8), `64a63f9` (fase 1 dan 7), `f4e48b0` (fase 9), `4c74626` (skrip verifikasi akhir). Author Rangggase, tanpa atribusi AI.
 - Tidak ada push. Tidak ada merge ke `main` atau `tactile-ui`.
 
 ## Lingkungan uji
@@ -115,6 +116,23 @@ Sesi lanjutan (fase 1–9, backend uji PID 17328, preview PID 7220):
 | Akhir (setelah e2e, screenshot, uji tambahan, pengukuran) | 79 (max id 79) | 341 |
 
 Waktu ubah `aether_erp.db` di akhir: 20 Nov 2026 01:18:19 (sama dengan catatan sesi 1), ukuran 520.192 byte, `-wal` 0 byte. Hanya COPY yang bertambah.
+
+## Lingkungan tinjauan Gerbang 5
+
+Dijalankan 20 Nov 2026 setelah pengguna memilih "Tinjau dulu".
+
+- Database: `ui-v3-tinjau.db` di folder kerja uji, disalin dari `ui-v3.base.db` (data demo bersih: 2 retur, 1 faktur dibayar sebagian, periode Januari–Juni 2026 ditutup, 1 PO menunggu persetujuan, 1 transfer dalam perjalanan; tanpa data buatan uji e2e). `ui-v3.db` hasil verifikasi akhir tidak diubah.
+- Peluncur di folder kerja uji: `tinjau_backend.py` (memasang `DATABASE_URL` dan variabel lain di dalam prosesnya sendiri, lalu menolak jalan bila engine tidak terikat ke `ui-v3-tinjau.db`) dan `tinjau_frontend.mjs` (`vite preview` build produksi di 127.0.0.1:5180, proxy `/api` dipasang di dalam proses ke 8010, berhenti bila proxy mengarah ke tempat lain).
+- Dijalankan lewat panel browser aplikasi desktop dengan konfigurasi `D:\new another projectd\.claude\launch.json` (di luar repo): `tinjau-backend-8010`, `tinjau-frontend-5180`.
+- Build produksi dibuat ulang dari HEAD `4c74626` sebelum dijalankan. Rute Katalog tidak ada di build ini.
+
+| Langkah | LIVE `aether_erp.db` (ro) | COPY `ui-v3-tinjau.db` (ro) |
+|---|---|---|
+| Sebelum server dijalankan | 79 (max id 79) | 102 |
+| Backend mencetak `PID=9004 DATABASE_URL=sqlite:///C:/Users/.../uiv3/ui-v3-tinjau.db` | | |
+| Login lewat proxy `vite preview` 5180 (HTTP 200) | 79 (max id 79) | 103 |
+
+Waktu ubah `aether_erp.db` tetap 20 Nov 2026 01:18:19, ukuran 520.192 byte, `-wal` 0 byte.
 
 ## Fase 9: hasil
 
@@ -320,7 +338,7 @@ Dasbor (bagian 11):
 
 ## Keputusan terbuka (Gerbang 5, untuk pengguna)
 
-1. Merge `ui-v3` ke `main`? `ui-v3` bercabang dari `tactile-ui` (v2) yang juga belum di-merge, jadi merge `ui-v3` sekaligus membawa v2. Pilihan: (a) merge `ui-v3` ke `main`; (b) tinjau dulu di aplikasi dari cabang `ui-v3`; (c) tetap terpisah.
+1. Merge `ui-v3` ke `main`? `ui-v3` bercabang dari `tactile-ui` (v2) yang juga belum di-merge, jadi merge `ui-v3` sekaligus membawa v2. Pilihan: (a) merge `ui-v3` ke `main`; (b) tinjau dulu di aplikasi dari cabang `ui-v3`; (c) tetap terpisah. Pengguna memilih (b) pada 20 Nov 2026; keputusan merge menyusul setelah tinjauan.
 2. Izinkan devDependency `@playwright/test@1.65.0`? Jika ya, `tests/e2e/run.cjs` bisa dipindah ke runner resmi dengan laporan dan snapshot visual.
 3. Peluang audit gerak yang terbuka: kerjakan atau biarkan.
 4. M6 dan M9 butuh endpoint backend baru (lapisan FIFO, laporan aliran per tahap), di luar lingkup brief UI.
@@ -335,8 +353,10 @@ Dasbor (bagian 11):
 | `vite preview` 5180 (sesi 1) | 6532 | Dimatikan |
 | Backend uji 8010 (sesi lanjutan) | 17328 | Dimatikan |
 | `vite preview` 5180 (sesi lanjutan) | 7220 | Dimatikan |
+| Backend tinjauan 8010 (`tinjau_backend.py`) | 9004 | **Berjalan** selama tinjauan Gerbang 5 |
+| `vite preview` tinjauan 5180 (`tinjau_frontend.mjs`) | 14936 | **Berjalan** selama tinjauan Gerbang 5 |
 
-Tidak ada proses sesi ini yang masih berjalan. Setelah dimatikan, tidak ada yang mendengarkan di port 8010, 5180, 8000, atau 5173 (server milik pengguna di 8000 dan 5173 memang tidak berjalan dan tidak disentuh).
+Server tinjauan sengaja dibiarkan berjalan sampai pengguna selesai meninjau. Matikan lewat panel browser (`preview_stop`) atau dengan menghentikan kedua PID di atas, lalu pastikan port 8010 dan 5180 kosong. Server milik pengguna di 8000 dan 5173 tidak berjalan dan tidak disentuh.
 
 ## Catatan teknis untuk sesi berikutnya
 
